@@ -32,27 +32,35 @@ struct HttpRequest { // including https
 	on_finish_callback_t on_finish{};
 	
 	static std::map<std::string, std::string> default_headers_added(std::map<std::string, std::string> headers) {
-		static const std::string DEFAULT_USER_AGENT = "Mozilla/5.0 (Linux; Android 11; Pixel 3a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.101 Mobile Safari/537.36";
-		static const std::map<std::string, std::string> default_headers = {
-			{"Accept", "*/*"},
-			{"Connection", "Keep-Alive"},
-			{"User-Agent", DEFAULT_USER_AGENT}
-		};
-		for (auto default_header : default_headers) if (!headers.count(default_header.first)) headers[default_header.first] = default_header.second;
+		// Set up default Android/YouTube client headers
+  	headers["Accept-Language"] = "en";
+    headers["Content-Type"] = "application/json";
+    headers["User-Agent"] = "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)";
+    headers["X-YouTube-Client-Name"] = "IOS";
+    headers["X-YouTube-Client-Version"] = "19.29.1";
+
+
 		return headers;
 	}
+
 	static HttpRequest GET(const std::string &url, const std::map<std::string, std::string> &headers, bool follow_redirect = true) {
-		return HttpRequest{"GET", url, default_headers_added(headers), "", follow_redirect};
+		auto updated_headers = default_headers_added(headers);
+		return HttpRequest{"GET", url, updated_headers, "", follow_redirect};
 	}
+
 	static HttpRequest POST(const std::string &url, const std::map<std::string, std::string> &headers, const std::string &body) {
-		return HttpRequest{"POST", url, default_headers_added(headers), body, false};
+		auto updated_headers = default_headers_added(headers);
+		return HttpRequest{"POST", url, updated_headers, body, false};
 	}
+
 	HttpRequest with_progress_func(progress_callback_t progress_func) const {
 		return HttpRequest{method, url, headers, body, follow_redirect, progress_func, on_finish};
 	}
+
 	HttpRequest with_on_finish_callback(on_finish_callback_t on_finish) const {
 		return HttpRequest{method, url, headers, body, follow_redirect, progress_func, on_finish};
 	}
+
 };
 
 struct NetworkSessionList { // one instance per thread

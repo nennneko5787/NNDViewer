@@ -13,7 +13,7 @@ namespace youtube_parser {
 #ifdef _WIN32
 	std::pair<bool, std::string> http_get(const std::string &url, std::map<std::string, std::string> headers) {
 		static int cnt = 0;
-		static const std::string user_agent = "Mozilla/5.0 (Linux; Android 11; Pixel 3a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.101 Mobile Safari/537.36";
+		static const std::string user_agent = "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)";
 		if (!headers.count("User-Agent")) headers["User-Agent"] = user_agent;
 		if (!headers.count("Accept-Language")) headers["Accept-Language"] = language_code + ";q=0.9";
 		
@@ -74,13 +74,30 @@ namespace youtube_parser {
 			return {true, std::string(result.data.begin(), result.data.end())};
 		}
 	}
+
 	HttpRequest http_post_json_request(const std::string &url, const std::string &json, std::map<std::string, std::string> headers) {
 		confirm_thread_network_session_list_inited();
-		if (!headers.count("Accept-Language")) headers["Accept-Language"] = language_code + ";q=0.9";
-		headers["Content-Type"] = "application/json";
-		
+
+	headers["Accept-Language"] = "en";
+    headers["Content-Type"] = "application/json";
+    headers["User-Agent"] = "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)";
+    headers["X-YouTube-Client-Name"] = "IOS";
+    headers["X-YouTube-Client-Version"] = "19.29.1";
+
+		std::string headersLog = "POST Request Headers:\n";
+		for (const auto &header : headers) {
+			headersLog += header.first + ": " + header.second + "\n";
+		}
+
+		logger.info("curl", headersLog);
+
+		logger.error("net/dl", "failed to acquire x-head-seqnum");
 		return HttpRequest::POST(url, headers, json);
+
+		logger.info("http_post_json_request url", url);
+		logger.info("http_post_json_request json", json);
 	}
+
 	std::pair<bool, std::string> http_post_json(const std::string &url, const std::string &json, std::map<std::string, std::string> headers) {
 		debug_info("accessing(POST)...");
 		auto result = thread_network_session_list.perform(http_post_json_request(url, json, headers));

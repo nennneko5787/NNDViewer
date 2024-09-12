@@ -263,7 +263,7 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 	
 	std::string playlist_id = youtube_get_playlist_id_by_url(url);
 	
-	std::string post_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "MWEB","clientVersion": "2.20220308.01.00"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": %4}}})";
+	std::string post_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "IOS","clientVersion": "19.29.1","deviceMake": "Apple","deviceModel": "19.29.1","osName": "iPhone","userAgent": "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)\"","osVersion": "17.5.1.21F90"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": %4}}})";
 	post_content = std::regex_replace(post_content, std::regex("%0"), res.id);
 	post_content = std::regex_replace(post_content, std::regex("%1"), playlist_id == "" ? "" : "\"playlistId\": \"" + playlist_id + "\", ");
 	post_content = std::regex_replace(post_content, std::regex("%2"), language_code);
