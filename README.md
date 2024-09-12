@@ -9,7 +9,7 @@ A work-in-progress homebrew YouTube client for the 3DS
 As this app is still in the alpha stage, you may and will encounter crashes and other bugs.  
 If you find one of those, it would be helpful to open an issue on this GitHub repository.  
 
-## credits
+## Credits
 
   WindowsServer2003 - The creator of ThirdTube
 
