@@ -9,6 +9,12 @@ A work-in-progress homebrew YouTube client for the 3DS
 As this app is still in the alpha stage, you may and will encounter crashes and other bugs.  
 If you find one of those, it would be helpful to open an issue on this GitHub repository.  
 
+## credits
+
+  WindowsServer2003 - The creator of ThirdTube
+
+  Smu1zel - Figured out the line of code that I needed and test the changed out.
+
 ## Description
 It utilizes some undocumented YouTube APIs to get the raw video url and plays the stream using the decoder taken from [Video player for 3DS by Core-2-Extreme](https://github.com/Core-2-Extreme/Video_player_for_3DS).  
 It does not run any javascripts or render html/css, so it's significantly faster than YouTube on the browser.  
