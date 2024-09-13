@@ -18,6 +18,7 @@ namespace About {
 		"for the new 3DS"
 	};
 	const std::vector<std::pair<std::string, std::vector<std::string> > > credits = {
+		{"Credit to Us", {"The story goes as follows:", "thirdtube stopped working", "then we, as the the former ThirdTube", "now FourthTube community, took action", "Extra credit goes to:", "NPC 3.0, fixing the app", "Smul1zel, fixing the app", "5GBurrito, minor contributions", "2B_enpitsu, new banner and icon"}}
 		{"Core 2 Extreme", {"for Video player for 3DS from which", "the video playback code of this app is taken"}}
 	};
 	const std::vector<std::string> license_lines = {
