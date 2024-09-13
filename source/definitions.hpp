@@ -11,7 +11,7 @@
 #define DEF_HTTP_USER_AGENT (std::string)"video player for 3ds v1.1.0"
 #define DEF_CURRENT_APP_VER (std::string)"Beta 13"
 #define DEF_CURRENT_APP_VER_INT 0
-#define GITHUB_URL std::string("https://github.com/erievs/IdiotTube")
+#define GITHUB_URL std::string("https://github.com/erievs/FourthTube")
 
 //video player
 #define DEF_SAPP0_NAME (std::string)"Video\nplayer"
