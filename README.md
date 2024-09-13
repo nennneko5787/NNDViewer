@@ -1,7 +1,7 @@
 # IdiotTube 
 
 A work-in-progress homebrew YouTube client for the 3DS  
-[GBAtemp Thread](https://gbatemp.net/threads/release-thirdtube-a-homebrew-youtube-client-for-the-new-3ds.591696/)  
+[GBAtemp Thread]([[https://gbatemp.net/threads/release-thirdtube-a-homebrew-youtube-client-for-the-new-3ds.591696/](https://gbatemp.net/threads/fourthtube-for-now-a-fork-of-thirdtube-that-works.660775/)](https://gbatemp.net/threads/fourthtube-for-now-a-fork-of-thirdtube-that-works.660775/))  
 [Discord Server](https://discord.gg/UPK3wDTTE2)
 
 ## Instability Warning
