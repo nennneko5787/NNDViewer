@@ -1,7 +1,7 @@
 #pragma once
 
 //settings
-#define DEF_MAIN_DIR (std::string)"/3ds/IdiotTube/"
+#define DEF_MAIN_DIR (std::string)"/3ds/FourthTube/"
 #define DEF_UPDATE_DIR_PREFIX (std::string)"/3ds/Video_player_ver_"
 #define DEF_UPDATE_FILE_PREFIX (std::string)"video_player"
 #define DEF_SWKBD_MAX_DIC_WORDS 128
@@ -9,7 +9,7 @@
 #define DEF_SEND_APP_INFO_URL (std::string)"https://script.google.com/macros/s/AKfycbyn_blFyKWXCgJr6NIF8x6ETs7CHRN5FXKYEAAIrzV6jPYcCkI/exec"
 #define DEF_CHECK_UPDATE_URL (std::string)"https://script.google.com/macros/s/AKfycbwTd3jzV0npUE9MNKmZIv3isazVR5D9_7A8rexsG1vr9SE7iavDBxgtzlph8dZipwu9/exec"
 #define DEF_HTTP_USER_AGENT (std::string)"video player for 3ds v1.1.0"
-#define DEF_CURRENT_APP_VER (std::string)"Beta 13"
+#define DEF_CURRENT_APP_VER (std::string)"Beta 13.1"
 #define DEF_CURRENT_APP_VER_INT 0
 #define GITHUB_URL std::string("https://github.com/erievs/FourthTube")
 
