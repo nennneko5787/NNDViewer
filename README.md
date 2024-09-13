@@ -28,6 +28,7 @@ The name is derived from the fact that it is the third YouTube client on 3DS, fo
 
 ## QR code
 You can use the qr code below to download & install .cia from 3ds 
+
 <img src="https://github.com/erievs/FourthTube/blob/main/images/qr_code.png" width="200" height="200">
 
 ## Screenshots
