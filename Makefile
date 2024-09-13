@@ -51,9 +51,9 @@ LIBRARY := library
 GFXBUILD	:=	$(ROMFS)/gfx
 #---------------------------------------------------------------------------------
 APP_VER					:= 84
-APP_TITLE				:= IdiotTube
+APP_TITLE				:= FourthTube
 APP_DESCRIPTION				:= A YouTube Client For The 3DS
-APP_AUTHOR				:= ncp/windows_server_2003/smu1zel
+APP_AUTHOR				:= The FourthTube Community
 PRODUCT_CODE				:= CTR-TYT
 UNIQUE_ID				:= 0xBF74D
 
