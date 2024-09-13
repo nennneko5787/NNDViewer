@@ -263,74 +263,75 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 	
 	std::string playlist_id = youtube_get_playlist_id_by_url(url);
 	
-	std::string post_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "IOS","clientVersion": "19.29.1","deviceMake": "Apple","deviceModel": "19.29.1","osName": "iPhone","userAgent": "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)\"","osVersion": "17.5.1.21F90"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": %4}}})";
+	std::string video_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "IOS","clientVersion": "19.29.1","deviceMake": "Apple","deviceModel": "19.29.1","osName": "iPhone","userAgent": "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)\"","osVersion": "17.5.1.21F90"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": %4}}})";
+	video_content = std::regex_replace(video_content, std::regex("%0"), res.id);
+	video_content = std::regex_replace(video_content, std::regex("%1"), playlist_id == "" ? "" : "\"playlistId\": \"" + playlist_id + "\", ");
+	video_content = std::regex_replace(video_content, std::regex("%2"), language_code);
+	video_content = std::regex_replace(video_content, std::regex("%3"), country_code);
+	video_content = std::regex_replace(video_content, std::regex("%4"), std::to_string(get_sts()));
+
+	std::string post_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "MWEB","clientVersion": "2.20220308.01.00"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": %4}}})";
 	post_content = std::regex_replace(post_content, std::regex("%0"), res.id);
 	post_content = std::regex_replace(post_content, std::regex("%1"), playlist_id == "" ? "" : "\"playlistId\": \"" + playlist_id + "\", ");
 	post_content = std::regex_replace(post_content, std::regex("%2"), language_code);
 	post_content = std::regex_replace(post_content, std::regex("%3"), country_code);
 	post_content = std::regex_replace(post_content, std::regex("%4"), std::to_string(get_sts()));
+
 	std::string urls[2] = {
 		get_innertube_api_url("next"),
 		get_innertube_api_url("player")
 	};
-#	ifdef _WIN32
-	std::string json_str[2]; // {/next, /player}
-	for (int i = 0; i < 2; i++) json_str[i] = http_post_json(urls[i], post_content).second;
-	for (int i = 0; i < 2; i++) {
-		parse_json_destructive(&json_str[i][0],
-			[&] (Document &json_root, RJson data) {
-				if (i == 0) extract_metadata(data, res);
-				else extract_player_data(json_root, data, res);
-			},
-			[&] (const std::string &error) {
-				res.error = "[v-#" + std::to_string(i) + "] " + error;
-				debug_error(res.error);
-			}
-		);
-	}
-#	else
-	debug_info("accessing(multi)...");
-	std::vector<NetworkResult> results;
-	{
-		std::vector<HttpRequest> requests;
-		for (int i = 0; i < 2; i++) requests.push_back(http_post_json_request(urls[i], post_content));
-		results = thread_network_session_list.perform(requests);
-		bool fail = false;
-		for (int i = 0; i < 2; i++) if (results[i].fail) {
-			fail = true;
-			debug_error("#" + std::to_string(i) + " fail");
+
+	#ifdef _WIN32
+		std::string json_str[2]; // {/next, /player}
+		json_str[0] = http_post_json(urls[0], post_content).second;   
+		json_str[1] = http_post_json(urls[1], video_content).second;   /
+
+		for (int i = 0; i < 2; i++) {
+			parse_json_destructive(&json_str[i][0],
+				[&] (Document &json_root, RJson data) {
+					if (i == 0) extract_metadata(data, res);
+					else extract_player_data(json_root, data, res);
+				},
+				[&] (const std::string &error) {
+					res.error = "[v-#" + std::to_string(i) + "] " + error;
+					debug_error(res.error);
+				}
+			);
 		}
-		if (!fail) debug_info("ok");
-	}
-	for (int i = 0; i < 2; i++) {
-		results[i].data.push_back('\0');
-		parse_json_destructive((char *) &results[i].data[0],
-			[&] (Document &json_root, RJson data) {
-				if (i == 0) extract_metadata(data, res);
-				else extract_player_data(json_root, data, res);
-			},
-			[&] (const std::string &error) {
-				res.error = "[v-#" + std::to_string(i) + "] " + error;
-				debug_error(res.error);
+	#else
+		debug_info("accessing(multi)...");
+		std::vector<NetworkResult> results;
+		{
+			std::vector<HttpRequest> requests;
+			requests.push_back(http_post_json_request(urls[0], post_content));   
+			requests.push_back(http_post_json_request(urls[1], video_content));  
+
+			results = thread_network_session_list.perform(requests);
+			bool fail = false;
+			for (int i = 0; i < 2; i++) {
+				if (results[i].fail) {
+					fail = true;
+					debug_error("#" + std::to_string(i) + " fail");
+				}
 			}
-		);
-	}
-#	endif
-	
-	if (res.id != "") res.succinct_thumbnail_url = youtube_get_video_thumbnail_url_by_id(res.id);
-#	ifndef _WIN32
-	if (res.title != "" && res.id != "") {
-		HistoryVideo video;
-		video.id = res.id;
-		video.title = res.title;
-		video.author_name = res.author.name;
-		video.length_text = Util_convert_seconds_to_time((double) res.duration_ms / 1000);
-		video.my_view_count = 1;
-		video.last_watch_time = time(NULL);
-		add_watched_video(video);
-		misc_tasks_request(TASK_SAVE_HISTORY);
-	}
-#	endif
+			if (!fail) debug_info("ok");
+		}
+
+		for (int i = 0; i < 2; i++) {
+			results[i].data.push_back('\0');
+			parse_json_destructive((char *) &results[i].data[0],
+				[&] (Document &json_root, RJson data) {
+					if (i == 0) extract_metadata(data, res);
+					else extract_player_data(json_root, data, res);
+				},
+				[&] (const std::string &error) {
+					res.error = "[v-#" + std::to_string(i) + "] " + error;
+					debug_error(res.error);
+				}
+			);
+		}
+	#endif
 	
 	debug_info(res.title != "" ? res.title : "preason : " + res.playability_reason);
 	return res;
