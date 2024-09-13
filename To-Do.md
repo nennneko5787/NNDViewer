@@ -4,4 +4,5 @@
     - SnakeTube
     - FourthTube
 - [ ] Add dislikes
-- [ ] Fix captions  
+- [ ] Fix captions
+- [ ] fix crash on closing .3dsx
