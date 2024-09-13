@@ -2,7 +2,7 @@
 
 A work-in-progress homebrew YouTube client for the 3DS  
 [GBAtemp Thread](https://gbatemp.net/threads/release-thirdtube-a-homebrew-youtube-client-for-the-new-3ds.591696/)  
-[Discord Server](https://discord.gg/CVcThBCQJM)
+[Discord Server](https://discord.gg/UPK3wDTTE2)
 
 ## Instability Warning
 
@@ -13,7 +13,13 @@ If you find one of those, it would be helpful to open an issue on this GitHub re
 
   WindowsServer2003 - The creator of ThirdTube
 
-  Smu1zel - Figured out the line of code that I needed and test the changed out.
+  Smu1zel - Figured out the line of code that I needed and test the changed out, fixing the app after it stopped working in 2024.
+
+  NPC 3.0 - fixing the app after it stopped working in 2024.
+
+  5GBurrito - Minor changes (projct manager?)
+
+  2B_enpitsu - New banner and icon.
 
 ## Description
 It utilizes some undocumented YouTube APIs to get the raw video url and plays the stream using the decoder taken from [Video player for 3DS by Core-2-Extreme](https://github.com/Core-2-Extreme/Video_player_for_3DS).  
@@ -21,7 +27,7 @@ It does not run any javascripts or render html/css, so it's significantly faster
 The name is derived from the fact that it is the third YouTube client on 3DS, following the official YouTube app (discontinued) and the new 3DS browser.  
 
 ## QR code
-You can use the qr code below to download & install .cia from 3ds(Thanks @Minionguyjpro)
+You can use the qr code below to download & install .cia from 3ds NEEDS TO BE UPDATED
 <img src="https://github.com/windows-server-2003/ThirdTube/blob/main/images/qr_code.png" width="200" height="200">
 
 ## Screenshots
