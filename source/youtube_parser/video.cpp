@@ -108,6 +108,8 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 		cur_lang.base_url = base_lang["baseUrl"].string_value();
 		cur_lang.is_translatable = base_lang["isTranslatable"].bool_value();
 		res.caption_base_languages.push_back(cur_lang);
+		logger.info("Caption Data", cur_lang.base_url);
+
 	}
 	for (auto translation_lang : player_response["captions"]["playerCaptionsTracklistRenderer"]["translationLanguages"].array_items()) {
 		YouTubeVideoDetail::CaptionTranslationLanguage cur_lang;
