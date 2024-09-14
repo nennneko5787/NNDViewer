@@ -11,6 +11,7 @@ extern bool var_wifi_enabled;
 extern bool var_history_enabled;
 extern int var_autoplay_level;
 extern bool var_show_fps;
+extern bool var_full_dislike_like_count;
 extern bool var_full_screen_mode;
 extern bool var_video_show_debug_info;
 extern bool var_video_linear_filter;

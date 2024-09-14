@@ -12,6 +12,7 @@ bool var_history_enabled = true;
 int var_autoplay_level = 2; // 0 : never, 1 : only in a playlist, 2 : always
 bool var_show_fps = false;
 bool var_full_screen_mode = false;
+bool var_full_dislike_like_count = false;
 bool var_video_show_debug_info = false;
 bool var_video_linear_filter = true;
 double var_forward_buffer_ratio = 0.8;

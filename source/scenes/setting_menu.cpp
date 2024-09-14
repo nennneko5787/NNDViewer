@@ -280,6 +280,19 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// show full dislike/like
+					(new SelectorView(0, 0, 320, 35))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_video_show_debug_info)
+						->set_title([](const SelectorView &) { return LOCALIZED(FULL_SCREEN_MODE); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_video_show_debug_info != view.selected_button) {
+								var_video_show_debug_info = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Dark theme (plus flash)
 					(new SelectorView(0, 0, 320, 35))
 						->set_texts({

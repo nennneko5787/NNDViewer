@@ -1,6 +1,9 @@
 #include <regex>
 #include "internal_common.hpp"
 #include "parser.hpp"
+#include <iostream>
+#include "../variables.hpp"
+#include <iomanip>
 
 static std::map<std::string, std::string> nparam_transform_results_cache;
 static bool extract_player_data(Document &json_root, RJson player_response, YouTubeVideoDetail &res) {
@@ -115,30 +118,50 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 }
 
 static void extract_like_dislike_counts(RJson buttons, YouTubeVideoDetail &res) {
-	for (auto button : buttons.array_items()) {
-		if (button.has_key("slimMetadataToggleButtonRenderer")) { // legacy?
-			auto content = get_text_from_object(button["slimMetadataToggleButtonRenderer"]["button"]["toggleButtonRenderer"]["defaultText"]);
-			if (content.size() && !isdigit(content[0])) content = "hidden";
-			if (button["slimMetadataToggleButtonRenderer"]["isLike"].bool_value()) res.like_count_str = content;
-			else if (button["slimMetadataToggleButtonRenderer"]["isDislike"].bool_value()) res.dislike_count_str = content;
-			if (button["slimMetadataToggleButtonRenderer"]["target"]["videoId"].is_valid()) res.id = button["slimMetadataToggleButtonRenderer"]["target"]["videoId"].string_value();
-		}
-		if (button["slimMetadataButtonRenderer"]["button"].has_key("segmentedLikeDislikeButtonRenderer")) { // old?
-			auto renderer = button["slimMetadataButtonRenderer"]["button"]["segmentedLikeDislikeButtonRenderer"];
-			auto get_text = [] (RJson button) -> std::string {
-				auto text = get_text_from_object(button["toggleButtonRenderer"]["defaultText"]);
-				if (text.size() && !isdigit(text[0])) return "hidden";
-				return text;
-			};
-			res.like_count_str = get_text(renderer["likeButton"]);
-			res.dislike_count_str = get_text(renderer["dislikeButton"]);
-		}
-		if (button["slimMetadataButtonRenderer"]["button"].has_key("segmentedLikeDislikeButtonViewModel")) {
-			res.like_count_str = button["slimMetadataButtonRenderer"]["button"]["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]
-				["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["defaultButtonViewModel"]["buttonViewModel"]["title"].string_value();
-			if (res.like_count_str.size() && !isdigit(res.like_count_str[0])) res.like_count_str = "hidden";
-		}
-	}
+    res.like_count_str = "0";   // Default to "0" for like count
+    res.dislike_count_str = "0"; // Default to "0" for dislike count
+
+    for (auto button : buttons.array_items()) {
+        if (button.has_key("slimMetadataToggleButtonRenderer")) { // legacy?
+            auto get_text = [](RJson button) -> std::string {
+                auto content = get_text_from_object(button["button"]["toggleButtonRenderer"]["defaultText"]);
+                if (content.size() && !isdigit(content[0])) return "0"; // Default to "0" if not a number
+                return content;
+            };
+
+            if (button["slimMetadataToggleButtonRenderer"]["isLike"].bool_value()) {
+                res.like_count_str = get_text(button["slimMetadataToggleButtonRenderer"]);
+            }
+            if (button["slimMetadataToggleButtonRenderer"]["isDislike"].bool_value()) {
+                res.dislike_count_str = get_text(button["slimMetadataToggleButtonRenderer"]);
+            }
+            if (button["slimMetadataToggleButtonRenderer"]["target"]["videoId"].is_valid()) {
+                res.id = button["slimMetadataToggleButtonRenderer"]["target"]["videoId"].string_value();
+            }
+        }
+
+        if (button.has_key("slimMetadataButtonRenderer") && button["slimMetadataButtonRenderer"]["button"].has_key("segmentedLikeDislikeButtonRenderer")) { // old?
+            auto renderer = button["slimMetadataButtonRenderer"]["button"]["segmentedLikeDislikeButtonRenderer"];
+            auto get_text = [](RJson button) -> std::string {
+                auto text = get_text_from_object(button["toggleButtonRenderer"]["defaultText"]);
+                if (text.size() && !isdigit(text[0])) return "0"; // Default to "0" if not a number
+                return text;
+            };
+            res.like_count_str = get_text(renderer["likeButton"]);
+            res.dislike_count_str = get_text(renderer["dislikeButton"]);
+        }
+
+        if (button.has_key("slimMetadataButtonRenderer") && button["slimMetadataButtonRenderer"]["button"].has_key("segmentedLikeDislikeButtonViewModel")) {
+            auto get_text_from_view_model = [](RJson button) -> std::string {
+                auto text = button["slimMetadataButtonRenderer"]["button"]["segmentedLikeDislikeButtonViewModel"]["likeButtonViewModel"]
+                    ["likeButtonViewModel"]["toggleButtonViewModel"]["toggleButtonViewModel"]["defaultButtonViewModel"]["buttonViewModel"]["title"].string_value();
+                if (text.size() && !isdigit(text[0])) return "0"; // Default to "0" if not a number
+                return text;
+            };
+            res.like_count_str = get_text_from_view_model(button);
+            res.dislike_count_str = get_text_from_view_model(button); // Update the dislike count similarly
+        }
+    }
 }
 
 static void extract_owner(RJson slimOwnerRenderer, YouTubeVideoDetail &res) {
@@ -191,6 +214,60 @@ static void extract_item(RJson content, YouTubeVideoDetail &res) {
 	}
 }
 
+
+std::string format_count(int count) {
+    std::stringstream ss;
+    if (count >= 1000000) {
+        ss << std::fixed << std::setprecision(1) << (count / 1000000.0) << "M";
+    } else if (count >= 1000) {
+        ss << std::fixed << std::setprecision(1) << (count / 1000.0) << "k";
+    } else {
+        ss << count;
+    }
+    return ss.str();
+}
+
+void fetch_like_dislike_counts(const std::string &video_id, YouTubeVideoDetail &res) {
+    std::string api_url = "https://returnyoutubedislikeapi.com/votes?videoId=" + video_id;
+
+    std::map<std::string, std::string> headers;
+    auto response = http_get(api_url, headers);
+
+    logger.info("Raw JSON response", response.second);
+
+    if (response.first) {
+        rapidjson::Document document;
+        std::string error;
+
+        RJson data = RJson::parse(document, response.second.c_str(), error);
+
+        if (data.is_valid()) {
+            if (data.has_key("likes")) {
+                int likes = data["likes"].int_value();
+                res.like_count_str = var_full_dislike_like_count ? 
+                    std::to_string(likes) : format_count(likes);
+                logger.info("Like count", res.like_count_str);
+            }
+
+            if (data.has_key("dislikes")) {
+                int dislikes = data["dislikes"].int_value();
+                res.dislike_count_str = var_full_dislike_like_count ? 
+                    std::to_string(dislikes) : format_count(dislikes);
+                logger.info("Dislike count", res.dislike_count_str);
+            }
+
+        } else {
+            res.like_count_str = "Error";
+            res.dislike_count_str = "Error";
+            std::cerr << "JSON Parsing Error: " << error << std::endl;
+        }
+    } else {
+        res.like_count_str = "N/A";
+        res.dislike_count_str = "N/A";
+    }
+}
+
+
 static void extract_metadata(RJson data, YouTubeVideoDetail &res) {
 	{
 		auto contents = data["contents"]["singleColumnWatchNextResults"]["results"]["results"]["contents"];
@@ -200,13 +277,15 @@ static void extract_metadata(RJson data, YouTubeVideoDetail &res) {
 			} else if (content.has_key("slimVideoMetadataSectionRenderer")) {
 				for (auto i : content["slimVideoMetadataSectionRenderer"]["contents"].array_items()) {
 					if (i.has_key("slimVideoInformationRenderer")) res.title = get_text_from_object(i["slimVideoInformationRenderer"]["title"]);
-					if (i.has_key("slimVideoActionBarRenderer")) extract_like_dislike_counts(i["slimVideoActionBarRenderer"]["buttons"], res);
 					if (i.has_key("slimOwnerRenderer")) extract_owner(i["slimOwnerRenderer"], res);
 					if (i.has_key("slimVideoDescriptionRenderer")) res.description = get_text_from_object(i["slimVideoDescriptionRenderer"]["description"]);
 				}
 			}
 		}
 	}
+
+    fetch_like_dislike_counts(res.id, res);
+
 	RJson playlist_object = data["contents"]["singleColumnWatchNextResults"]["playlist"]["playlist"];
 	if (playlist_object.is_valid()) {
 		res.playlist.id = playlist_object["playlistId"].string_value();
@@ -252,89 +331,105 @@ static void extract_metadata(RJson data, YouTubeVideoDetail &res) {
 	}
 }
 
+
+
 YouTubeVideoDetail youtube_load_video_page(std::string url) {
-	YouTubeVideoDetail res;
-	
-	res.id = youtube_get_video_id_by_url(url);
-	if (res.id == "") {
-		res.error = "Not a video url : " + url;
-		return res;
-	}
-	
-	std::string playlist_id = youtube_get_playlist_id_by_url(url);
-	
-	std::string video_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "IOS","clientVersion": "19.29.1","deviceMake": "Apple","deviceModel": "19.29.1","osName": "iPhone","userAgent": "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)\"","osVersion": "17.5.1.21F90"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": %4}}})";
-	video_content = std::regex_replace(video_content, std::regex("%0"), res.id);
-	video_content = std::regex_replace(video_content, std::regex("%1"), playlist_id == "" ? "" : "\"playlistId\": \"" + playlist_id + "\", ");
-	video_content = std::regex_replace(video_content, std::regex("%2"), language_code);
-	video_content = std::regex_replace(video_content, std::regex("%3"), country_code);
-	video_content = std::regex_replace(video_content, std::regex("%4"), std::to_string(get_sts()));
+    YouTubeVideoDetail res;
+    
+    res.id = youtube_get_video_id_by_url(url);
+    if (res.id.empty()) {
+        res.error = "Not a video URL: " + url;
+        return res;
+    }
+    
+    std::string playlist_id = youtube_get_playlist_id_by_url(url);
+    
+    std::string video_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "IOS","clientVersion": "19.29.1","deviceMake": "Apple","deviceModel": "19.29.1","osName": "iPhone","userAgent": "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)\"","osVersion": "17.5.1.21F90"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": %4}}})";
+    video_content = std::regex_replace(video_content, std::regex("%0"), res.id);
+    video_content = std::regex_replace(video_content, std::regex("%1"), playlist_id.empty() ? "" : "\"playlistId\": \"" + playlist_id + "\", ");
+    video_content = std::regex_replace(video_content, std::regex("%2"), language_code);
+    video_content = std::regex_replace(video_content, std::regex("%3"), country_code);
+    video_content = std::regex_replace(video_content, std::regex("%4"), std::to_string(get_sts()));
 
-	std::string post_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "MWEB","clientVersion": "2.20220308.01.00"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": %4}}})";
-	post_content = std::regex_replace(post_content, std::regex("%0"), res.id);
-	post_content = std::regex_replace(post_content, std::regex("%1"), playlist_id == "" ? "" : "\"playlistId\": \"" + playlist_id + "\", ");
-	post_content = std::regex_replace(post_content, std::regex("%2"), language_code);
-	post_content = std::regex_replace(post_content, std::regex("%3"), country_code);
-	post_content = std::regex_replace(post_content, std::regex("%4"), std::to_string(get_sts()));
+    std::string post_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "MWEB","clientVersion": "2.20220308.01.00"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": %4}}})";
+    post_content = std::regex_replace(post_content, std::regex("%0"), res.id);
+    post_content = std::regex_replace(post_content, std::regex("%1"), playlist_id.empty() ? "" : "\"playlistId\": \"" + playlist_id + "\", ");
+    post_content = std::regex_replace(post_content, std::regex("%2"), language_code);
+    post_content = std::regex_replace(post_content, std::regex("%3"), country_code);
+    post_content = std::regex_replace(post_content, std::regex("%4"), std::to_string(get_sts()));
 
-	std::string urls[2] = {
-		get_innertube_api_url("next"),
-		get_innertube_api_url("player")
-	};
+    std::string urls[2] = {
+        get_innertube_api_url("next"),
+        get_innertube_api_url("player")
+    };
 
-	#ifdef _WIN32
-		std::string json_str[2]; // {/next, /player}
-		json_str[0] = http_post_json(urls[0], post_content).second;   
-		json_str[1] = http_post_json(urls[1], video_content).second;   /
+    #ifdef _WIN32
+    std::string json_str[2];
+    bool success = true;
+    for (int i = 0; i < 2; i++) {
+        std::string json_data;
+        if (!http_post_json(urls[i], i == 0 ? post_content : video_content, json_data)) {
+            res.error = "[v-#" + std::to_string(i) + "] Failed to get data";
+            success = false;
+        } else {
+            parse_json_destructive(&json_data[0],
+                [&](Document &json_root, RJson data) {
+                    if (i == 0) extract_metadata(data, res);
+                    else extract_player_data(json_root, data, res);
+                },
+                [&](const std::string &error) {
+                    res.error = "[v-#" + std::to_string(i) + "] " + error;
+                    debug_error(res.error);
+                }
+            );
+        }
+    }
+    if (success) debug_info(res.title.empty() ? "preason: " + res.playability_reason : res.title);
+    #else
+    debug_info("accessing(multi)...");
+    std::vector<NetworkResult> results;
+    bool success = true;
+    {
+        std::vector<HttpRequest> requests;
+        requests.push_back(http_post_json_request(urls[0], post_content));   
+        requests.push_back(http_post_json_request(urls[1], video_content));  
 
-		for (int i = 0; i < 2; i++) {
-			parse_json_destructive(&json_str[i][0],
-				[&] (Document &json_root, RJson data) {
-					if (i == 0) extract_metadata(data, res);
-					else extract_player_data(json_root, data, res);
-				},
-				[&] (const std::string &error) {
-					res.error = "[v-#" + std::to_string(i) + "] " + error;
-					debug_error(res.error);
-				}
-			);
-		}
-	#else
-		debug_info("accessing(multi)...");
-		std::vector<NetworkResult> results;
-		{
-			std::vector<HttpRequest> requests;
-			requests.push_back(http_post_json_request(urls[0], post_content));   
-			requests.push_back(http_post_json_request(urls[1], video_content));  
+        results = thread_network_session_list.perform(requests);
+        for (int i = 0; i < 2; i++) {
+            if (results[i].fail) {
+                res.error = "[v-#" + std::to_string(i) + "] Network request failed";
+                debug_error(res.error);
+                success = false;
+            }
+        }
+    }
 
-			results = thread_network_session_list.perform(requests);
-			bool fail = false;
-			for (int i = 0; i < 2; i++) {
-				if (results[i].fail) {
-					fail = true;
-					debug_error("#" + std::to_string(i) + " fail");
-				}
-			}
-			if (!fail) debug_info("ok");
-		}
+    if (success) {
+        for (int i = 0; i < 2; i++) {
+            if (!results[i].data.empty()) {
+                results[i].data.push_back('\0');
+                parse_json_destructive((char *) &results[i].data[0],
+                    [&](Document &json_root, RJson data) {
+                        if (i == 0) extract_metadata(data, res);
+                        else extract_player_data(json_root, data, res);
+                    },
+                    [&](const std::string &error) {
+                        res.error = "[v-#" + std::to_string(i) + "] " + error;
+                        debug_error(res.error);
+                    }
+                );
+            } else {
+                res.error = "Empty response data for URL index: " + std::to_string(i);
+                debug_error(res.error);
+                success = false;
+            }
+        }
+    }
 
-		for (int i = 0; i < 2; i++) {
-			results[i].data.push_back('\0');
-			parse_json_destructive((char *) &results[i].data[0],
-				[&] (Document &json_root, RJson data) {
-					if (i == 0) extract_metadata(data, res);
-					else extract_player_data(json_root, data, res);
-				},
-				[&] (const std::string &error) {
-					res.error = "[v-#" + std::to_string(i) + "] " + error;
-					debug_error(res.error);
-				}
-			);
-		}
-	#endif
-	
-	debug_info(res.title != "" ? res.title : "preason : " + res.playability_reason);
-	return res;
+    if (success) debug_info(res.title.empty() ? "preason: " + res.playability_reason : res.title);
+    #endif
+    
+    return res;
 }
 
 void YouTubeVideoDetail::load_more_suggestions() {

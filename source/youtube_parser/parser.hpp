@@ -246,4 +246,10 @@ enum class YouTubePageType {
 };
 YouTubePageType youtube_get_page_type(std::string url);
 
-
+struct YouTubeDislikeData {
+    std::string id;
+    int64_t likes;
+    int64_t dislikes;
+    double rating;
+    int64_t view_count;
+};
