@@ -1,7 +1,9 @@
-# IdiotTube 
+# FourthTube  
 
 A work-in-progress homebrew YouTube client for the 3DS  
-[GBAtemp Thread](https://gbatemp.net/threads/release-thirdtube-a-homebrew-youtube-client-for-the-new-3ds.591696/)  
+
+[GBAtemp Thread](https://gbatemp.net/threads/fourthtube-for-now-a-fork-of-thirdtube-that-works.660775/)
+
 [Discord Server](https://discord.gg/UPK3wDTTE2)
 
 ## Instability Warning
@@ -29,7 +31,7 @@ The name is derived from the fact that it is the third YouTube client on 3DS, fo
 ## QR code
 You can use the qr code below to download & install .cia from 3ds 
 
-<img src="https://github.com/erievs/FourthTube/blob/main/images/qr_code.png" width="200" height="200">
+<img src="https://github.com/erievs/FourthTube/blob/main/images/qr-code.png" width="200" height="200">
 
 ## Screenshots
 <img src="https://github.com/windows-server-2003/ThirdTube/blob/main/images/0.jpg" width="400" height="480"> ![](https://github.com/windows-server-2003/ThirdTube/blob/main/images/1.bmp)  
