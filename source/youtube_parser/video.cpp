@@ -4,6 +4,7 @@
 #include <iostream>
 #include "../variables.hpp"
 #include <iomanip>
+#include <algorithm>
 
 static std::map<std::string, std::string> nparam_transform_results_cache;
 static bool extract_player_data(Document &json_root, RJson player_response, YouTubeVideoDetail &res) {
@@ -227,6 +228,25 @@ std::string format_count(int count) {
     return ss.str();
 }
 
+std::string format_with_commas(int number) {
+    std::string num_str = std::to_string(number);
+    std::string result;
+    int count = 0;
+    std::string::size_type length = num_str.length(); 
+    
+    for (auto it = num_str.rbegin(); it != num_str.rend(); ++it) {
+        result += *it;
+        ++count;
+        if (count % 3 == 0 && count != static_cast<int>(length)) { 
+            result += ',';
+        }
+    }
+
+    std::reverse(result.begin(), result.end());
+    return result;
+}
+
+
 void fetch_like_dislike_counts(const std::string &video_id, YouTubeVideoDetail &res) {
     std::string api_url = "https://returnyoutubedislikeapi.com/votes?videoId=" + video_id;
 
@@ -242,17 +262,18 @@ void fetch_like_dislike_counts(const std::string &video_id, YouTubeVideoDetail &
         RJson data = RJson::parse(document, response.second.c_str(), error);
 
         if (data.is_valid()) {
+			
             if (data.has_key("likes")) {
                 int likes = data["likes"].int_value();
                 res.like_count_str = var_full_dislike_like_count ? 
-                    std::to_string(likes) : format_count(likes);
+                    format_with_commas(likes) : format_count(likes);
                 logger.info("Like count", res.like_count_str);
             }
 
             if (data.has_key("dislikes")) {
                 int dislikes = data["dislikes"].int_value();
                 res.dislike_count_str = var_full_dislike_like_count ? 
-                    std::to_string(dislikes) : format_count(dislikes);
+                    format_with_commas(dislikes) : format_count(dislikes);
                 logger.info("Dislike count", res.dislike_count_str);
             }
 

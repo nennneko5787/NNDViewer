@@ -285,11 +285,11 @@ void Sem_init(void) {
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
 							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
-						}, var_video_show_debug_info)
-						->set_title([](const SelectorView &) { return LOCALIZED(FULL_SCREEN_MODE); })
+						}, var_full_dislike_like_count)
+						->set_title([](const SelectorView &) { return LOCALIZED(SHOW_FULL_DISLIKE); })
 						->set_on_change([](const SelectorView &view) {
-							if (var_video_show_debug_info != view.selected_button) {
-								var_video_show_debug_info = view.selected_button;
+							if (var_full_dislike_like_count != view.selected_button) {
+								var_full_dislike_like_count = view.selected_button;
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
