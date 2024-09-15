@@ -68,7 +68,7 @@ void About_init(void) {
 			->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 		(new RuleView(0, 0, 320, SMALL_MARGIN * 2)),
 		(new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
-			->set_text("ThirdTube")
+			->set_text("FourthTube")
 			->set_x_alignment(TextView::XAlign::CENTER)
 			->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 		(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
