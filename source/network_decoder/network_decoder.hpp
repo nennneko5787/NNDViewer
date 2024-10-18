@@ -143,7 +143,7 @@ public :
 class NetworkDecoder {
 private :
 	static constexpr size_t OLD_MAX_RAW_BUFFER_SIZE = 3 * 1000 * 1000;
-	static constexpr size_t NEW_MAX_RAW_BUFFER_SIZE = 8 * 1000 * 1000;
+	static constexpr size_t NEW_MAX_RAW_BUFFER_SIZE = 10 * 1000 * 1000;
 	static constexpr int VIDEO = 0;
 	static constexpr int AUDIO = 1;
 	static constexpr int BOTH = 0;
