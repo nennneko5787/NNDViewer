@@ -27,8 +27,10 @@ If you find one of those, it would be helpful to open an issue on this GitHub re
 
 ## Description
 It utilizes some undocumented YouTube APIs to get the raw video url and plays the stream using the decoder taken from [Video player for 3DS by Core-2-Extreme](https://github.com/Core-2-Extreme/Video_player_for_3DS).  
+
 It does not run any javascripts or render html/css, so it's significantly faster than YouTube on the browser.  
-The name is derived from the fact that it is the third YouTube client on 3DS, following the official YouTube app (discontinued) and the new 3DS browser.  
+
+The name is derived from the fact that it is the fourth YouTube client on 3DS, following the official YouTube app (discontinued), then the new 3DS browser, and ThirdTube.  
 
 ## QR code
 You can use the qr code below to download & install .cia from 3ds 
