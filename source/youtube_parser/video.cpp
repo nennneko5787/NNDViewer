@@ -97,7 +97,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 			}
 		}
 		// both_stream_url : search for itag 18
-		for (auto i : video_formats) if (i["itag"].int_value() == 22)
+		for (auto i : video_formats) if (i["itag"].int_value() == 18)
 			res.both_stream_url = i["url"].string_value();
 	}
 	
