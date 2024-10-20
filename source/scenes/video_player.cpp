@@ -51,7 +51,7 @@ namespace VideoPlayer {
 	volatile bool eof_reached = false;
 	volatile bool audio_only_mode = false;
 	volatile bool video_skip_drawing = false; // for performance reason, enabled when opening keyboard
-	volatile int video_p_value = 360;
+	volatile int video_p_value = 480;
 	volatile double seek_at_init_request = -1;
 	double vid_time[2][320];
 	double vid_copy_time[2] = { 0, 0, };
@@ -539,7 +539,7 @@ void VideoPlayer_init(void) {
 	vid_height = 0;
 	vid_video_format = "n/a";
 	vid_audio_format = "n/a";
-	video_p_value = var_is_new3ds ? 360 : 144;
+	video_p_value = var_is_new3ds ? 480 : 144;
 	
 	VideoPlayer_resume("");
 	vid_already_init = true;
@@ -1171,7 +1171,7 @@ static void load_video_page(void *arg) {
 		
 		auto is_available = [&] (int p_value) { return tmp_video_info.video_stream_urls.count(p_value) || (p_value == 480 && tmp_video_info.both_stream_url != ""); };
 		if (!audio_only_mode && !is_available(video_p_value)) {
-			video_p_value = var_is_new3ds ? 360 : 144;
+			video_p_value = var_is_new3ds ? 480 : 144;
 			if (!is_available(video_p_value)) audio_only_mode = true;
 		}
 		video_quality_selector_view->selected_button = audio_only_mode ? 0 : 1 + std::find(available_qualities.begin(), available_qualities.end(), (int) video_p_value) - available_qualities.begin();
