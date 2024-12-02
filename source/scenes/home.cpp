@@ -269,13 +269,13 @@ static void load_subscription_feed(void *) {
 			}
 			int unit = -1;
 			std::vector<std::vector<std::string> > unit_list = {
-				{"second", "秒"},
-				{"minute", "分"},
-				{"hour", "時間"},
-				{"day", "日"},
-				{"week", "週間"},
-				{"month", "月"},
-				{"year", "年"}
+				{"second", "秒", "Sekunde"},
+				{"minute", "分", "Minute"},
+				{"hour", "時間", "Stunde"},
+				{"day", "日", "Tag"},
+				{"week", "週間", "Woche"},
+				{"month", "月", "Monat"},
+				{"year", "年", "Jahr"}
 			};
 			for (size_t i = 0; i < unit_list.size(); i++) {
 				bool matched = false;
