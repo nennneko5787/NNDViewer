@@ -15,9 +15,9 @@
 <REMOVE_ALL_HISTORY_CONFIRM>Sind sie ihnen sicher das ihre\nkomplette Mediathek löschen wollen?</REMOVE_ALL_HISTORY_CONFIRM>
 <ALL_HISTORY_REMOVED>Mediathek aufgeräumt</ALL_HISTORY_REMOVED>
 <SECONDS>sec</SECONDS>
-<LANG_EN>Englisch</LANG_EN>
-<LANG_JA>Japanisch</LANG_JA>
-<LANG_DE>Deutsch</LANG_DE>
+<LANG_EN>English</LANG_EN>
+<LANG_JA>Japanese</LANG_JA>
+<LANG_DE>German</LANG_DE>
 <GENERAL>Generell</GENERAL>
 <SUGGESTIONS>Vorschläge</SUGGESTIONS>
 <COMMENTS>Kommentare</COMMENTS>
@@ -114,7 +114,9 @@
 <NEVER_TURN_OFF>Niemals auschalten</NEVER_TURN_OFF>
 <ECO_MODE>Eco Modus</ECO_MODE>
 <FULL_SCREEN_MODE>Vollbild Modus</FULL_SCREEN_MODE>
-<SHOW_FULL_DISLIKE>§λôω Fúℓℓ Ðïƨℓïƙè/£ïƙè</SHOW_FULL_DISLIKE>
+----This translation is probably really bad. Replace it eventually.----
+<SHOW_FULL_DISLIKE>Gesamtes Dislike/Like anzeigen</SHOW_FULL_DISLIKE>
+----This translation is probably really bad. Replace it eventually.----
 <DARK_THEME>Dunkler Modus</DARK_THEME>
 <FLASH>Aufblitzen</FLASH>
 <AUTOPLAY>Autoplay</AUTOPLAY>
