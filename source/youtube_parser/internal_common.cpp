@@ -7,7 +7,7 @@ void youtube_change_content_language(std::string language_code) {
         youtube_parser::country_code = "US";
 	} else if (language_code == "jp") {
 		youtube_parser::country_code = "JP";
-    } else if (language_code == "de") {
+	} else if (language_code == "de") {
 		youtube_parser::country_code = "DE";
 	} else {
 		youtube_parser::country_code = "US";
