@@ -421,7 +421,7 @@ void Sem_init(void) {
 								return true; // close the dialog
 							});
 							popup_view->set_is_visible(true);
-							var_need_reflesh = true;
+							var_need_refresh = true;
 						}),
 					(new EmptyView(0, 0, 320, 10))
 				}),
@@ -460,7 +460,7 @@ void Sem_init(void) {
 						->set_on_view_released([] (const View &) {
 							if (update_state == UpdateState::FAILED_CHECKING || update_state == UpdateState::UP_TO_DATE) {
 								update_state = UpdateState::CHECKING_UPDATES;
-								var_need_reflesh = true;
+								var_need_refresh = true;
 							}
 							if (update_state == UpdateState::UPDATES_AVAILABLE || update_state == UpdateState::FAILED_INSTALLING) {
 								std::vector<std::string> confirm_lines;
@@ -477,7 +477,7 @@ void Sem_init(void) {
 									return true; // close the dialog
 								});
 								popup_view->set_is_visible(true);
-								var_need_reflesh = true;
+								var_need_refresh = true;
 							}
 						})
 						->set_get_background_color([] (const View &view) -> u32 {
@@ -599,7 +599,7 @@ void Sem_suspend(void) {
 void Sem_resume(std::string arg) {
 	overlay_menu_on_resume();
 	thread_suspend = false;
-	var_need_reflesh = true;
+	var_need_refresh = true;
 }
 
 
@@ -615,9 +615,9 @@ void Sem_draw(void)
 	if (video_playing_bar_show) CONTENT_Y_HIGH -= VIDEO_PLAYING_BAR_HEIGHT;
 	main_tab_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT);
 	
-	if(var_need_reflesh || !var_eco_mode)
+	if(var_need_refresh || !var_eco_mode)
 	{
-		var_need_reflesh = false;
+		var_need_refresh = false;
 		Draw_frame_ready();
 		video_draw_top_screen();
 		

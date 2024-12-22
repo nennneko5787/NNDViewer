@@ -133,7 +133,7 @@ void About_resume(std::string arg) {
 	main_view->reset_holding_status();
 	
 	thread_suspend = false;
-	var_need_reflesh = true;
+	var_need_refresh = true;
 }
 
 void About_draw(void)
@@ -147,9 +147,9 @@ void About_draw(void)
 	CONTENT_Y_HIGH = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
 	main_view->update_y_range(0, CONTENT_Y_HIGH);
 	
-	if(var_need_reflesh || !var_eco_mode)
+	if(var_need_refresh || !var_eco_mode)
 	{
-		var_need_reflesh = false;
+		var_need_refresh = false;
 		Draw_frame_ready();
 		video_draw_top_screen();
 		

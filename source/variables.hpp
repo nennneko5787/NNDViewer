@@ -1,7 +1,7 @@
 #pragma once
 
 extern bool var_connect_test_succes;
-extern bool var_need_reflesh;
+extern bool var_need_refresh;
 extern bool var_allow_send_app_info;
 extern bool var_night_mode;
 extern bool var_eco_mode;

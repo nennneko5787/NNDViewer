@@ -147,7 +147,7 @@ void Home_resume(std::string arg) {
 	// main_tab_view->on_resume();
 	overlay_menu_on_resume();
 	thread_suspend = false;
-	var_need_reflesh = true;
+	var_need_refresh = true;
 	
 	resource_lock.lock();
 	update_subscribed_channels(get_valid_subscribed_channels());
@@ -188,7 +188,7 @@ static void update_home_bottom_view(bool force_show_loading) {
 static void load_home_page(void *) {
 	resource_lock.lock();
 	update_home_bottom_view(true);
-	var_need_reflesh = true;
+	var_need_refresh = true;
 	resource_lock.unlock();
 	
 	add_cpu_limit(ADDITIONAL_CPU_LIMIT);
@@ -207,7 +207,7 @@ static void load_home_page(void *) {
 		home_videos_list_view->set_views(new_videos_view);
 		update_home_bottom_view(false);
 	} else home_info.error = results.error;
-	var_need_reflesh = true;
+	var_need_refresh = true;
 	resource_lock.unlock();
 }
 static void load_home_page_more(void *) {
@@ -238,7 +238,7 @@ static void load_subscription_feed(void *) {
 	auto results = youtube_load_channel_page_multi(ids, [] (int cur, int total) {
 		feed_loading_progress = cur;
 		feed_loading_total = total;
-		var_need_reflesh = true;
+		var_need_refresh = true;
 	});
 	remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 	
@@ -367,9 +367,9 @@ void Home_draw(void) {
 	main_tab_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT);
 	
 	
-	if(var_need_reflesh || !var_eco_mode)
+	if(var_need_refresh || !var_eco_mode)
 	{
-		var_need_reflesh = false;
+		var_need_refresh = false;
 		Draw_frame_ready();
 		video_draw_top_screen();
 		

@@ -164,7 +164,7 @@ void Channel_resume(std::string arg)
 	overlay_menu_on_resume();
 	main_view->on_resume();
 	thread_suspend = false;
-	var_need_reflesh = true;
+	var_need_refresh = true;
 }
 
 void Channel_suspend(void) { thread_suspend = true; }
@@ -307,7 +307,7 @@ static void load_channel(void *) {
 		subscription_subscribe(new_info);
 		
 		misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
-		var_need_reflesh = true;
+		var_need_refresh = true;
 	}
 	
 	
@@ -343,7 +343,7 @@ static void load_channel(void *) {
 				subscription_subscribe(new_channel);
 			}
 			misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
-			var_need_reflesh = true;
+			var_need_refresh = true;
 		})
 		->set_get_is_subscribed([] () { return subscription_is_subscribed(channel_info.id); })
 		->set_icon_handle(thumbnail_request(channel_info.icon_url, SceneType::CHANNEL, 1001, ThumbnailType::ICON));
@@ -399,7 +399,7 @@ static void load_channel(void *) {
 	
 	
 	main_view->set_views({banner_view, channel_view, tab_view}); 
-	var_need_reflesh = true;
+	var_need_refresh = true;
 	resource_lock.unlock();
 }
 static void load_channel_more(void *) {
@@ -429,7 +429,7 @@ static void load_channel_more(void *) {
 		video_load_more_view->update_y_range(0, 0);
 		video_load_more_view->set_is_visible(false);
 	}
-	var_need_reflesh = true;
+	var_need_refresh = true;
 	resource_lock.unlock();
 }
 static void load_channel_playlists(void *) {
@@ -453,7 +453,7 @@ static void load_channel_playlists(void *) {
 	delete tab_view->views[1];
 	tab_view->views[1] = playlist_tab_view;
 	
-	var_need_reflesh = true;
+	var_need_refresh = true;
 	resource_lock.unlock();
 }
 static void load_channel_community_posts(void *) {
@@ -486,7 +486,7 @@ static void load_channel_community_posts(void *) {
 			->set_is_visible(false);
 	}
 	
-	var_need_reflesh = true;
+	var_need_refresh = true;
 	resource_lock.unlock();
 	
 }
@@ -514,9 +514,9 @@ void Channel_draw(void)
 	VIDEO_LIST_Y_HIGH = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
 	main_view->update_y_range(0, VIDEO_LIST_Y_HIGH);
 	
-	if(var_need_reflesh || !var_eco_mode)
+	if(var_need_refresh || !var_eco_mode)
 	{
-		var_need_reflesh = false;
+		var_need_refresh = false;
 		Draw_frame_ready();
 		video_draw_top_screen();
 		

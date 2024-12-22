@@ -231,7 +231,7 @@ bool Menu_main(void)
 	else sprintf(var_status, "%04d/%02d/%02d %02d:%02d:%02d ", var_years, var_months, var_days, var_hours, var_minutes, var_seconds);
 	
 	if(var_debug_mode)
-		var_need_reflesh = true;
+		var_need_refresh = true;
 	
 	global_intent = Intent();
 	if (global_current_scene == SceneType::VIDEO_PLAYER) VideoPlayer_draw();
@@ -257,9 +257,9 @@ bool Menu_main(void)
 	// common updates
 	if (key.h_select && key.p_y) var_debug_mode = !var_debug_mode;
 	if (key.h_select && key.h_r && key.p_a) var_show_fps = !var_show_fps;
-	if (key.h_select && key.p_x) logger.draw_enabled ^= 1, var_need_reflesh = true; // toggle log drawing
+	if (key.h_select && key.p_x) logger.draw_enabled ^= 1, var_need_refresh = true; // toggle log drawing
 	logger.update(key);
-	if (key.h_touch || key.p_touch) var_need_reflesh = true;
+	if (key.h_touch || key.p_touch) var_need_refresh = true;
 	if (((key.h_select && key.p_start) || (key.h_start && key.p_select)) && var_model != CFG_MODEL_2DS) bot_screen_disabled = !bot_screen_disabled;
 	
 	
@@ -382,7 +382,7 @@ void Menu_worker_thread(void* arg)
 		if (count >= 20)
 		{
 			Menu_get_system_info();
-			var_need_reflesh = true;
+			var_need_refresh = true;
 			count = 0;
 		}
 		
@@ -420,7 +420,7 @@ void Menu_worker_thread(void* arg)
 		if (var_flash_mode)
 		{
 			var_night_mode = !var_night_mode;
-			var_need_reflesh = true;
+			var_need_refresh = true;
 		}
 	}
 	logger.info(DEF_MENU_WORKER_THREAD_STR, "Thread exit.");
