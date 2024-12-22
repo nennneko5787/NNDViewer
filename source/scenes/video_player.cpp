@@ -821,14 +821,17 @@ static void load_video_page(void *arg) {
 					->set_text_lines(title_lines)
 					->set_font_size(title_font_size, 15),
 				(new EmptyView(0, 0, 320, SMALL_MARGIN)),
-				(new HorizontalListView(0, 0, DEFAULT_FONT_INTERVAL)) // view count / publish date
+				(new HorizontalListView(0, 0, DEFAULT_FONT_INTERVAL)) // view count
 					->set_views({
 						(new TextView(0, 0, 160, DEFAULT_FONT_INTERVAL))
 							->set_text(tmp_video_info.views_str)
 							->set_get_text_color([] () { return LIGHT0_TEXT_COLOR; }),
+					}),
+				(new HorizontalListView(0, 0, DEFAULT_FONT_INTERVAL)) // publish date
+					->set_views({
 						(new TextView(0, 0, 160, DEFAULT_FONT_INTERVAL))
 							->set_text(tmp_video_info.publish_date)
-							->set_x_alignment(TextView::XAlign::RIGHT)
+							->set_x_alignment(TextView::XAlign::LEFT)
 							->set_get_text_color([] () { return LIGHT0_TEXT_COLOR; })
 					}),
 				(new CustomView(0, 0, 320, DEFAULT_FONT_INTERVAL)) // like/dislike
