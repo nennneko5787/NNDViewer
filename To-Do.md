@@ -2,7 +2,7 @@
 - [✓] Finalize name, logo, etc
     - CitrusTube
     - SnakeTube
-    ✓ - FourthTube
+    - FourthTube
 - [✓] Add dislikes
 - [✓] Fix captions
 - [✓] Fix crash on closing .3dsx
