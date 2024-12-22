@@ -32,24 +32,6 @@ namespace SceneSwitcher {
 using namespace SceneSwitcher;
 
 void Menu_worker_thread(void* arg);
-
-#define DECRYPTER_VERSION 0
-#define DECRYPTER_URL ("https://raw.githubusercontent.com/windows-server-2003/ThirdTube/main/decrypter/" + std::to_string(DECRYPTER_VERSION) + "_latest.txt")
-static void yt_load_decrypter(void *) {
-	static NetworkSessionList session_list;
-	static bool first = true;
-	if (first) first = false, session_list.init();
-	
-	auto result = session_list.perform(HttpRequest::GET(DECRYPTER_URL, {}));
-	if (result.fail) logger.error("yt-dec", "fail: " + result.error);
-	else if (!result.status_code_is_success()) logger.error("yt-dec", "fail http: " + std::to_string(result.status_code));
-	else {
-		youtube_set_cipher_decrypter(std::string(result.data.begin(), result.data.end()));
-		auto write_res = Path(DEF_MAIN_DIR + std::to_string(DECRYPTER_VERSION) + "_decrypter.txt").write_file(result.data.data(), result.data.size());
-		if (write_res.code != 0) logger.error("yt-dec", "failed writing decypter: " + write_res.string, write_res.code);
-	}
-}
-
 #define LOG_IF_ERROR(expr) \
 	do {\
 		auto res = expr;\
@@ -144,21 +126,6 @@ void Menu_init(void)
 	misc_tasks_thread = threadCreate(misc_tasks_thread_func, NULL, DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, 0, false);
 
 	Menu_get_system_info();
-	
-	// load default youtube decrypter
-	u8 decrypter_buf[1001] = { 0 };
-	u32 read_size;
-	// first load from romfs, which is reliable
-	result = Path("romfs:/yt_decrypter.txt").read_file(decrypter_buf, 1000, read_size);
-	if (result.code != 0) logger.warning("yt-dec", "default fail: " + result.error_description);
-	else youtube_set_cipher_decrypter((char *) decrypter_buf);
-	// then try loading from local cache, which may be newer but does not always exist
-	memset(decrypter_buf, 0, sizeof(decrypter_buf));
-	result = Path(DEF_MAIN_DIR + std::to_string(DECRYPTER_VERSION) + "_decrypter.txt").read_file(decrypter_buf, 1000, read_size);
-	if (result.code != 0) logger.warning("yt-dec", "cache fail: " + result.error_description);
-	else youtube_set_cipher_decrypter((char *) decrypter_buf);
-	// fetch from remote
-	queue_async_task(yt_load_decrypter, NULL);
 	
 	logger.info(DEF_MENU_INIT_STR, "Initialized.");
 }
