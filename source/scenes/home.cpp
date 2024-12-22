@@ -112,7 +112,8 @@ void Home_init(void) {
 	
 	queue_async_task(load_home_page, NULL);
 	load_subscription();
-	
+	queue_async_task(load_subscription_feed, NULL);
+
 	Home_resume("");
 	already_init = true;
 }
