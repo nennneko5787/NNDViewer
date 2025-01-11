@@ -416,12 +416,6 @@ void Menu_worker_thread(void* arg)
 			cur_screen_dimmed = next_screen_dimmed;
 			cur_bot_screen_disabled = next_bot_screen_disabled;
 		}
-
-		if (var_flash_mode)
-		{
-			var_night_mode = !var_night_mode;
-			var_need_refresh = true;
-		}
 	}
 	logger.info(DEF_MENU_WORKER_THREAD_STR, "Thread exit.");
 	threadExit(0);

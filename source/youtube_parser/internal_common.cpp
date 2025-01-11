@@ -3,16 +3,22 @@
 
 void youtube_change_content_language(std::string language_code) {
 	youtube_parser::language_code = language_code;
-    if (language_code == "en") {
-        youtube_parser::country_code = "US";
-	} else if (language_code == "jp") {
+	if (language_code == "en") {
+		youtube_parser::country_code = "US";
+	}
+	else if (language_code == "jp") {
 		youtube_parser::country_code = "JP";
-	} else if (language_code == "de") {
+	}
+	else if (language_code == "de") {
 		youtube_parser::country_code = "DE";
-	} else {
+	}
+	else if (language_code == "fr") {
+		youtube_parser::country_code = "FR";
+	}
+	else {
 		youtube_parser::country_code = "US";
 		debug_error("No country code has been specified for the selected language. Please fix this!");
-    }
+	}
 }
 
 namespace youtube_parser {

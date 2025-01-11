@@ -270,13 +270,13 @@ static void load_subscription_feed(void *) {
 			}
 			int unit = -1;
 			std::vector<std::vector<std::string> > unit_list = {
-				{"second", "秒", "Sekunde"},
-				{"minute", "分", "Minute"},
-				{"hour", "時間", "Stunde"},
-				{"day", "日", "Tag"},
-				{"week", "週間", "Woche"},
-				{"month", "月", "Monat"},
-				{"year", "年", "Jahr"}
+				{"second", "秒", "Sekunde", "seconde"},
+				{"minute", "分", "Minute", "minute"}, // Not sure if I have to duplicate these, but whatever, it works.
+				{"hour", "時間", "Stunde", "heure"},
+				{"day", "日", "Tag", "jour"},
+				{"week", "週間", "Woche", "semaine"},
+				{"month", "月", "Monat", "mois"},
+				{"year", "年", "Jahr", "an"}
 			};
 			for (size_t i = 0; i < unit_list.size(); i++) {
 				bool matched = false;

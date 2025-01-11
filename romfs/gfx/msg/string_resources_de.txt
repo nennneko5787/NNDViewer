@@ -18,6 +18,7 @@
 <LANG_EN>English</LANG_EN>
 <LANG_JA>日本語</LANG_JA>
 <LANG_DE>Deutsch</LANG_DE>
+<LANG_FR>Français</LANG_FR>
 <GENERAL>Generell</GENERAL>
 <SUGGESTIONS>Vorschläge</SUGGESTIONS>
 <COMMENTS>Kommentare</COMMENTS>
@@ -114,16 +115,15 @@
 <NEVER_TURN_OFF>Niemals auschalten</NEVER_TURN_OFF>
 <ECO_MODE>Eco Modus</ECO_MODE>
 <FULL_SCREEN_MODE>Vollbild Modus</FULL_SCREEN_MODE>
-----This translation is probably really bad. Replace it eventually.----
-<SHOW_FULL_DISLIKE>Gesamtes Dislike/Like anzeigen</SHOW_FULL_DISLIKE>
-----This translation is probably really bad. Replace it eventually.----
+----This translation might be bad.----
+<SHOW_FULL_DISLIKE>Genaue Anzahl der Dislikes und Likes anzeigen</SHOW_FULL_DISLIKE>
+----This translation might be bad.----
 <DARK_THEME>Dunkler Modus</DARK_THEME>
-<FLASH>Aufblitzen</FLASH>
 <AUTOPLAY>Autoplay</AUTOPLAY>
 <LOOP>Wiederholen</LOOP>
 <ONLY_IN_PLAYLIST>Nur Playlists</ONLY_IN_PLAYLIST>
 <SCROLL_SPEED0>Scrollgeschwindigkeit</SCROLL_SPEED0>
-<SCROLL_SPEED1>Scrollgeschwindigkeit(schnell)</SCROLL_SPEED1>
+<SCROLL_SPEED1>Scrollgeschwindigkeit (schnell)</SCROLL_SPEED1>
 <SCROLL_SPEED_THREASHOLD>Beschleunigung des Scrollens um drei Stufen</SCROLL_SPEED_THREASHOLD>
 <COMMUNITY_POST_IMAGE_SIZE>Größe der Bilder im Community Tab</COMMUNITY_POST_IMAGE_SIZE>
 <LINEAR_FILTER>Linearer Video Filter</LINEAR_FILTER>
