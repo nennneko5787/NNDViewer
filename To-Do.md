@@ -1,4 +1,4 @@
-- [ ] Update  the `README.md` file to reflect the changes made in this release.
+- [ ] Update the `README.md` file to reflect the changes made in this release.
 - [✓] Finalize name, logo, etc
     - CitrusTube
     - SnakeTube
@@ -6,7 +6,7 @@
 - [✓] Add dislikes
 - [✓] Fix captions
 - [✓] Fix crash on closing .3dsx
-- [ ] Fix community posts
+- [✓] Fix community posts
 - [ ] Stop depending on mbedtls 2.16
-
+- [ ] Fix countless Old 3DS issues
 
