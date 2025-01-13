@@ -15,10 +15,10 @@
 <REMOVE_ALL_HISTORY_CONFIRM>Bist du dir sicher, dass du deine komplette Mediathek löschen willst?</REMOVE_ALL_HISTORY_CONFIRM>
 <ALL_HISTORY_REMOVED>Mediathek geleert</ALL_HISTORY_REMOVED>
 <SECONDS>sec</SECONDS>
-<LANG_EN>Englisch</LANG_EN>
-<LANG_JA>Japanisch</LANG_JA>
+<LANG_EN>English</LANG_EN>
+<LANG_JA>日本語</LANG_JA>
 <LANG_DE>Deutsch</LANG_DE>
-<LANG_FR>Französisch</LANG_FR>
+<LANG_FR>Français</LANG_FR>
 <GENERAL>Generell</GENERAL>
 <SUGGESTIONS>Vorschläge</SUGGESTIONS>
 <COMMENTS>Kommentare</COMMENTS>
