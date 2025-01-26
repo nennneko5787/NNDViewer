@@ -388,7 +388,7 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 		video_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "VISIONOS","clientVersion": "0.1","deviceMake": "Apple","deviceModel": "iPhone16,2","osName": "iPhone","userAgent": "com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X;)\"","osVersion": "2.2.22N842", "visitorData": "%4"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
 	} else {
 		// User messed with something. Fix that.
-		logger.error("[appdata]", "Invalid value for player_response has been set. Falling back to 0 (iOS)!");
+		logger.error("appdata", "Invalid value for player_response has been set. Falling back to 0 (iOS)!");
 		video_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "IOS","clientVersion": "19.45.4","deviceMake": "Apple","deviceModel": "iPhone16,2","osName": "iPhone","userAgent": "com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X;)\"","osVersion": "18.1.0.22B83", "visitorData": "%4"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
 		var_player_response = 0;
 		misc_tasks_request(TASK_SAVE_SETTINGS);
