@@ -76,7 +76,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	}
 	
 	// extract caption data
-    std::string captions_content = R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "MWEB","clientVersion": "2.20220308.01.00"}}, "videoId": "%2"})";
+    std::string captions_content = R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "MWEB","clientVersion": "2.20241202.07.00"}}, "videoId": "%2"})";
     captions_content = std::regex_replace(captions_content, std::regex("%0"), language_code);
     captions_content = std::regex_replace(captions_content, std::regex("%1"), country_code);
     captions_content = std::regex_replace(captions_content, std::regex("%2"), res.id);
@@ -399,7 +399,7 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
     video_content = std::regex_replace(video_content, std::regex("%3"), country_code);
     video_content = std::regex_replace(video_content, std::regex("%4"), visitor_data);
 
-    std::string post_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "MWEB","clientVersion": "2.20220308.01.00"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
+    std::string post_content = R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "MWEB","clientVersion": "2.20241202.07.00"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
     post_content = std::regex_replace(post_content, std::regex("%0"), res.id);
     post_content = std::regex_replace(post_content, std::regex("%1"), playlist_id.empty() ? "" : "\"playlistId\": \"" + playlist_id + "\", ");
     post_content = std::regex_replace(post_content, std::regex("%2"), language_code);
@@ -475,7 +475,7 @@ void YouTubeVideoDetail::load_more_suggestions() {
 	}
 	
 	// POST to get more results
-	std::string post_content = R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20210711.08.00", "utcOffsetMinutes": 0}, "request": {}, "user": {}}, "continuation": ")"
+	std::string post_content = R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00", "utcOffsetMinutes": 0}, "request": {}, "user": {}}, "continuation": ")"
 		+ suggestions_continue_token + "\"}";
 	post_content = std::regex_replace(post_content, std::regex("%0"), language_code);
 	post_content = std::regex_replace(post_content, std::regex("%1"), country_code);
@@ -541,7 +541,7 @@ void YouTubeVideoDetail::load_more_comments() {
 			[&] (const std::string &error) { debug_error((this->error = "[v-com+0] " + error)); }
 		);
 	} else {
-		std::string post_content = R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20210711.08.00", "utcOffsetMinutes": 0}, "request": {}, "user": {}}, "continuation": ")"
+		std::string post_content = R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00", "utcOffsetMinutes": 0}, "request": {}, "user": {}}, "continuation": ")"
 			+ comment_continue_token + "\"}";
 		post_content = std::regex_replace(post_content, std::regex("%0"), language_code);
 		post_content = std::regex_replace(post_content, std::regex("%1"), country_code);
@@ -575,7 +575,7 @@ void YouTubeVideoDetail::Comment::load_more_replies() {
 		return;
 	}
 	
-	std::string post_content = R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20210711.08.00", "utcOffsetMinutes": 0}, "request": {}, "user": {}}, "continuation": ")"
+	std::string post_content = R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00", "utcOffsetMinutes": 0}, "request": {}, "user": {}}, "continuation": ")"
 		+ replies_continue_token + "\"}";
 	post_content = std::regex_replace(post_content, std::regex("%0"), language_code);
 	post_content = std::regex_replace(post_content, std::regex("%1"), country_code);
