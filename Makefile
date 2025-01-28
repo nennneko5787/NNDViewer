@@ -232,7 +232,7 @@ else
 	@$(MAKEROM) -f cia -o $(OUTPUT).cia -target t -exefslogo $(MAKEROM_ARGS) -ver $(APP_VER)
 endif
 
-all_win: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES) $(OBJDIRS)
+all_win:
 	@echo -e "\033[0;33m\"make all_win\" is deprecated. Please just run \"make\" or \"make all\".\033[0m"
 	@$(MAKE)
 
