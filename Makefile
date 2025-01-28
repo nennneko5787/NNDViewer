@@ -233,7 +233,7 @@ else
 endif
 
 all_win: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES) $(OBJDIRS)
-	@echo -e "\033[0;33mmake all_win is deprecated. Please just run \"make\" or \"make all\"!\033[0m"
+	@echo -e "\033[0;33m\"make all_win\" is deprecated. Please just run \"make\" or \"make all\".\033[0m"
 	@$(MAKE)
 
 $(BUILD):
