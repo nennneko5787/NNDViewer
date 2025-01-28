@@ -410,29 +410,6 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
         get_innertube_api_url("player")
     };
 
-    #ifdef _WIN32
-    std::string json_str[2];
-    bool success = true;
-    for (int i = 0; i < 2; i++) {
-        std::string json_data;
-        if (!http_post_json(urls[i], i == 0 ? post_content : video_content, json_data)) {
-            res.error = "[v-#" + std::to_string(i) + "] Failed to get data";
-            success = false;
-        } else {
-            parse_json_destructive(&json_data[0],
-                [&](Document &json_root, RJson data) {
-                    if (i == 0) extract_metadata(data, res);
-                    else extract_player_data(json_root, data, res);
-                },
-                [&](const std::string &error) {
-                    res.error = "[v-#" + std::to_string(i) + "] " + error;
-                    debug_error(res.error);
-                }
-            );
-        }
-    }
-    if (success) debug_info(res.title.empty() ? "preason: " + res.playability_reason : res.title);
-    #else
     debug_info("accessing(multi)...");
     std::vector<NetworkResult> results;
     bool success = true;
@@ -474,7 +451,6 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
     }
 
 	if (res.id != "") res.succinct_thumbnail_url = youtube_get_video_thumbnail_url_by_id(res.id);
-#	ifndef _WIN32
 	if (res.title != "" && res.id != "") {
 		HistoryVideo video;
 		video.id = res.id;
@@ -486,10 +462,8 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 		add_watched_video(video);
 		misc_tasks_request(TASK_SAVE_HISTORY);
 	}
-#	endif
 
     if (success) debug_info(res.title.empty() ? "preason: " + res.playability_reason : res.title);
-    #endif
     
     return res;
 }

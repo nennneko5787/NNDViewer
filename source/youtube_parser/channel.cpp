@@ -116,14 +116,6 @@ YouTubeChannelDetail youtube_load_channel_page(std::string url_or_id) {
 std::vector<YouTubeChannelDetail> youtube_load_channel_page_multi(std::vector<std::string> ids, std::function<void (int, int)> progress) {
 	std::vector<YouTubeChannelDetail> res;
 	if (progress) progress(0, ids.size());
-#ifdef _WIN32
-	int finished = 0;
-	for (auto id : ids) {
-		res.push_back(youtube_load_channel_page(id));
-		if (progress) progress(++finished, ids.size());
-	}
-#else
-	
 	std::vector<HttpRequest> requests;
 	int n = ids.size();
 	int finished = 0;
@@ -151,7 +143,6 @@ std::vector<YouTubeChannelDetail> youtube_load_channel_page_multi(std::vector<st
 		);
 		res.push_back(cur_res);
 	}
-#endif
 	return res;
 }
 
