@@ -531,7 +531,7 @@ void Sem_init(void) {
 							}
 							return DEFAULT_BACK_COLOR;
 						}),
-					(new RuleView(0, 6, 330, 1))
+					(new RuleView(0, 6, 320, 1))
 					    ->set_get_background_color([] (const View &) {return DEFAULT_BACK_COLOR; }),
 					    release_notes_view,
 					(new EmptyView(0, 0, 320, DEFAULT_FONT_INTERVAL))
@@ -582,7 +582,7 @@ void Sem_init(void) {
 							}
 						}),
 					(new EmptyView(0, 0, 320, 10)),
-                    // New on/off button
+                    // Select app data to use
                     (new SelectorView(0, 0, 320, 35))
                         ->set_texts({
                             (std::function<std::string ()>) []() { return "iOS"; },
