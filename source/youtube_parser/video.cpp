@@ -67,9 +67,6 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 				continue;
 			}
 
-			logger.info("Stream Info", "itag: " + std::to_string(cur_itag) + 
-						", Resolution: " + std::to_string(height) + "p, URL: " + url);
-
 			// Store the stream URL by resolution
 			if (height > 0) {
 				res.video_stream_urls[height] = url;
