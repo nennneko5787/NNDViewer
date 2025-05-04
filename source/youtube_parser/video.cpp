@@ -57,22 +57,36 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	}
 	// video
 	{
-		std::map<int, int> itag_to_p = {
+		std::map<int, int> itag_to_resolution = {
 			{160, 144},
 			{133, 240},
 			{134, 360},
 			{135, 480}
 		};
+
 		for (auto i : video_formats) {
 			int cur_itag = i["itag"].int_value();
-			if (itag_to_p.count(cur_itag)) {
-				int p_value = itag_to_p[cur_itag];
-				res.video_stream_urls[p_value] = i["url"].string_value();
+			std::string url = i["url"].string_value();
+			int height = i["height"].int_value(); // Video resolution height
+
+			// Check if the height matches any value in itag_to_resolution
+			int resolution = (std::find_if(itag_to_resolution.begin(), itag_to_resolution.end(),
+											[&](const auto &pair) { return pair.second == height; }) != itag_to_resolution.end())
+							 ? height
+							 : (itag_to_resolution.count(cur_itag) ? itag_to_resolution[cur_itag] : 0);
+
+			// Store the stream URL by resolution
+			if (resolution > 0) {
+				res.video_stream_urls[resolution] = url;
 			}
 		}
 		// both_stream_url : search for itag 18
-		for (auto i : video_formats) if (i["itag"].int_value() == 18)
-			res.both_stream_url = i["url"].string_value();
+		for (auto i : video_formats) {
+			if (i["itag"].int_value() == 18) {
+				res.both_stream_url = i["url"].string_value();
+				break;
+			}
+		}
 	}
 	
 	// extract caption data
