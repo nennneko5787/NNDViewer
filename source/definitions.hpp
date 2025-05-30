@@ -2,13 +2,8 @@
 
 //settings
 #define DEF_MAIN_DIR (std::string)"/3ds/FourthTube/"
-#define DEF_UPDATE_DIR_PREFIX (std::string)"/3ds/Video_player_ver_"
-#define DEF_UPDATE_FILE_PREFIX (std::string)"video_player"
 #define DEF_SWKBD_MAX_DIC_WORDS 128
 #define DEF_CHECK_INTERNET_URL (std::string)"https://connectivitycheck.gstatic.com/generate_204"
-#define DEF_SEND_APP_INFO_URL (std::string)"https://script.google.com/macros/s/AKfycbyn_blFyKWXCgJr6NIF8x6ETs7CHRN5FXKYEAAIrzV6jPYcCkI/exec"
-#define DEF_CHECK_UPDATE_URL (std::string)"https://script.google.com/macros/s/AKfycby1_fRyOemuxKtWu57O_7GA66DxWII6SD8dCj8r2n5SB4m0yvvGabynDwk92b5KTs1r/exec"
-#define DEF_HTTP_USER_AGENT (std::string)"video player for 3ds v1.1.0"
 #define DEF_CURRENT_APP_VER (std::string)"Beta 32"
 #define DEF_CURRENT_APP_VER_INT 0
 #define GITHUB_URL std::string("https://github.com/erievs/FourthTube")
@@ -53,7 +48,6 @@
 #define DEF_ERR_OTHER 0xFFFFFFFF
 #define DEF_ERR_OUT_OF_MEMORY 0xFFFFFFFE
 #define DEF_ERR_OUT_OF_LINEAR_MEMORY 0xFFFFFFFD
-#define DEF_ERR_GAS_RETURNED_NOT_SUCCESS 0xFFFFFFFC
 #define DEF_ERR_STB_IMG_RETURNED_NOT_SUCCESS 0xFFFFFFFB
 #define DEF_ERR_FFMPEG_RETURNED_NOT_SUCCESS 0xFFFFFFFA
 #define DEF_ERR_INVALID_ARG 0xFFFFFFF9
@@ -63,10 +57,9 @@
 #define DEF_ERR_OTHER_STR (std::string)"[Error] An unspecified error has occurred. "
 #define DEF_ERR_OUT_OF_MEMORY_STR (std::string)"[Error] Out of memory. "
 #define DEF_ERR_OUT_OF_LINEAR_MEMORY_STR (std::string)"[Error] Out of linear memory. "
-#define DEF_ERR_GAS_RETURNED_NOT_SUCCESS_STR (std::string)"[Error] Google apps script returned NOT success. "
-#define DEF_ERR_STB_IMG_RETURNED_NOT_SUCCESS_STR (std::string)"[Error] stb image returned NOT success. "
-#define DEF_ERR_FFMPEG_RETURNED_NOT_SUCCESS_STR (std::string)"[Error] ffmpeg returned NOT success. "
-#define DEF_ERR_INVALID_ARG_STR (std::string)"[Error] Invalid arg. "
+#define DEF_ERR_STB_IMG_RETURNED_NOT_SUCCESS_STR (std::string)"[Error] stb_image didn't return 0 (success). "
+#define DEF_ERR_FFMPEG_RETURNED_NOT_SUCCESS_STR (std::string)"[Error] FFmpeg didn't return 0 (success). "
+#define DEF_ERR_INVALID_ARG_STR (std::string)"[Error] Invalid argument. "
 
 //thread
 #define DEF_STACKSIZE (64 * 1024)
