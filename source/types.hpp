@@ -12,7 +12,7 @@ struct Result_with_string
 struct Image_data
 {
 	C2D_Image c2d;
-	Tex3DS_SubTexture* subtex = NULL;
+	Tex3DS_SubTexture *subtex = NULL;
 };
 
 struct Hid_info

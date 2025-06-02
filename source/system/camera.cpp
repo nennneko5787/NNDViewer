@@ -10,16 +10,16 @@ Result_with_string Util_cam_init(std::string color_format)
 	Result_with_string result;
 	CAMU_OutputFormat color;
 
-	if(util_cam_init)
+	if (util_cam_init)
 	{
 		result.code = DEF_ERR_OTHER;
 		result.string = "[Error] Camera is already initialized. ";
 		return result;
 	}
 
-	if(color_format == "bgr565")
+	if (color_format == "bgr565")
 		color = OUTPUT_RGB_565;
-	else if(color_format == "yuv422")
+	else if (color_format == "yuv422")
 		color = OUTPUT_YUV_422;
 	else
 	{
@@ -145,19 +145,19 @@ Result_with_string Util_cam_init(std::string color_format)
 	return result;
 }
 
-Result_with_string Util_cam_take_a_picture(u8** raw_data, int* width, int* height, bool shutter_sound)
+Result_with_string Util_cam_take_a_picture(u8 **raw_data, int *width, int *height, bool shutter_sound)
 {
 	Result_with_string result;
 	Handle receive = 0;
-	if(!util_cam_init)
+	if (!util_cam_init)
 	{
 		result.code = DEF_ERR_OTHER;
 		result.string = "[Error] camera is not initialized. ";
 		return result;
 	}
 
-	*raw_data = (u8*)malloc(util_cam_width * util_cam_height * 2);
-	if(*raw_data == NULL)
+	*raw_data = (u8 *)malloc(util_cam_width * util_cam_height * 2);
+	if (*raw_data == NULL)
 	{
 		result.code = DEF_ERR_OUT_OF_MEMORY;
 		result.string = DEF_ERR_OUT_OF_MEMORY_STR;
@@ -165,21 +165,22 @@ Result_with_string Util_cam_take_a_picture(u8** raw_data, int* width, int* heigh
 	}
 
 	result.code = CAMU_StartCapture(PORT_BOTH);
-	if(result.code != 0)
+	if (result.code != 0)
 	{
 		result.string = "[Error] CAMU_StartCapture failed. ";
 		return result;
 	}
 
-	result.code = CAMU_SetReceiving(&receive, *raw_data, PORT_CAM1, util_cam_width * util_cam_height * 2, (s16)util_cam_buffer_size);
-	if(result.code != 0)
+	result.code = CAMU_SetReceiving(&receive, *raw_data, PORT_CAM1, util_cam_width * util_cam_height * 2,
+	                                (s16)util_cam_buffer_size);
+	if (result.code != 0)
 	{
 		result.string = "[Error] CAMU_SetReceiving failed. ";
 		return result;
 	}
 
 	result.code = svcWaitSynchronization(receive, 1000000000);
-	if(result.code != 0)
+	if (result.code != 0)
 	{
 		svcCloseHandle(receive);
 		result.string = "[Error] svcWaitSynchronization failed. ";
@@ -188,10 +189,10 @@ Result_with_string Util_cam_take_a_picture(u8** raw_data, int* width, int* heigh
 	*width = util_cam_width;
 	*height = util_cam_height;
 
-	if(shutter_sound)
+	if (shutter_sound)
 	{
 		result.code = CAMU_PlayShutterSound(SHUTTER_SOUND_TYPE_NORMAL);
-		if(result.code != 0)
+		if (result.code != 0)
 		{
 			svcCloseHandle(receive);
 			result.string = "[Error] CAMU_PlayShutterSound failed. ";
@@ -208,13 +209,13 @@ Result_with_string Util_cam_set_resolution(int width, int height)
 {
 	CAMU_Size size;
 	Result_with_string result;
-	if(!util_cam_init)
+	if (!util_cam_init)
 	{
 		result.code = DEF_ERR_OTHER;
 		result.string = "[Error] camera is not initialized. ";
 		return result;
 	}
-	
+
 	if (width == 640 && height == 480)
 		size = SIZE_VGA;
 	else if (width == 512 && height == 384)

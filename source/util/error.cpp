@@ -48,22 +48,27 @@ void Util_err_clear_error_message(void)
 
 void Util_err_save_error(void)
 {
-	Path(DEF_MAIN_DIR + "error/" + std::to_string(var_years) + std::to_string(var_months) + std::to_string(var_days)
-	+ std::to_string(var_minutes) + std::to_string(var_seconds) + ".txt").write_file(
-		(u8*)(err_error_summary + "\n" + err_error_description + "\n" + err_error_place + "\n" + err_error_code).c_str(),
-		(err_error_summary + "\n" + err_error_description + "\n" + err_error_place + "\n" + err_error_code).length());
+	Path(DEF_MAIN_DIR + "error/" + std::to_string(var_years) + std::to_string(var_months) + std::to_string(var_days) +
+	     std::to_string(var_minutes) + std::to_string(var_seconds) + ".txt")
+	    .write_file(
+	        (u8 *)(err_error_summary + "\n" + err_error_description + "\n" + err_error_place + "\n" + err_error_code)
+	            .c_str(),
+	        (err_error_summary + "\n" + err_error_description + "\n" + err_error_place + "\n" + err_error_code)
+	            .length());
 	Util_err_set_error_show_flag(false);
 }
 
 void Util_err_main(Hid_info key)
 {
-	if (key.p_a || (key.p_touch && key.touch_x >= 150 && key.touch_x <= 169 && key.touch_y >= 150 && key.touch_y <= 169))
+	if (key.p_a ||
+	    (key.p_touch && key.touch_x >= 150 && key.touch_x <= 169 && key.touch_y >= 150 && key.touch_y <= 169))
 	{
 		err_error_display = false;
 		var_need_refresh = true;
 	}
-	else if(key.p_x || (key.p_touch && key.touch_x >= 200 && key.touch_x <= 239 && key.touch_y >= 150 && key.touch_y <= 169))
-	{	
+	else if (key.p_x ||
+	         (key.p_touch && key.touch_x >= 200 && key.touch_x <= 239 && key.touch_y >= 150 && key.touch_y <= 169))
+	{
 		Util_err_save_error();
 		var_need_refresh = true;
 	}

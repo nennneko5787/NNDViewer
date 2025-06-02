@@ -72,17 +72,18 @@ void Util_expl_set_current_patch(std::string patch)
 void Util_expl_set_show_flag(bool flag)
 {
 	expl_show_flag = flag;
-	if(flag == true)
+	if (flag == true)
 		expl_read_dir_request = true;
 }
 
 void Util_expl_init(void)
 {
 	logger.info(DEF_EXPL_INIT_STR, "Initializing...");
-	
+
 	expl_thread_run = true;
-	expl_read_dir_thread = threadCreate(Util_expl_read_dir_thread, (void*)(""), DEF_STACKSIZE, DEF_THREAD_PRIORITY_HIGH, -1, false);
-	
+	expl_read_dir_thread =
+	    threadCreate(Util_expl_read_dir_thread, (void *)(""), DEF_STACKSIZE, DEF_THREAD_PRIORITY_HIGH, -1, false);
+
 	logger.info(DEF_EXPL_INIT_STR, "Initialized.");
 }
 
@@ -111,14 +112,17 @@ void Util_expl_draw(void)
 		else
 			color = DEF_DRAW_BLACK;
 
-		Draw(expl_files[i + (int)expl_view_offset_y] + "(" + std::to_string(expl_size[i + (int)expl_view_offset_y] / 1024.0 / 1024.0).substr(0, 4) + "MB) (" + expl_type[i + (int)expl_view_offset_y] + ")", 12.5, 20.0 + (i * 10.0), 0.4, 0.4, color);
+		Draw(expl_files[i + (int)expl_view_offset_y] + "(" +
+		         std::to_string(expl_size[i + (int)expl_view_offset_y] / 1024.0 / 1024.0).substr(0, 4) + "MB) (" +
+		         expl_type[i + (int)expl_view_offset_y] + ")",
+		     12.5, 20.0 + (i * 10.0), 0.4, 0.4, color);
 	}
 }
 
 void Util_expl_main(Hid_info key)
 {
 	size_t cut_pos;
-	
+
 	if (key.p_y)
 	{
 		expl_cancel_callback();
@@ -129,11 +133,13 @@ void Util_expl_main(Hid_info key)
 	{
 		for (int i = 0; i < 16; i++)
 		{
-			if (key.p_a || (key.p_touch && key.touch_x >= 10 && key.touch_x <= 299 && key.touch_y >= 20 + (i * 10) && key.touch_y <= 30 + (i * 10)))
+			if (key.p_a || (key.p_touch && key.touch_x >= 10 && key.touch_x <= 299 && key.touch_y >= 20 + (i * 10) &&
+			                key.touch_y <= 30 + (i * 10)))
 			{
 				if (key.p_a || i == (int)expl_selected_file_num)
 				{
-					if (((int)expl_view_offset_y + (int)expl_selected_file_num) == 0 && !(Util_expl_query_current_patch() == "/"))
+					if (((int)expl_view_offset_y + (int)expl_selected_file_num) == 0 &&
+					    !(Util_expl_query_current_patch() == "/"))
 					{
 						expl_current_patch = expl_current_patch.substr(0, expl_current_patch.length() - 1);
 						cut_pos = expl_current_patch.find_last_of("/");
@@ -146,14 +152,16 @@ void Util_expl_main(Hid_info key)
 					}
 					else if (expl_type[(int)expl_view_offset_y + (int)expl_selected_file_num] == "dir")
 					{
-						expl_current_patch = expl_current_patch + expl_files[(int)expl_selected_file_num + (int)expl_view_offset_y] + "/";
+						expl_current_patch = expl_current_patch +
+						                     expl_files[(int)expl_selected_file_num + (int)expl_view_offset_y] + "/";
 						expl_view_offset_y = 0.0;
 						expl_selected_file_num = 0.0;
 						expl_read_dir_request = true;
 					}
 					else
 					{
-						expl_callback(Util_expl_query_file_name((int)expl_selected_file_num + (int)expl_view_offset_y), expl_current_patch);
+						expl_callback(Util_expl_query_file_name((int)expl_selected_file_num + (int)expl_view_offset_y),
+						              expl_current_patch);
 						expl_show_flag = false;
 						var_need_refresh = true;
 					}
@@ -164,7 +172,7 @@ void Util_expl_main(Hid_info key)
 				{
 					if (expl_num_of_file > (i + (int)expl_view_offset_y))
 						expl_selected_file_num = i;
-					
+
 					var_need_refresh = true;
 				}
 			}
@@ -184,7 +192,8 @@ void Util_expl_main(Hid_info key)
 				var_need_refresh = true;
 			}
 		}
-		else if (key.p_d_down || key.h_d_down || key.p_c_down || key.h_c_down || key.p_d_right || key.h_d_right || key.p_c_right || key.h_c_right)
+		else if (key.p_d_down || key.h_d_down || key.p_c_down || key.h_c_down || key.p_d_right || key.h_d_right ||
+		         key.p_c_right || key.h_c_right)
 		{
 			if ((expl_selected_file_num + 1.0) < 16.0 && (expl_selected_file_num + 1.0) < expl_num_of_file)
 			{
@@ -202,7 +211,8 @@ void Util_expl_main(Hid_info key)
 			}
 			var_need_refresh = true;
 		}
-		else if (key.p_d_up || key.h_d_up || key.p_c_up || key.h_c_up || key.p_d_left || key.h_d_left || key.p_c_left || key.h_c_left)
+		else if (key.p_d_up || key.h_d_up || key.p_c_up || key.h_c_up || key.p_d_left || key.h_d_left || key.p_c_left ||
+		         key.h_c_left)
 		{
 			if ((expl_selected_file_num - 1.0) > -1.0)
 			{
@@ -233,7 +243,7 @@ void Util_expl_main(Hid_info key)
 	}
 }
 
-void Util_expl_read_dir_thread(void* arg)
+void Util_expl_read_dir_thread(void *arg)
 {
 	logger.info(DEF_EXPL_READ_DIR_THREAD_STR, "Thread started.");
 	int log_num;

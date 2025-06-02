@@ -15,10 +15,10 @@ Result_with_string Util_cset_set_screen_brightness(bool top_screen, bool bottom_
 	else
 		result.code = DEF_ERR_INVALID_ARG;
 
-	if(result.code != DEF_ERR_INVALID_ARG)
+	if (result.code != DEF_ERR_INVALID_ARG)
 	{
 		result.code = GSPLCD_SetBrightnessRaw(screen, brightness);
-		if(result.code != 0)
+		if (result.code != 0)
 			result.string = "GSPLCD_SetBrightnessRaw() failed.";
 	}
 
@@ -32,7 +32,7 @@ Result_with_string Util_cset_set_wifi_state(bool wifi_state)
 	Result_with_string result;
 
 	result.code = NWMEXT_ControlWirelessEnabled(wifi_state);
-	if(result.code != 0)
+	if (result.code != 0)
 		result.string = "NWMEXT_ControlWirelessEnabled() failed.";
 
 	nwmExtExit();
@@ -54,18 +54,18 @@ Result_with_string Util_cset_set_screen_state(bool top_screen, bool bottom_scree
 	else
 		result.code = DEF_ERR_INVALID_ARG;
 
-	if(result.code != DEF_ERR_INVALID_ARG)
+	if (result.code != DEF_ERR_INVALID_ARG)
 	{
 		if (state)
 		{
 			result.code = GSPLCD_PowerOnBacklight(screen);
-			if(result.code != 0)
+			if (result.code != 0)
 				result.string = "GSPLCD_PowerOnBacklight() failed.";
 		}
 		else
 		{
 			result.code = GSPLCD_PowerOffBacklight(screen);
-			if(result.code != 0)
+			if (result.code != 0)
 				result.string = "GSPLCD_PowerOffBacklight() failed.";
 		}
 	}

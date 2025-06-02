@@ -2,7 +2,8 @@
 #include <vector>
 #include <string>
 
-struct SubscriptionChannel {
+struct SubscriptionChannel
+{
 	std::string id;
 	std::string url;
 	std::string name;
