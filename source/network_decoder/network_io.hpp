@@ -6,8 +6,7 @@
 #include <3ds.h>
 #include <curl/curl.h>
 
-struct NetworkResult
-{
+struct NetworkResult {
 	std::string redirected_url;
 	bool fail =
 	    false; // whether some network error occured; receiving http error code like 404 is still counted as a 'success'
@@ -17,14 +16,10 @@ struct NetworkResult
 	std::vector<u8> data;
 	std::map<std::string, std::string> response_headers;
 
-	bool status_code_is_success()
-	{
-		return status_code / 100 == 2;
-	}
+	bool status_code_is_success() { return status_code / 100 == 2; }
 	std::string get_header(std::string key);
 };
-struct HttpRequest
-{ // including https
+struct HttpRequest { // including https
 	std::string method;
 	std::string url;
 	std::map<std::string, std::string> headers;
@@ -36,8 +31,7 @@ struct HttpRequest
 	using on_finish_callback_t = std::function<void(NetworkResult &, int)>;
 	on_finish_callback_t on_finish{};
 
-	static std::map<std::string, std::string> default_headers_added(std::map<std::string, std::string> headers)
-	{
+	static std::map<std::string, std::string> default_headers_added(std::map<std::string, std::string> headers) {
 		// Set up default Android/YouTube client headers
 		static const std::string DEFAULT_USER_AGENT = "Mozilla/5.0 (Linux; Android 11; Pixel 3a) AppleWebKit/537.36 "
 		                                              "(KHTML, like Gecko) Chrome/83.0.4103.101 Mobile Safari/537.36";
@@ -51,32 +45,27 @@ struct HttpRequest
 	}
 
 	static HttpRequest GET(const std::string &url, const std::map<std::string, std::string> &headers,
-	                       bool follow_redirect = true)
-	{
+	                       bool follow_redirect = true) {
 		auto updated_headers = default_headers_added(headers);
 		return HttpRequest{"GET", url, updated_headers, "", follow_redirect};
 	}
 
 	static HttpRequest POST(const std::string &url, const std::map<std::string, std::string> &headers,
-	                        const std::string &body)
-	{
+	                        const std::string &body) {
 		auto updated_headers = default_headers_added(headers);
 		return HttpRequest{"POST", url, updated_headers, body, false};
 	}
 
-	HttpRequest with_progress_func(progress_callback_t progress_func) const
-	{
+	HttpRequest with_progress_func(progress_callback_t progress_func) const {
 		return HttpRequest{method, url, headers, body, follow_redirect, progress_func, on_finish};
 	}
 
-	HttpRequest with_on_finish_callback(on_finish_callback_t on_finish) const
-	{
+	HttpRequest with_on_finish_callback(on_finish_callback_t on_finish) const {
 		return HttpRequest{method, url, headers, body, follow_redirect, progress_func, on_finish};
 	}
 };
 
-struct NetworkSessionList
-{ // one instance per thread
+struct NetworkSessionList { // one instance per thread
   private:
 	void deinit(); // will be called for each instance when the app exits
 
@@ -87,8 +76,7 @@ struct NetworkSessionList
   public:
 	// used for libcurl
 	CURLM *curl_multi = NULL; // curl manages sessions within a single CURL *
-	struct RequestInternal
-	{
+	struct RequestInternal {
 		CURL *curl;
 		NetworkResult *res;
 		char *errbuf;

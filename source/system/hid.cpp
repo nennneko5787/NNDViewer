@@ -1,7 +1,6 @@
 #include "headers.hpp"
 
-namespace Hid
-{
+namespace Hid {
 u32 key_down;
 u32 key_held;
 touchPosition touch_pos;
@@ -13,8 +12,7 @@ int count = 0;
 }; // namespace Hid
 using namespace Hid;
 
-void Util_hid_update_key_state()
-{
+void Util_hid_update_key_state() {
 	prev_key_down = key_down;
 	prev_key_held = key_held;
 	prev_touch_pos = touch_pos;
@@ -27,10 +25,8 @@ void Util_hid_update_key_state()
 	count++;
 }
 
-void Util_hid_query_key_state(Hid_info *out_key_state)
-{
-	if (key_down | key_held)
-	{
+void Util_hid_query_key_state(Hid_info *out_key_state) {
+	if (key_down | key_held) {
 		if (var_afk_time > var_time_to_turn_off_lcd)
 			key_down = 0; // the tap to awake the lcd should be ignored in most cases
 		var_afk_time = 0;

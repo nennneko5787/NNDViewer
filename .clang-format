@@ -1,4 +1,4 @@
-BasedOnStyle: Microsoft
+BasedOnStyle: LLVM
 ColumnLimit: 120
 UseTab: ForIndentation
 IndentWidth: 4

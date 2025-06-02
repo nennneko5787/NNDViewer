@@ -5,8 +5,7 @@
 
 #define SETTINGS_FILE_PATH (DEF_MAIN_DIR + "settings.txt")
 
-void load_settings()
-{
+void load_settings() {
 	char buf[0x1001] = {0};
 	u32 read_size;
 	Result_with_string result = Path(SETTINGS_FILE_PATH).read_file((u8 *)buf, 0x1000, read_size);
@@ -74,8 +73,7 @@ void load_settings()
 	video_set_linear_filter_enabled(var_video_linear_filter);
 	video_set_show_debug_info(var_video_show_debug_info);
 }
-void save_settings()
-{
+void save_settings() {
 	std::string data;
 	auto add_str = [&](const std::string &key, const std::string &val) {
 		data += "<" + key + ">" + val + "</" + key + ">\n";

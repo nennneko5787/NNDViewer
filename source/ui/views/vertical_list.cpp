@@ -7,17 +7,13 @@
 #include <map>
 #include <utility>
 
-void VerticalListView::recursive_delete_subviews()
-{
-	if (do_thumbnail_update)
-	{
-		for (auto view : views)
-		{
+void VerticalListView::recursive_delete_subviews() {
+	if (do_thumbnail_update) {
+		for (auto view : views) {
 			auto *cur_view = dynamic_cast<SuccinctVideoView *>(view);
 			if (cur_view)
 				thumbnail_cancel_request(cur_view->thumbnail_handle), cur_view->thumbnail_handle = -1;
-			else
-			{
+			else {
 				auto *cur_view = dynamic_cast<SuccinctChannelView *>(view);
 				if (cur_view)
 					thumbnail_cancel_request(cur_view->thumbnail_handle), cur_view->thumbnail_handle = -1;
@@ -26,31 +22,26 @@ void VerticalListView::recursive_delete_subviews()
 		thumbnail_loaded_l = 0;
 		thumbnail_loaded_r = 0;
 	}
-	for (auto view : views)
-	{
+	for (auto view : views) {
 		view->recursive_delete_subviews();
 		delete view;
 	}
 	views.clear();
 }
 
-void VerticalListView::swap_views(const std::vector<View *> &new_views)
-{
+void VerticalListView::swap_views(const std::vector<View *> &new_views) {
 	std::map<std::string, std::vector<int>> handles;
-	for (auto view : views)
-	{
+	for (auto view : views) {
 		auto *cur_view = dynamic_cast<SuccinctVideoView *>(view);
 		if (cur_view && cur_view->thumbnail_handle != -1)
 			handles[cur_view->thumbnail_url].push_back(cur_view->thumbnail_handle);
-		else
-		{
+		else {
 			auto *cur_view = dynamic_cast<SuccinctChannelView *>(view);
 			if (cur_view && cur_view->thumbnail_handle != -1)
 				handles[cur_view->thumbnail_url].push_back(cur_view->thumbnail_handle);
 		}
 	}
-	for (auto view : views)
-	{
+	for (auto view : views) {
 		view->recursive_delete_subviews();
 		delete view;
 	}
@@ -58,37 +49,28 @@ void VerticalListView::swap_views(const std::vector<View *> &new_views)
 	// try to keep current thumbnail_loaded_l and thumbnail_loaded_r
 	thumbnail_loaded_r = std::min<int>(thumbnail_loaded_r, new_views.size());
 	thumbnail_loaded_l = std::min(thumbnail_loaded_l, thumbnail_loaded_r);
-	for (int i = thumbnail_loaded_l; i < thumbnail_loaded_r; i++)
-	{
+	for (int i = thumbnail_loaded_l; i < thumbnail_loaded_r; i++) {
 		auto *cur_view = dynamic_cast<SuccinctVideoView *>(views[i]);
-		if (cur_view)
-		{
-			if (handles.count(cur_view->thumbnail_url))
-			{
+		if (cur_view) {
+			if (handles.count(cur_view->thumbnail_url)) {
 				auto &available_handles = handles[cur_view->thumbnail_url];
 				cur_view->thumbnail_handle = available_handles.back();
 				available_handles.pop_back();
 				if (!available_handles.size())
 					handles.erase(cur_view->thumbnail_url);
-			}
-			else
+			} else
 				cur_view->thumbnail_handle =
 				    thumbnail_request(cur_view->thumbnail_url, thumbnail_scene, 0, ThumbnailType::VIDEO_THUMBNAIL);
-		}
-		else
-		{
+		} else {
 			auto *cur_view = dynamic_cast<SuccinctChannelView *>(views[i]);
-			if (cur_view)
-			{
-				if (handles.count(cur_view->thumbnail_url))
-				{
+			if (cur_view) {
+				if (handles.count(cur_view->thumbnail_url)) {
 					auto &available_handles = handles[cur_view->thumbnail_url];
 					cur_view->thumbnail_handle = available_handles.back();
 					available_handles.pop_back();
 					if (!available_handles.size())
 						handles.erase(cur_view->thumbnail_url);
-				}
-				else
+				} else
 					cur_view->thumbnail_handle =
 					    thumbnail_request(cur_view->thumbnail_url, thumbnail_scene, 0, ThumbnailType::ICON);
 			}
@@ -98,21 +80,16 @@ void VerticalListView::swap_views(const std::vector<View *> &new_views)
 		for (auto handle : i.second)
 			thumbnail_cancel_request(handle);
 }
-void VerticalListView::draw_() const
-{
-	if (!draw_order.size())
-	{
+void VerticalListView::draw_() const {
+	if (!draw_order.size()) {
 		double y_offset = y0;
-		for (auto view : views)
-		{
+		for (auto view : views) {
 			double y_bottom = y_offset + view->get_height();
 			if (y_bottom >= 0 && y_offset < 240)
 				view->draw(x0, y_offset);
 			y_offset = y_bottom + margin;
 		}
-	}
-	else
-	{
+	} else {
 		std::vector<float> y_pos(views.size() + 1, y0);
 		for (size_t i = 0; i < views.size(); i++)
 			y_pos[i + 1] = y_pos[i] + views[i]->get_height() + margin;
@@ -121,25 +98,21 @@ void VerticalListView::draw_() const
 				views[i]->draw(x0, y_pos[i]);
 	}
 }
-void VerticalListView::update_(Hid_info key)
-{
+void VerticalListView::update_(Hid_info key) {
 	double y_offset = y0;
-	for (auto view : views)
-	{
+	for (auto view : views) {
 		double y_bottom = y_offset + view->get_height();
 		if (y_bottom >= 0 && y_offset < 240)
 			view->update(key, x0, y_offset);
 		y_offset = y_bottom + margin;
 	}
-	if (do_thumbnail_update)
-	{
+	if (do_thumbnail_update) {
 		int video_num = views.size();
 		int displayed_l = views.size();
 		int displayed_r = -1;
 		{
 			int cur_y = y0;
-			for (int i = 0; i < (int)views.size(); i++)
-			{
+			for (int i = 0; i < (int)views.size(); i++) {
 				if (cur_y < 240)
 					displayed_r = i;
 				cur_y += views[i]->get_height();
@@ -165,35 +138,26 @@ void VerticalListView::update_(Hid_info key)
 		for (int i = request_target_l; i < request_target_r; i++)
 			cancelling_indexes.erase(i);
 
-		for (auto i : cancelling_indexes)
-		{
+		for (auto i : cancelling_indexes) {
 			auto *cur_view = dynamic_cast<SuccinctVideoView *>(views[i]);
-			if (cur_view)
-			{
+			if (cur_view) {
 				thumbnail_cancel_request(cur_view->thumbnail_handle);
 				cur_view->thumbnail_handle = -1;
-			}
-			else
-			{
+			} else {
 				auto *cur_view = dynamic_cast<SuccinctChannelView *>(views[i]);
-				if (cur_view)
-				{
+				if (cur_view) {
 					thumbnail_cancel_request(cur_view->thumbnail_handle);
 					cur_view->thumbnail_handle = -1;
 				}
 			}
 		}
-		for (auto i : new_indexes)
-		{
+		for (auto i : new_indexes) {
 			auto *cur_view = dynamic_cast<SuccinctVideoView *>(views[i]);
-			if (cur_view)
-			{
+			if (cur_view) {
 				if (cur_view->thumbnail_handle == -1)
 					cur_view->thumbnail_handle =
 					    thumbnail_request(cur_view->thumbnail_url, thumbnail_scene, 0, ThumbnailType::VIDEO_THUMBNAIL);
-			}
-			else
-			{
+			} else {
 				auto *cur_view = dynamic_cast<SuccinctChannelView *>(views[i]);
 				if (cur_view && cur_view->thumbnail_handle == -1)
 					cur_view->thumbnail_handle =
@@ -212,13 +176,11 @@ void VerticalListView::update_(Hid_info key)
 				return 500 - (i - displayed_r + 1);
 			return PRIORITY_FOREGROUND + displayed_r - i;
 		};
-		for (int i = request_target_l; i < request_target_r; i++)
-		{
+		for (int i = request_target_l; i < request_target_r; i++) {
 			auto *cur_view = dynamic_cast<SuccinctVideoView *>(views[i]);
 			if (cur_view)
 				priority_list[i - request_target_l] = {cur_view->thumbnail_handle, priority(i)};
-			else
-			{
+			else {
 				auto *cur_view = dynamic_cast<SuccinctChannelView *>(views[i]);
 				if (cur_view)
 					priority_list[i - request_target_l] = {cur_view->thumbnail_handle, priority(i)};

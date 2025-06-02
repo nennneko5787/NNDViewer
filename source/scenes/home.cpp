@@ -22,8 +22,7 @@
 #define TOP_HEIGHT 25
 #define VIDEO_TITLE_MAX_WIDTH (320 - SMALL_MARGIN * 2 - VIDEO_LIST_THUMBNAIL_WIDTH)
 
-namespace Home
-{
+namespace Home {
 bool thread_suspend = false;
 bool already_init = false;
 bool exiting = false;
@@ -58,8 +57,7 @@ static void load_home_page_more(void *);
 static void load_subscription_feed(void *);
 static void update_subscribed_channels(const std::vector<SubscriptionChannel> &new_subscribed_channels);
 
-void Home_init(void)
-{
+void Home_init(void) {
 	logger.info("subsc/init", "Initializing...");
 
 	home_videos_list_view = (new VerticalListView(0, 0, 320))
@@ -124,8 +122,7 @@ void Home_init(void)
 	Home_resume("");
 	already_init = true;
 }
-void Home_exit(void)
-{
+void Home_exit(void) {
 	already_init = false;
 	thread_suspend = false;
 	exiting = true;
@@ -146,12 +143,8 @@ void Home_exit(void)
 
 	logger.info("subsc/exit", "Exited.");
 }
-void Home_suspend(void)
-{
-	thread_suspend = true;
-}
-void Home_resume(std::string arg)
-{
+void Home_suspend(void) { thread_suspend = true; }
+void Home_resume(std::string arg) {
 	(void)arg;
 
 	// main_tab_view->on_resume();
@@ -165,8 +158,7 @@ void Home_resume(std::string arg)
 }
 
 // async functions
-static SuccinctVideoView *convert_video_to_view(const YouTubeVideoSuccinct &video)
-{
+static SuccinctVideoView *convert_video_to_view(const YouTubeVideoSuccinct &video) {
 	SuccinctVideoView *res = new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT);
 	res->set_title_lines(truncate_str(video.title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5));
 	res->set_auxiliary_lines({video.views_str, video.publish_date});
@@ -179,11 +171,9 @@ static SuccinctVideoView *convert_video_to_view(const YouTubeVideoSuccinct &vide
 	});
 	return res;
 }
-static void update_home_bottom_view(bool force_show_loading)
-{
+static void update_home_bottom_view(bool force_show_loading) {
 	delete home_videos_bottom_view;
-	if (home_info.has_more_results() || force_show_loading)
-	{
+	if (home_info.has_more_results() || force_show_loading) {
 		home_videos_bottom_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 		                              ->set_text([]() {
 			                              if (home_info.error != "")
@@ -197,13 +187,11 @@ static void update_home_bottom_view(bool force_show_loading)
 			                                  !is_async_task_running(load_home_page_more) && home_info.error == "")
 				                              queue_async_task(load_home_page_more, NULL);
 		                              });
-	}
-	else
+	} else
 		home_videos_bottom_view = new EmptyView(0, 0, 320, 0);
 	home_tab_view->set_views({home_videos_list_view, home_videos_bottom_view});
 }
-static void load_home_page(void *)
-{
+static void load_home_page(void *) {
 	resource_lock.lock();
 	update_home_bottom_view(true);
 	var_need_refresh = true;
@@ -220,20 +208,17 @@ static void load_home_page(void *)
 	logger.info("home", "truncate/view creation end");
 
 	resource_lock.lock();
-	if (results.error == "")
-	{
+	if (results.error == "") {
 		home_info = results;
 		home_videos_list_view->recursive_delete_subviews();
 		home_videos_list_view->set_views(new_videos_view);
 		update_home_bottom_view(false);
-	}
-	else
+	} else
 		home_info.error = results.error;
 	var_need_refresh = true;
 	resource_lock.unlock();
 }
-static void load_home_page_more(void *)
-{
+static void load_home_page_more(void *) {
 	auto new_result = home_info;
 	new_result.load_more_results();
 
@@ -245,16 +230,14 @@ static void load_home_page_more(void *)
 
 	resource_lock.lock();
 	home_info = new_result;
-	if (new_result.error == "")
-	{
+	if (new_result.error == "") {
 		home_videos_list_view->views.insert(home_videos_list_view->views.end(), new_videos_view.begin(),
 		                                    new_videos_view.end());
 		update_home_bottom_view(false);
 	}
 	resource_lock.unlock();
 }
-static void load_subscription_feed(void *)
-{
+static void load_subscription_feed(void *) {
 	resource_lock.lock();
 	auto channels = subscribed_channels;
 	resource_lock.unlock();
@@ -271,11 +254,9 @@ static void load_subscription_feed(void *)
 	remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
 	std::map<std::pair<int, int>, std::vector<YouTubeVideoSuccinct>> loaded_videos;
-	for (auto result : results)
-	{
+	for (auto result : results) {
 		// update the subscription metadata at the same time
-		if (result.name != "")
-		{
+		if (result.name != "") {
 			SubscriptionChannel new_info;
 			new_info.id = result.id;
 			new_info.url = result.url;
@@ -287,8 +268,7 @@ static void load_subscription_feed(void *)
 		}
 
 		int loaded_cnt = 0;
-		for (auto video : result.videos)
-		{
+		for (auto video : result.videos) {
 			std::string date_number_str;
 			for (auto c : video.publish_date)
 				if (isdigit(c))
@@ -297,51 +277,37 @@ static void load_subscription_feed(void *)
 			// 1 : seconds
 			char *end;
 			int number = strtoll(date_number_str.c_str(), &end, 10);
-			if (*end)
-			{
+			if (*end) {
 				logger.error("subsc", "failed to parse the integer in date : " + video.publish_date);
 				continue;
 			}
 			int unit = -1;
 			std::vector<std::vector<std::string>> unit_list = {{"second"}, {"minute"}, {"hour"}, {"day"},
 			                                                   {"week"},   {"month"},  {"year"}};
-			if (var_lang_content == "ja")
-			{
+			if (var_lang_content == "ja") {
 				unit_list = {{"秒"}, {"分"}, {"時間"}, {"日"}, {"週間"}, {"月"}, {"年"}};
-			}
-			else if (var_lang_content == "de")
-			{
+			} else if (var_lang_content == "de") {
 				unit_list = {{"Sekunde"}, {"Minute"}, {"Stunde"}, {"Tag"}, {"Woche"}, {"Monat"}, {"Jahr"}};
-			}
-			else if (var_lang_content == "fr")
-			{
+			} else if (var_lang_content == "fr") {
 				unit_list = {{"seconde"}, {"minute"}, {"heure"}, {"jour"}, {"semaine"}, {"mois"}, {"an"}};
-			}
-			else if (var_lang_content == "it")
-			{
+			} else if (var_lang_content == "it") {
 				unit_list = {{"second"}, {"minut"}, {"ora", "ore"}, {"giorn"}, {"settiman"}, {"mes"}, {"ann"}};
-			}
-			else if (var_lang_content != "en")
-			{
+			} else if (var_lang_content != "en") {
 				logger.error("i18n", "Units not found.");
 			}
-			for (size_t i = 0; i < unit_list.size(); i++)
-			{
+			for (size_t i = 0; i < unit_list.size(); i++) {
 				bool matched = false;
 				for (auto pattern : unit_list[i])
-					if (video.publish_date.find(pattern) != std::string::npos)
-					{
+					if (video.publish_date.find(pattern) != std::string::npos) {
 						matched = true;
 						break;
 					}
-				if (matched)
-				{
+				if (matched) {
 					unit = i;
 					break;
 				}
 			}
-			if (unit == -1)
-			{
+			if (unit == -1) {
 				logger.error("subsc", "failed to parse the unit of date : " + video.publish_date);
 				continue;
 			}
@@ -354,10 +320,8 @@ static void load_subscription_feed(void *)
 	}
 
 	std::vector<View *> new_feed_video_views;
-	for (auto &i : loaded_videos)
-	{
-		for (auto video : i.second)
-		{
+	for (auto &i : loaded_videos) {
+		for (auto video : i.second) {
 			SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
 
 			cur_view->set_title_lines(truncate_str(video.title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));
@@ -377,8 +341,7 @@ static void load_subscription_feed(void *)
 	misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
 
 	resource_lock.lock();
-	if (exiting)
-	{ // app shut down while loading
+	if (exiting) { // app shut down while loading
 		resource_lock.unlock();
 		return;
 	}
@@ -389,14 +352,12 @@ static void load_subscription_feed(void *)
 	resource_lock.unlock();
 }
 
-static void update_subscribed_channels(const std::vector<SubscriptionChannel> &new_subscribed_channels)
-{
+static void update_subscribed_channels(const std::vector<SubscriptionChannel> &new_subscribed_channels) {
 	subscribed_channels = new_subscribed_channels;
 
 	// prepare new views
 	std::vector<View *> new_views;
-	for (auto channel : new_subscribed_channels)
-	{
+	for (auto channel : new_subscribed_channels) {
 		SuccinctChannelView *cur_view = (new SuccinctChannelView(0, 0, 320, CHANNEL_ICON_HEIGHT));
 		cur_view->set_name(channel.name);
 		cur_view->set_auxiliary_lines({channel.subscriber_count_str});
@@ -411,8 +372,7 @@ static void update_subscribed_channels(const std::vector<SubscriptionChannel> &n
 	channels_tab_list_view->swap_views(new_views); // avoid unnecessary thumbnail reloading
 }
 
-void Home_draw(void)
-{
+void Home_draw(void) {
 	Hid_info key;
 	Util_hid_query_key_state(&key);
 
@@ -422,8 +382,7 @@ void Home_draw(void)
 	CONTENT_Y_HIGH = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
 	main_tab_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT);
 
-	if (var_need_refresh || !var_eco_mode)
-	{
+	if (var_need_refresh || !var_eco_mode) {
 		var_need_refresh = false;
 		Draw_frame_ready();
 		video_draw_top_screen();
@@ -447,22 +406,16 @@ void Home_draw(void)
 		Draw_touch_pos();
 
 		Draw_apply_draw();
-	}
-	else
+	} else
 		gspWaitForVBlank();
 
 	resource_lock.lock();
 
-	if (Util_err_query_error_show_flag())
-	{
+	if (Util_err_query_error_show_flag()) {
 		Util_err_main(key);
-	}
-	else if (Util_expl_query_show_flag())
-	{
+	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
-	}
-	else
-	{
+	} else {
 		update_overlay_menu(&key);
 
 		home_tab_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT - main_tab_view->tab_selector_height);
@@ -470,8 +423,7 @@ void Home_draw(void)
 		feed_videos_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT - main_tab_view->tab_selector_height -
 		                                        FEED_RELOAD_BUTTON_HEIGHT - SMALL_MARGIN);
 		main_view->update(key);
-		if (clicked_url != "")
-		{
+		if (clicked_url != "") {
 			global_intent.next_scene = clicked_is_video ? SceneType::VIDEO_PLAYER : SceneType::CHANNEL;
 			global_intent.arg = clicked_url;
 			clicked_url = "";

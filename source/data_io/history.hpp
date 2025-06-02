@@ -3,8 +3,7 @@
 #include <string>
 #include <time.h>
 
-struct HistoryVideo
-{
+struct HistoryVideo {
 	std::string id;
 	std::string title;
 	std::vector<std::string> title_lines;

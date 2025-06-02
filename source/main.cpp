@@ -1,12 +1,10 @@
 ﻿#include "headers.hpp"
 
-int main()
-{
+int main() {
 	Menu_init();
 
 	// Main loop
-	while (aptMainLoop())
-	{
+	while (aptMainLoop()) {
 		if (!Menu_main())
 			break;
 	}

@@ -4,17 +4,14 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-Result_with_string Path::write_file(const u8 *data, u32 size)
-{
+Result_with_string Path::write_file(const u8 *data, u32 size) {
 	Result_with_string res;
 	res.string = [&]() -> std::string {
 		FILE *fp = fopen(path.c_str(), "w");
-		if (!fp)
-		{
+		if (!fp) {
 			const char *begin = path.c_str();
 			const char *slash = strchr(begin + 1, '/');
-			while (slash)
-			{
+			while (slash) {
 				errno = 0;
 				if (mkdir(path.substr(0, slash - begin).c_str(), 0777) && errno != EEXIST)
 					return "mkdir() failed";
@@ -36,8 +33,7 @@ Result_with_string Path::write_file(const u8 *data, u32 size)
 		res.code = errno;
 	return res;
 }
-Result_with_string Path::read_file(u8 *data, u32 size, u32 &size_read, u64 offset)
-{
+Result_with_string Path::read_file(u8 *data, u32 size, u32 &size_read, u64 offset) {
 	Result_with_string res;
 	res.string = [&]() {
 		errno = 0;
@@ -45,8 +41,7 @@ Result_with_string Path::read_file(u8 *data, u32 size, u32 &size_read, u64 offse
 		if (!fp)
 			return "fopen() failed";
 		auto tmp = [&]() {
-			if (offset)
-			{
+			if (offset) {
 				errno = 0;
 				if (fseek(fp, offset, SEEK_SET) != 0)
 					return "fseek() failed";
@@ -64,24 +59,21 @@ Result_with_string Path::read_file(u8 *data, u32 size, u32 &size_read, u64 offse
 		res.code = errno;
 	return res;
 }
-Result_with_string Path::delete_file()
-{
+Result_with_string Path::delete_file() {
 	Result_with_string res;
 	errno = 0;
 	if (remove(path.c_str()) != 0)
 		res.string = "remove() failed", res.code = errno;
 	return res;
 }
-Result_with_string Path::rename_to(const std::string &new_name)
-{
+Result_with_string Path::rename_to(const std::string &new_name) {
 	Result_with_string res;
 	errno = 0;
 	if (rename(path.c_str(), new_name.c_str()) != 0)
 		res.string = "rename() failed", res.code = errno;
 	return res;
 }
-Result_with_string Path::get_size(u64 &size)
-{
+Result_with_string Path::get_size(u64 &size) {
 	Result_with_string res;
 	res.string = [&]() {
 		errno = 0;
@@ -106,16 +98,14 @@ Result_with_string Path::get_size(u64 &size)
 		res.code = errno;
 	return res;
 }
-bool Path::is_file()
-{
+bool Path::is_file() {
 	FILE *fp = fopen(path.c_str(), "rb");
 	if (!fp)
 		return false;
 	fclose(fp);
 	return true;
 }
-Result_with_string Path::read_dir(std::string *names, std::string *types, int max_num, int &read_num)
-{
+Result_with_string Path::read_dir(std::string *names, std::string *types, int max_num, int &read_num) {
 	Result_with_string res;
 	res.string = [&]() {
 		errno = 0;
@@ -125,8 +115,7 @@ Result_with_string Path::read_dir(std::string *names, std::string *types, int ma
 		[&]() {
 			struct dirent *item = readdir(dir);
 			int cnt = 0;
-			while (item && cnt < max_num)
-			{
+			while (item && cnt < max_num) {
 				names[cnt] = item->d_name;
 				types[cnt] = (item->d_type == DT_REG ? "file" : item->d_type == DT_DIR ? "dir" : "unknown");
 				cnt++;

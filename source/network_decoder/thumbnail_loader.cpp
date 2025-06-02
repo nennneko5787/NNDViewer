@@ -7,17 +7,14 @@
 
 static bool thread_network_session_list_inited = false;
 static NetworkSessionList thread_network_session_list;
-static void confirm_thread_network_session_list_inited()
-{
-	if (!thread_network_session_list_inited)
-	{
+static void confirm_thread_network_session_list_inited() {
+	if (!thread_network_session_list_inited) {
 		thread_network_session_list_inited = true;
 		thread_network_session_list.init();
 	}
 }
 
-struct LoadedThumbnail
-{
+struct LoadedThumbnail {
 	int image_width;
 	int image_height;
 	int texture_width;
@@ -25,8 +22,7 @@ struct LoadedThumbnail
 	Image_data data;
 };
 
-struct Request
-{
+struct Request {
 	std::string url;
 	SceneType scene;
 	int priority;
@@ -43,8 +39,7 @@ static std::map<std::string, int> thumbnail_free_time;
 
 #define THUMBNAIL_CACHE_MAX 300 // 4 KB * 300 = 1.2 MB
 
-struct URLStatus
-{
+struct URLStatus {
 	std::set<int> handles;
 	bool is_loaded = false;
 	bool error = false;
@@ -56,20 +51,16 @@ struct URLStatus
 };
 static std::map<std::string, URLStatus> requested_urls;
 
-int thumbnail_request(const std::string &url, SceneType scene_id, int priority, ThumbnailType type)
-{
+int thumbnail_request(const std::string &url, SceneType scene_id, int priority, ThumbnailType type) {
 	if (url == "")
 		return -1;
 	int handle;
 	resource_lock.lock();
-	if (free_list.size())
-	{
+	if (free_list.size()) {
 		handle = free_list.front();
 		free_list.pop();
 		requests[handle] = {url, scene_id, priority};
-	}
-	else
-	{
+	} else {
 		handle = requests.size();
 		requests.push_back({url, scene_id, priority});
 	}
@@ -82,15 +73,13 @@ int thumbnail_request(const std::string &url, SceneType scene_id, int priority, 
 		               "request size too large, possible resource leak : " + std::to_string(requests.size()));
 	return handle;
 }
-inline static void thumbnail_cancel_request_wo_lock(int handle)
-{
+inline static void thumbnail_cancel_request_wo_lock(int handle) {
 	if (handle == -1)
 		return;
 	std::string url = requests[handle].url;
 	auto &url_status = requested_urls[url];
 	url_status.handles.erase(handle);
-	if (!url_status.handles.size())
-	{
+	if (!url_status.handles.size()) {
 		if (url_status.is_loaded)
 			Draw_c2d_image_free(url_status.data.data);
 		requested_urls.erase(url);
@@ -98,48 +87,39 @@ inline static void thumbnail_cancel_request_wo_lock(int handle)
 	}
 	free_list.push(handle);
 }
-void thumbnail_cancel_request(int handle)
-{
+void thumbnail_cancel_request(int handle) {
 	if (handle == -1)
 		return;
 	resource_lock.lock();
 	thumbnail_cancel_request_wo_lock(handle);
 	resource_lock.unlock();
 }
-void thumbnail_cancel_requests(const std::vector<int> &handles)
-{
+void thumbnail_cancel_requests(const std::vector<int> &handles) {
 	resource_lock.lock();
 	for (auto handle : handles)
 		if (handle != -1)
 			thumbnail_cancel_request_wo_lock(handle);
 	resource_lock.unlock();
 }
-void thumbnail_set_priority(int handle, int value)
-{
+void thumbnail_set_priority(int handle, int value) {
 	if (handle == -1)
 		return;
 	resource_lock.lock();
 	requests[handle].priority = value;
 	resource_lock.unlock();
 }
-void thumbnail_set_priorities(const std::vector<std::pair<int, int>> &priority_list)
-{
+void thumbnail_set_priorities(const std::vector<std::pair<int, int>> &priority_list) {
 	resource_lock.lock();
-	for (auto i : priority_list)
-	{
+	for (auto i : priority_list) {
 		if (i.first == -1)
 			continue;
 		requests[i.first].priority = i.second;
 	}
 	resource_lock.unlock();
 }
-void thumbnail_set_active_scene(SceneType type)
-{
-	active_scene = type;
-}
+void thumbnail_set_active_scene(SceneType type) { active_scene = type; }
 
-bool thumbnail_is_available(const std::string &url)
-{
+bool thumbnail_is_available(const std::string &url) {
 	if (url == "")
 		return false;
 	resource_lock.lock();
@@ -147,15 +127,13 @@ bool thumbnail_is_available(const std::string &url)
 	resource_lock.unlock();
 	return res;
 }
-bool thumbnail_is_available(int handle)
-{
+bool thumbnail_is_available(int handle) {
 	if (handle == -1)
 		return false;
 	return thumbnail_is_available(requests[handle].url); // TODO : lock
 }
 
-int thumbnail_get_status_code(const std::string &url)
-{
+int thumbnail_get_status_code(const std::string &url) {
 	if (url == "")
 		return false;
 	resource_lock.lock();
@@ -163,69 +141,56 @@ int thumbnail_get_status_code(const std::string &url)
 	resource_lock.unlock();
 	return res;
 }
-int thumbnail_get_status_code(int handle)
-{
+int thumbnail_get_status_code(int handle) {
 	if (handle == -1)
 		return false;
 	return thumbnail_get_status_code(requests[handle].url);
 }
 
-bool thumbnail_draw(int handle, int x_offset, int y_offset, int x_len, int y_len)
-{
+bool thumbnail_draw(int handle, int x_offset, int y_offset, int x_len, int y_len) {
 	if (handle == -1)
 		return false;
 	bool res;
 	resource_lock.lock();
 	std::string url = requests[handle].url;
-	if (requested_urls.count(url) && requested_urls[url].is_loaded)
-	{
+	if (requested_urls.count(url) && requested_urls[url].is_loaded) {
 		LoadedThumbnail thumbnail = requested_urls[url].data;
 		Draw_texture(thumbnail.data.c2d, x_offset, y_offset, x_len, y_len);
 		res = true;
-	}
-	else
+	} else
 		res = false;
 	resource_lock.unlock();
 	return res;
 }
 
-static std::vector<u8> http_get(const std::string &url, int &status_code)
-{
+static std::vector<u8> http_get(const std::string &url, int &status_code) {
 	std::vector<u8> res;
 	resource_lock.lock();
 	if (thumbnail_cache.count(url))
 		res = thumbnail_cache[url];
 	resource_lock.unlock();
 
-	if (res.size())
-	{
+	if (res.size()) {
 		status_code = 0;
 		return res;
 	}
 
 	confirm_thread_network_session_list_inited();
 	auto result = thread_network_session_list.perform(HttpRequest::GET(url, {}));
-	if (result.fail)
-	{
+	if (result.fail) {
 		status_code = -1;
 		logger.error("thumb-dl", "access fail : " + result.error);
-	}
-	else
-	{
-		if (result.data.size() && result.status_code / 100 == 2)
-		{
+	} else {
+		if (result.data.size() && result.status_code / 100 == 2) {
 			resource_lock.lock();
-			if (thumbnail_cache.size() >= THUMBNAIL_CACHE_MAX)
-			{
+			if (thumbnail_cache.size() >= THUMBNAIL_CACHE_MAX) {
 				std::string erase_url;
 				int min_time = 1000000000;
-				for (auto &item : thumbnail_cache)
-				{
+				for (auto &item : thumbnail_cache) {
 					if (!thumbnail_free_time.count(item.first))
 						continue;
 					int cur_time = thumbnail_free_time[item.first];
-					if (min_time > cur_time)
-					{
+					if (min_time > cur_time) {
 						min_time = cur_time;
 						erase_url = item.first;
 					}
@@ -246,21 +211,17 @@ static std::vector<u8> http_get(const std::string &url, int &status_code)
 }
 
 static bool should_be_running = true;
-void thumbnail_downloader_thread_func(void *arg)
-{
-	while (should_be_running)
-	{
+void thumbnail_downloader_thread_func(void *arg) {
+	while (should_be_running) {
 		resource_lock.lock();
-		struct Item
-		{
+		struct Item {
 			int priority;
 			std::string url;
 			ThumbnailType type;
 		};
 		std::vector<Item> download_list;
 		{
-			for (auto &i : requested_urls)
-			{
+			for (auto &i : requested_urls) {
 				if (i.second.is_loaded)
 					continue;
 				if (i.second.error && (!i.second.waiting_retry || time(NULL) < i.second.next_retry))
@@ -275,8 +236,7 @@ void thumbnail_downloader_thread_func(void *arg)
 		}
 		resource_lock.unlock();
 
-		if (!download_list.size())
-		{
+		if (!download_list.size()) {
 			usleep(50000);
 			continue;
 		}
@@ -296,15 +256,12 @@ void thumbnail_downloader_thread_func(void *arg)
 		std::vector<NetworkResult> results(download_list.size());
 		std::vector<int> uncached_index_list;
 		std::vector<int> cached_index_list;
-		for (size_t i = 0; i < download_list.size(); i++)
-		{
-			if (thumbnail_cache.count(download_list[i].url))
-			{
+		for (size_t i = 0; i < download_list.size(); i++) {
+			if (thumbnail_cache.count(download_list[i].url)) {
 				results[i].status_code = 0; // cached
 				results[i].data = thumbnail_cache[download_list[i].url];
 				cached_index_list.push_back(i);
-			}
-			else
+			} else
 				uncached_index_list.push_back(i);
 		}
 
@@ -316,21 +273,17 @@ void thumbnail_downloader_thread_func(void *arg)
 			u8 *decoded_data = NULL;
 			if (res.data.size())
 				decoded_data = Image_decode(&res.data[0], res.data.size(), &w, &h);
-			if (decoded_data)
-			{
+			if (decoded_data) {
 				// update cache
 				resource_lock.lock();
-				if (thumbnail_cache.size() >= THUMBNAIL_CACHE_MAX)
-				{
+				if (thumbnail_cache.size() >= THUMBNAIL_CACHE_MAX) {
 					std::string erase_url;
 					int min_time = 1000000000;
-					for (auto &item : thumbnail_cache)
-					{
+					for (auto &item : thumbnail_cache) {
 						if (!thumbnail_free_time.count(item.first))
 							continue;
 						int cur_time = thumbnail_free_time[item.first];
-						if (min_time > cur_time)
-						{
+						if (min_time > cur_time) {
 							min_time = cur_time;
 							erase_url = item.first;
 						}
@@ -345,8 +298,7 @@ void thumbnail_downloader_thread_func(void *arg)
 
 				// some special operations on the picture here (it shouldn't be here but...)
 				// for video thumbnail, crop to 16:9
-				if (info.type == ThumbnailType::VIDEO_THUMBNAIL && h > w * 9 / 16 + 1)
-				{
+				if (info.type == ThumbnailType::VIDEO_THUMBNAIL && h > w * 9 / 16 + 1) {
 					int new_h = w * 9 / 16;
 					int vertical_offset = (h - new_h) / 2;
 					memmove(decoded_data, decoded_data + vertical_offset * w * 2, new_h * w * 2);
@@ -354,12 +306,10 @@ void thumbnail_downloader_thread_func(void *arg)
 				}
 				// channel icon : round (definitely not the recommended way but we will fill the area outside the circle
 				// with white)
-				if (info.type == ThumbnailType::ICON)
-				{
+				if (info.type == ThumbnailType::ICON) {
 					float radius = (float)h / 2;
 					for (int i = 0; i < h; i++)
-						for (int j = 0; j < w; j++)
-						{
+						for (int j = 0; j < w; j++) {
 							float distance = std::hypot(radius - (i + 0.5), radius - (j + 0.5));
 							u8 b = decoded_data[(i * w + j) * 2 + 0] & ((1 << 5) - 1);
 							u8 g = (decoded_data[(i * w + j) * 2 + 0] >> 5) |
@@ -386,16 +336,13 @@ void thumbnail_downloader_thread_func(void *arg)
 				result = Draw_c2d_image_init(&result_image, texture_w, texture_h, GPU_RGB565);
 				if (result.code != 0)
 					logger.error("thumb-dl", "out of linearmem");
-				else
-				{
+				else {
 					result = Draw_set_texture_data(&result_image, decoded_data, w, h, texture_w, texture_h, GPU_RGB565);
 					if (result.code != 0)
 						logger.error("thumb-dl", "Draw_set_texture_data() failed");
-					else
-					{
+					else {
 						resource_lock.lock();
-						if (requested_urls.count(info.url))
-						{ // in case the request is cancelled while downloading
+						if (requested_urls.count(info.url)) { // in case the request is cancelled while downloading
 							requested_urls[info.url].is_loaded = true;
 							requested_urls[info.url].data = {w, h, texture_w, texture_h, result_image};
 						}
@@ -404,20 +351,15 @@ void thumbnail_downloader_thread_func(void *arg)
 				}
 				free(decoded_data);
 				decoded_data = NULL;
-			}
-			else
-			{
+			} else {
 				resource_lock.lock();
-				if (requested_urls.count(info.url))
-				{
+				if (requested_urls.count(info.url)) {
 					requested_urls[info.url].is_loaded = false;
 					requested_urls[info.url].error = true;
-					if (res.status_code / 100 != 4 && res.status_code / 100 != 2)
-					{
+					if (res.status_code / 100 != 4 && res.status_code / 100 != 2) {
 						requested_urls[info.url].waiting_retry = true;
 						requested_urls[info.url].next_retry = time(NULL) + 3;
-					}
-					else
+					} else
 						requested_urls[info.url].waiting_retry = false;
 					requested_urls[info.url].last_status_code = res.status_code;
 				}
@@ -464,7 +406,4 @@ void thumbnail_downloader_thread_func(void *arg)
 	logger.info("thumb-dl", "Thread exit.");
 	threadExit(0);
 }
-void thumbnail_downloader_thread_exit_request()
-{
-	should_be_running = false;
-}
+void thumbnail_downloader_thread_exit_request() { should_be_running = false; }

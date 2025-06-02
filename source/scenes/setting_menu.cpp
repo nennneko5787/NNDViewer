@@ -14,8 +14,7 @@
 #include "network_decoder/network_io.hpp"
 #include "rapidjson_wrapper.hpp"
 
-namespace Settings
-{
+namespace Settings {
 bool thread_suspend = false;
 bool already_init = false;
 bool exiting = false;
@@ -39,8 +38,7 @@ constexpr int TOP_HEIGHT = MIDDLE_FONT_INTERVAL + SMALL_MARGIN * 2;
 constexpr int DIALOG_WIDTH = 240;
 
 // used for updating of the app
-enum class UpdateState
-{
+enum class UpdateState {
 	CHECKING_UPDATES,
 	FAILED_CHECKING,
 	UP_TO_DATE,
@@ -65,8 +63,7 @@ Thread settings_misc_thread;
 }; // namespace Settings
 using namespace Settings;
 
-std::string install_update(NetworkSessionList &session_list)
-{
+std::string install_update(NetworkSessionList &session_list) {
 	std::string new_error_message = "";
 	auto url = is_3dsx ? update_url_3dsx : update_url_cia;
 	// auto url = update_url_cia;
@@ -81,8 +78,7 @@ std::string install_update(NetworkSessionList &session_list)
 	auto result = session_list.perform(HttpRequest::GET(url, {}).with_progress_func([&](u64 now, u64 total) {
 		if (total < 10000)
 			return; // ignore header(?)
-		if (first)
-		{
+		if (first) {
 			first = false;
 			resource_lock.lock();
 			install_progress_str = LOCALIZED(DOWNLOADING);
@@ -102,8 +98,7 @@ std::string install_update(NetworkSessionList &session_list)
 	update_progress_bar_view->set_progress(1.0);
 
 	Result libctru_result;
-	if (is_3dsx)
-	{
+	if (is_3dsx) {
 		char *slash_ptr = strrchr(path_3dsx.c_str(), '/');
 		if (!slash_ptr)
 			return "no slash in 3dsx path : " + path_3dsx;
@@ -111,9 +106,7 @@ std::string install_update(NetworkSessionList &session_list)
 		auto tmp_res = Path(path_3dsx).write_file(result.data.data(), result.data.size());
 		if (tmp_res.code != 0)
 			return "Failed to write to .3dsx file : " + tmp_res.string + " " + std::to_string(tmp_res.code);
-	}
-	else
-	{
+	} else {
 		Handle am_handle = 0;
 		if ((libctru_result = AM_StartCiaInstall(MEDIATYPE_SD, &am_handle)))
 			return "AM_StartCiaInstall() returned " + std::to_string(libctru_result);
@@ -121,8 +114,7 @@ std::string install_update(NetworkSessionList &session_list)
 		update_progress_bar_view->set_progress(0.0);
 
 		const size_t BLOCK_SIZE = 200000;
-		for (size_t i = 0; i < result.data.size();)
-		{
+		for (size_t i = 0; i < result.data.size();) {
 			size_t size = std::min(BLOCK_SIZE, result.data.size() - i);
 			u32 size_written;
 			libctru_result = FSFILE_Write(am_handle, &size_written, i, result.data.data() + i, size, FS_WRITE_FLUSH);
@@ -140,17 +132,14 @@ std::string install_update(NetworkSessionList &session_list)
 	return "";
 }
 
-static void update_worker_thread_func(void *)
-{
+static void update_worker_thread_func(void *) {
 	logger.info("updater", "Thread started.");
 
 	static NetworkSessionList session_list;
 	session_list.init();
 
-	while (!exiting)
-	{
-		if (update_state == UpdateState::CHECKING_UPDATES)
-		{
+	while (!exiting) {
+		if (update_state == UpdateState::CHECKING_UPDATES) {
 			std::string new_error_message;
 
 			bool check_success = false;
@@ -158,22 +147,17 @@ static void update_worker_thread_func(void *)
 			    HttpRequest::GET("https://api.github.com/repos/erievs/FourthTube/releases/latest", {}));
 			if (result.fail)
 				new_error_message = "Failed accessing(deep fail) : " + result.fail;
-			else if (result.status_code == 200)
-			{
+			else if (result.status_code == 200) {
 				result.data.push_back('\0');
 				rapidjson::Document json_root;
 				std::string error;
 				RJson result_json = RJson::parse(json_root, (char *)result.data.data(), error);
-				if (error != "")
-				{
+				if (error != "") {
 					logger.error("updater", "failed to parse json : " + error);
 					new_error_message = "failed to parse json : " + error;
-				}
-				else
-				{
+				} else {
 					update_url_3dsx = update_url_cia;
-					for (auto item : result_json["assets"].array_items())
-					{
+					for (auto item : result_json["assets"].array_items()) {
 						auto url = item["browser_download_url"].string_value();
 						if (url.size() >= 5 && url.substr(url.size() - 5, 5) == ".3dsx")
 							update_url_3dsx = url;
@@ -184,14 +168,12 @@ static void update_worker_thread_func(void *)
 						new_error_message = "could not find .cia url";
 					if (update_url_3dsx == "")
 						new_error_message = "could not find .3dsx url";
-					if (update_url_cia != "" && update_url_3dsx != "")
-					{
+					if (update_url_cia != "" && update_url_3dsx != "") {
 						// lexicographically compare the sequence of version numbers ([0, 4, 1] if v0.4.1)
 						auto version_str_to_vector = [](const std::string &str) {
 							size_t head = 0;
 							std::vector<int> res;
-							while (head < str.size())
-							{
+							while (head < str.size()) {
 								while (head < str.size() && !isdigit(str[head]))
 									head++;
 								if (head >= str.size())
@@ -214,16 +196,13 @@ static void update_worker_thread_func(void *)
 						const size_t line_length = 47;
 						std::vector<std::string> release_notes_lines;
 
-						while (std::getline(lines, line))
-						{
+						while (std::getline(lines, line)) {
 							std::istringstream words(line);
 							std::string word;
 							size_t line_len = 0;
 
-							while (words >> word)
-							{
-								if (line_len + word.length() > line_length)
-								{
+							while (words >> word) {
+								if (line_len + word.length() > line_length) {
 									wrapped << "\n";
 									release_notes_lines.push_back(wrapped.str());
 									wrapped.str("");
@@ -241,13 +220,11 @@ static void update_worker_thread_func(void *)
 
 						resource_lock.lock();
 						release_notes_view->set_is_visible(true);
-						while (!release_notes_view->views.empty())
-						{
+						while (!release_notes_view->views.empty()) {
 							delete release_notes_view->views.back();
 							release_notes_view->views.pop_back();
 						}
-						for (const auto &note_line : release_notes_lines)
-						{
+						for (const auto &note_line : release_notes_lines) {
 							release_notes_view->views.push_back(
 							    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))->set_text(note_line));
 						}
@@ -261,25 +238,21 @@ static void update_worker_thread_func(void *)
 						check_success = true;
 					}
 				}
-			}
-			else
+			} else
 				new_error_message = "http returned " + std::to_string(result.status_code);
 			if (!check_success)
 				update_state = UpdateState::FAILED_CHECKING;
-			if (new_error_message != "")
-			{
+			if (new_error_message != "") {
 				resource_lock.lock();
 				update_error_message = new_error_message;
 				resource_lock.unlock();
 			}
 		}
-		if (update_state == UpdateState::INSTALLING)
-		{
+		if (update_state == UpdateState::INSTALLING) {
 			std::string error = install_update(session_list);
 			if (error == "")
 				update_state = UpdateState::SUCCEEDED_INSTALLING;
-			else
-			{
+			else {
 				resource_lock.lock();
 				update_error_message = error;
 				resource_lock.unlock();
@@ -293,8 +266,7 @@ static void update_worker_thread_func(void *)
 	threadExit(0);
 }
 
-void Sem_init(void)
-{
+void Sem_init(void) {
 	logger.info("settings/init", "Initializing...");
 	Result_with_string result;
 
@@ -331,8 +303,7 @@ void Sem_init(void)
 		return LOCALIZED(UI_LANGUAGE); })
 						->set_on_change([](const SelectorView &view) {
 		auto next_lang = std::vector<std::string>{"en", "ja", "de", "fr", "it"}[view.selected_button];
-		if (var_lang != next_lang)
-		{
+		if (var_lang != next_lang) {
 			var_lang = next_lang;
 			misc_tasks_request(TASK_RELOAD_STRING_RESOURCE);
 			misc_tasks_request(TASK_SAVE_SETTINGS);
@@ -343,29 +314,16 @@ void Sem_init(void)
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(LANG_EN);
 }
-, (std::function<std::string()>)[]()
-{
-	return LOCALIZED(LANG_JA);
-}
-, (std::function<std::string()>)[]()
-{
-	return LOCALIZED(LANG_DE);
-}
-, (std::function<std::string()>)[]()
-{
-	return LOCALIZED(LANG_FR);
-}
-, (std::function<std::string()>)[]()
-{
-	return LOCALIZED(LANG_IT);
-}
+, (std::function<std::string()>)[]() { return LOCALIZED(LANG_JA); }
+, (std::function<std::string()>)[]() { return LOCALIZED(LANG_DE); }
+, (std::function<std::string()>)[]() { return LOCALIZED(LANG_FR); }
+, (std::function<std::string()>)[]() { return LOCALIZED(LANG_IT); }
 }, var_lang_content == "ja" ? 1 : var_lang_content == "de" ? 2 : var_lang_content == "fr" ? 3 : var_lang_content == "it" ? 4 : 0)
 						->set_title([](const SelectorView &) {
 	return LOCALIZED(CONTENT_LANGUAGE); })
 						->set_on_change([](const SelectorView &view) {
 	auto next_lang = std::vector<std::string>{"en", "ja", "de", "fr", "it"}[view.selected_button];
-	if (var_lang_content != next_lang)
-	{
+	if (var_lang_content != next_lang) {
 		var_lang_content = next_lang;
 		misc_tasks_request(TASK_SAVE_SETTINGS);
 		youtube_change_content_language(var_lang_content);
@@ -396,16 +354,12 @@ void Sem_init(void)
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF);
 }
-, (std::function<std::string()>)[]()
-{
-	return LOCALIZED(ON);
-}
+, (std::function<std::string()>)[]() { return LOCALIZED(ON); }
 }, var_full_screen_mode)
 						->set_title([](const SelectorView &) {
 	return LOCALIZED(FULL_SCREEN_MODE); })
 						->set_on_change([](const SelectorView &view) {
-	if (var_full_screen_mode != view.selected_button)
-	{
+	if (var_full_screen_mode != view.selected_button) {
 		var_full_screen_mode = view.selected_button;
 		misc_tasks_request(TASK_SAVE_SETTINGS);
 	}
@@ -415,16 +369,12 @@ void Sem_init(void)
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF);
 }
-, (std::function<std::string()>)[]()
-{
-	return LOCALIZED(ON);
-}
+, (std::function<std::string()>)[]() { return LOCALIZED(ON); }
 }, var_full_dislike_like_count)
 						->set_title([](const SelectorView &) {
 	return LOCALIZED(SHOW_FULL_DISLIKE); })
 						->set_on_change([](const SelectorView &view) {
-	if (var_full_dislike_like_count != view.selected_button)
-	{
+	if (var_full_dislike_like_count != view.selected_button) {
 		var_full_dislike_like_count = view.selected_button;
 		misc_tasks_request(TASK_SAVE_SETTINGS);
 	}
@@ -434,16 +384,12 @@ void Sem_init(void)
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF);
 }
-, (std::function<std::string()>)[]()
-{
-	return LOCALIZED(ON);
-}
+, (std::function<std::string()>)[]() { return LOCALIZED(ON); }
 }, var_night_mode)
 						->set_title([](const SelectorView &) {
 	return LOCALIZED(DARK_THEME); })
 						->set_on_change([](const SelectorView &view) {
-	if (var_night_mode != view.selected_button)
-	{
+	if (var_night_mode != view.selected_button) {
 		var_night_mode = view.selected_button;
 		misc_tasks_request(TASK_SAVE_SETTINGS);
 	}
@@ -499,8 +445,7 @@ void Sem_init(void)
 						->set_title([](const SelectorView &) {
 	return LOCALIZED(AUTOPLAY); })
 						->set_on_change([](const SelectorView &view) {
-	if (var_autoplay_level != view.selected_button)
-	{
+	if (var_autoplay_level != view.selected_button) {
 		var_autoplay_level = view.selected_button;
 		misc_tasks_request(TASK_CHANGE_BRIGHTNESS);
 	}
@@ -530,8 +475,7 @@ void Sem_init(void)
 						->set_title([](const SelectorView &) {
 	return LOCALIZED(WATCH_HISTORY); })
 						->set_on_change([](const SelectorView &view) {
-	if (var_history_enabled != view.selected_button)
-	{
+	if (var_history_enabled != view.selected_button) {
 		var_history_enabled = view.selected_button;
 		misc_tasks_request(TASK_SAVE_SETTINGS);
 	}
@@ -555,8 +499,7 @@ void Sem_init(void)
 	popup_view->set_buttons<std::function<std::string()>>(
 	    {[]() { return LOCALIZED(CANCEL); }, []() { return LOCALIZED(OK); }},
 	    [](OverlayDialogView &, int button_pressed) {
-		    if (button_pressed == 1)
-		    {
+		    if (button_pressed == 1) {
 			    history_erase_all();
 			    misc_tasks_request(TASK_SAVE_HISTORY);
 
@@ -622,13 +565,11 @@ void Sem_init(void)
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -1)
 						->set_on_view_released([] (const View &) {
-	if (update_state == UpdateState::FAILED_CHECKING || update_state == UpdateState::UP_TO_DATE)
-	{
+	if (update_state == UpdateState::FAILED_CHECKING || update_state == UpdateState::UP_TO_DATE) {
 		update_state = UpdateState::CHECKING_UPDATES;
 		var_need_refresh = true;
 	}
-	if (update_state == UpdateState::UPDATES_AVAILABLE || update_state == UpdateState::FAILED_INSTALLING)
-	{
+	if (update_state == UpdateState::UPDATES_AVAILABLE || update_state == UpdateState::FAILED_INSTALLING) {
 		std::vector<std::string> confirm_lines;
 		if (is_3dsx)
 			confirm_lines =
@@ -651,8 +592,7 @@ void Sem_init(void)
 						})
 						->set_get_background_color([] (const View &view) -> u32 {
 	if (update_state == UpdateState::FAILED_CHECKING || update_state == UpdateState::UPDATES_AVAILABLE ||
-	    update_state == UpdateState::UP_TO_DATE)
-	{
+	    update_state == UpdateState::UP_TO_DATE) {
 		int blue = std::min<int>(0xFF, 0xB0 + 0x30 * view.touch_darkness);
 		int other = 0x50 + 0x20 * (1 - view.touch_darkness);
 		return 0xFF000000 | blue << 16 | other << 8 | other;
@@ -678,8 +618,7 @@ void Sem_init(void)
 						->set_title([](const SelectorView &) {
 	return LOCALIZED(ECO_MODE); })
 						->set_on_change([](const SelectorView &view) {
-	if (var_eco_mode != view.selected_button)
-	{
+	if (var_eco_mode != view.selected_button) {
 		var_eco_mode = view.selected_button;
 		misc_tasks_request(TASK_SAVE_SETTINGS);
 	}
@@ -689,16 +628,12 @@ void Sem_init(void)
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF);
 }
-, (std::function<std::string()>)[]()
-{
-	return LOCALIZED(ON);
-}
+, (std::function<std::string()>)[]() { return LOCALIZED(ON); }
 }, var_video_linear_filter)
 						->set_title([](const SelectorView &) {
 	return LOCALIZED(LINEAR_FILTER); })
 						->set_on_change([](const SelectorView &view) {
-	if (var_video_linear_filter != view.selected_button)
-	{
+	if (var_video_linear_filter != view.selected_button) {
 		var_video_linear_filter = view.selected_button;
 		video_set_linear_filter_enabled(var_video_linear_filter);
 		misc_tasks_request(TASK_SAVE_SETTINGS);
@@ -710,16 +645,12 @@ void Sem_init(void)
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF);
 }
-, (std::function<std::string()>)[]()
-{
-	return LOCALIZED(ON);
-}
+, (std::function<std::string()>)[]() { return LOCALIZED(ON); }
 }, var_video_show_debug_info)
 						->set_title([](const SelectorView &view) {
 	return LOCALIZED(VIDEO_SHOW_DEBUG_INFO); })
 						->set_on_change([](const SelectorView &view) {
-	if (var_video_show_debug_info != view.selected_button)
-	{
+	if (var_video_show_debug_info != view.selected_button) {
 		var_video_show_debug_info = view.selected_button;
 		video_set_show_debug_info(var_video_show_debug_info);
 		misc_tasks_request(TASK_SAVE_SETTINGS);
@@ -731,31 +662,19 @@ void Sem_init(void)
                         ->set_texts({
                             (std::function<std::string ()>) []() { return "iOS";
 }
-, (std::function<std::string()>)[]()
-{
-	return "Android VR";
-}
-, (std::function<std::string()>)[]()
-{
-	return "visionOS";
-}
+, (std::function<std::string()>)[]() { return "Android VR"; }
+, (std::function<std::string()>)[]() { return "visionOS"; }
 }, var_player_response)
                         ->set_title([](const SelectorView &) {
 	return LOCALIZED(PLAYER_RESPONSE); })
                         ->set_on_change([](const SelectorView &view) {
-	if (var_player_response != view.selected_button)
-	{
+	if (var_player_response != view.selected_button) {
 		var_player_response = view.selected_button;
-		if (view.selected_button == 0)
-		{
+		if (view.selected_button == 0) {
 			var_player_response = 0; // iOS
-		}
-		else if (view.selected_button == 1)
-		{
+		} else if (view.selected_button == 1) {
 			var_player_response = 1; // Android VR
-		}
-		else if (view.selected_button == 2)
-		{
+		} else if (view.selected_button == 2) {
 			var_player_response = 2; // visionOS
 		}
 		misc_tasks_request(TASK_SAVE_SETTINGS);
@@ -790,12 +709,10 @@ main_view = (new VerticalListView(0, 0, 320))
                 ->set_draw_order({2, 1, 0});
 
 is_3dsx = envIsHomebrew();
-if (is_3dsx)
-{
+if (is_3dsx) {
 	const char *arglist = envGetSystemArgList();
 	int argc = *(u32 *)arglist;
-	if (argc)
-	{
+	if (argc) {
 		arglist += 4;
 		path_3dsx = arglist;
 		if (path_3dsx.substr(0, 6) == "sdmc:/")
@@ -809,8 +726,7 @@ update_worker_thread =
 Sem_resume("");
 already_init = true;
 }
-void Sem_exit(void)
-{
+void Sem_exit(void) {
 	already_init = false;
 	thread_suspend = false;
 	exiting = true;
@@ -828,19 +744,14 @@ void Sem_exit(void)
 
 	logger.info("settings/exit", "Exited.");
 }
-void Sem_suspend(void)
-{
-	thread_suspend = true;
-}
-void Sem_resume(std::string arg)
-{
+void Sem_suspend(void) { thread_suspend = true; }
+void Sem_resume(std::string arg) {
 	overlay_menu_on_resume();
 	thread_suspend = false;
 	var_need_refresh = true;
 }
 
-void Sem_draw(void)
-{
+void Sem_draw(void) {
 	Hid_info key;
 	Util_hid_query_key_state(&key);
 
@@ -852,8 +763,7 @@ void Sem_draw(void)
 		CONTENT_Y_HIGH -= VIDEO_PLAYING_BAR_HEIGHT;
 	main_tab_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT);
 
-	if (var_need_refresh || !var_eco_mode)
-	{
+	if (var_need_refresh || !var_eco_mode) {
 		var_need_refresh = false;
 		Draw_frame_ready();
 		video_draw_top_screen();
@@ -879,23 +789,17 @@ void Sem_draw(void)
 		Draw_touch_pos();
 
 		Draw_apply_draw();
-	}
-	else
+	} else
 		gspWaitForVBlank();
 
 	if (--toast_frames_left <= 0)
 		toast_view->set_is_visible(false);
 
-	if (Util_err_query_error_show_flag())
-	{
+	if (Util_err_query_error_show_flag()) {
 		Util_err_main(key);
-	}
-	else if (Util_expl_query_show_flag())
-	{
+	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
-	}
-	else
-	{
+	} else {
 		update_overlay_menu(&key);
 
 		// toast_view is never 'updated'

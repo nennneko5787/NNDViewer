@@ -8,8 +8,7 @@
 #include <ctime>
 #include <curl/curl.h>
 
-class ProtoBuilder
-{
+class ProtoBuilder {
   public:
 	ProtoBuilder();
 	std::vector<uint8_t> toBytes() const;

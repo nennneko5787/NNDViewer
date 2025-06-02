@@ -8,8 +8,7 @@
 #include <algorithm>
 #include <random>
 
-static bool extract_player_data(Document &json_root, RJson player_response, YouTubeVideoDetail &res)
-{
+static bool extract_player_data(Document &json_root, RJson player_response, YouTubeVideoDetail &res) {
 	res.playability_status = player_response["playabilityStatus"]["status"].string_value();
 	res.playability_reason = player_response["playabilityStatus"]["reason"].string_value();
 	res.is_upcoming = player_response["videoDetails"]["isUpcoming"].bool_value();
@@ -32,12 +31,10 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	res.stream_fragment_len = -1;
 	res.is_livestream = false;
 	std::vector<RJson> audio_formats, video_formats;
-	for (auto i : formats)
-	{
+	for (auto i : formats) {
 		// std::cerr << i["itag"].int_value() << " : " << (i["contentLength"].string_value().size() ? "Yes" : "No") <<
 		// std::endl; if (i["contentLength"].string_value() == "") continue;
-		if (i.has_key("targetDurationSec"))
-		{
+		if (i.has_key("targetDurationSec")) {
 			int new_stream_fragment_len = i["targetDurationSec"].int_value();
 			if (res.stream_fragment_len != -1 && res.stream_fragment_len != new_stream_fragment_len)
 				debug_warning("[unexp] diff targetDurationSec for diff streams");
@@ -50,20 +47,15 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 		if (i["type"].string_value() == "FORMAT_STREAM_TYPE_OTF")
 			continue;
 		auto mime_type = i["mimeType"].string_value();
-		if (mime_type.substr(0, 5) == "video")
-		{
+		if (mime_type.substr(0, 5) == "video") {
 			// H.264 is virtually the only playable video codec
 			if (mime_type.find("avc1") != std::string::npos)
 				video_formats.push_back(i);
-		}
-		else if (mime_type.substr(0, 5) == "audio")
-		{
+		} else if (mime_type.substr(0, 5) == "audio") {
 			// We can modify ffmpeg to support opus
 			if (mime_type.find("mp4a") != std::string::npos)
 				audio_formats.push_back(i);
-		}
-		else
-		{
+		} else {
 		} // ???
 	}
 	// audio
@@ -80,8 +72,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	{
 		std::map<int, int> itag_to_resolution = {{160, 144}, {133, 240}, {134, 360}, {135, 480}};
 
-		for (auto i : video_formats)
-		{
+		for (auto i : video_formats) {
 			int cur_itag = i["itag"].int_value();
 			std::string url = i["url"].string_value();
 			int height = i["height"].int_value(); // Video resolution height
@@ -94,16 +85,13 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 			        : (itag_to_resolution.count(cur_itag) ? itag_to_resolution[cur_itag] : 0);
 
 			// Store the stream URL by resolution
-			if (resolution > 0)
-			{
+			if (resolution > 0) {
 				res.video_stream_urls[resolution] = url;
 			}
 		}
 		// both_stream_url : search for itag 18
-		for (auto i : video_formats)
-		{
-			if (i["itag"].int_value() == 18)
-			{
+		for (auto i : video_formats) {
+			if (i["itag"].int_value() == 18) {
 				res.both_stream_url = i["url"].string_value();
 				break;
 			}
@@ -121,8 +109,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	                      [&](Document &, RJson mweb_data) {
 		                      RJson captions = mweb_data["captions"]["playerCaptionsTracklistRenderer"];
 
-		                      for (auto base_lang : captions["captionTracks"].array_items())
-		                      {
+		                      for (auto base_lang : captions["captionTracks"].array_items()) {
 			                      YouTubeVideoDetail::CaptionBaseLanguage cur_lang;
 			                      cur_lang.name = get_text_from_object(base_lang["name"]);
 			                      cur_lang.id = base_lang["languageCode"].string_value();
@@ -132,8 +119,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 			                      logger.info("Caption Data", cur_lang.base_url);
 		                      }
 
-		                      for (auto translation_lang : captions["translationLanguages"].array_items())
-		                      {
+		                      for (auto translation_lang : captions["translationLanguages"].array_items()) {
 			                      YouTubeVideoDetail::CaptionTranslationLanguage cur_lang;
 			                      cur_lang.name = get_text_from_object(translation_lang["languageName"]);
 			                      cur_lang.id = translation_lang["languageCode"].string_value();
@@ -145,15 +131,12 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	return true;
 }
 
-static void extract_like_dislike_counts(RJson buttons, YouTubeVideoDetail &res)
-{
+static void extract_like_dislike_counts(RJson buttons, YouTubeVideoDetail &res) {
 	res.like_count_str = "0";    // Default to "0" for like count
 	res.dislike_count_str = "0"; // Default to "0" for dislike count
 
-	for (auto button : buttons.array_items())
-	{
-		if (button.has_key("slimMetadataToggleButtonRenderer"))
-		{ // legacy?
+	for (auto button : buttons.array_items()) {
+		if (button.has_key("slimMetadataToggleButtonRenderer")) { // legacy?
 			auto get_text = [](RJson button) -> std::string {
 				auto content = get_text_from_object(button["button"]["toggleButtonRenderer"]["defaultText"]);
 				if (content.size() && !isdigit(content[0]))
@@ -161,23 +144,19 @@ static void extract_like_dislike_counts(RJson buttons, YouTubeVideoDetail &res)
 				return content;
 			};
 
-			if (button["slimMetadataToggleButtonRenderer"]["isLike"].bool_value())
-			{
+			if (button["slimMetadataToggleButtonRenderer"]["isLike"].bool_value()) {
 				res.like_count_str = get_text(button["slimMetadataToggleButtonRenderer"]);
 			}
-			if (button["slimMetadataToggleButtonRenderer"]["isDislike"].bool_value())
-			{
+			if (button["slimMetadataToggleButtonRenderer"]["isDislike"].bool_value()) {
 				res.dislike_count_str = get_text(button["slimMetadataToggleButtonRenderer"]);
 			}
-			if (button["slimMetadataToggleButtonRenderer"]["target"]["videoId"].is_valid())
-			{
+			if (button["slimMetadataToggleButtonRenderer"]["target"]["videoId"].is_valid()) {
 				res.id = button["slimMetadataToggleButtonRenderer"]["target"]["videoId"].string_value();
 			}
 		}
 
 		if (button.has_key("slimMetadataButtonRenderer") &&
-		    button["slimMetadataButtonRenderer"]["button"].has_key("segmentedLikeDislikeButtonRenderer"))
-		{ // old?
+		    button["slimMetadataButtonRenderer"]["button"].has_key("segmentedLikeDislikeButtonRenderer")) { // old?
 			auto renderer = button["slimMetadataButtonRenderer"]["button"]["segmentedLikeDislikeButtonRenderer"];
 			auto get_text = [](RJson button) -> std::string {
 				auto text = get_text_from_object(button["toggleButtonRenderer"]["defaultText"]);
@@ -190,8 +169,7 @@ static void extract_like_dislike_counts(RJson buttons, YouTubeVideoDetail &res)
 		}
 
 		if (button.has_key("slimMetadataButtonRenderer") &&
-		    button["slimMetadataButtonRenderer"]["button"].has_key("segmentedLikeDislikeButtonViewModel"))
-		{
+		    button["slimMetadataButtonRenderer"]["button"].has_key("segmentedLikeDislikeButtonViewModel")) {
 			auto get_text_from_view_model = [](RJson button) -> std::string {
 				auto text = button["slimMetadataButtonRenderer"]["button"]["segmentedLikeDislikeButtonViewModel"]
 				                  ["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]
@@ -207,8 +185,7 @@ static void extract_like_dislike_counts(RJson buttons, YouTubeVideoDetail &res)
 	}
 }
 
-static void extract_owner(RJson slimOwnerRenderer, YouTubeVideoDetail &res)
-{
+static void extract_owner(RJson slimOwnerRenderer, YouTubeVideoDetail &res) {
 	res.author.id = slimOwnerRenderer["navigationEndpoint"]["browseEndpoint"]["browseId"].string_value();
 	// !!! res.author.url = slimOwnerRenderer["channelUrl"].string_value();
 	res.author.name = slimOwnerRenderer["channelName"].string_value();
@@ -216,10 +193,8 @@ static void extract_owner(RJson slimOwnerRenderer, YouTubeVideoDetail &res)
 	res.author.icon_url = get_thumbnail_url_exact(slimOwnerRenderer["thumbnail"]["thumbnails"], 72);
 }
 
-static void extract_item(RJson content, YouTubeVideoDetail &res)
-{
-	if (content.has_key("slimVideoMetadataRenderer"))
-	{
+static void extract_item(RJson content, YouTubeVideoDetail &res) {
+	if (content.has_key("slimVideoMetadataRenderer")) {
 		RJson metadata_renderer = content["slimVideoMetadataRenderer"];
 		res.title = get_text_from_object(metadata_renderer["title"]);
 		res.description = get_text_from_object(metadata_renderer["description"]);
@@ -227,20 +202,16 @@ static void extract_item(RJson content, YouTubeVideoDetail &res)
 		res.publish_date = get_text_from_object(metadata_renderer["dateText"]);
 		extract_like_dislike_counts(metadata_renderer["buttons"], res);
 		extract_owner(metadata_renderer["owner"]["slimOwnerRenderer"], res);
-	}
-	else if (content.has_key("compactAutoplayRenderer"))
-	{
+	} else if (content.has_key("compactAutoplayRenderer")) {
 		for (auto j : content["compactAutoplayRenderer"]["contents"].array_items())
 			if (j.has_key("videoWithContextRenderer"))
 				res.suggestions.push_back(parse_succinct_video(j["videoWithContextRenderer"]));
-	}
-	else if (content.has_key("videoWithContextRenderer"))
+	} else if (content.has_key("videoWithContextRenderer"))
 		res.suggestions.push_back(parse_succinct_video(content["videoWithContextRenderer"]));
 	else if (content.has_key("continuationItemRenderer"))
 		res.suggestions_continue_token =
 		    content["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"].string_value();
-	else if (content.has_key("compactRadioRenderer") || content.has_key("compactPlaylistRenderer"))
-	{
+	else if (content.has_key("compactRadioRenderer") || content.has_key("compactPlaylistRenderer")) {
 		auto playlist_renderer = content.has_key("compactRadioRenderer") ? content["compactRadioRenderer"]
 		                                                                 : content["compactPlaylistRenderer"];
 
@@ -252,18 +223,14 @@ static void extract_item(RJson content, YouTubeVideoDetail &res)
 				cur_list.thumbnail_url = thumbnail["url"].string_value();
 
 		cur_list.url = convert_url_to_mobile(playlist_renderer["shareUrl"].string_value());
-		if (!starts_with(cur_list.url, "https://m.youtube.com/watch", 0))
-		{
-			if (starts_with(cur_list.url, "https://m.youtube.com/playlist?", 0))
-			{
+		if (!starts_with(cur_list.url, "https://m.youtube.com/watch", 0)) {
+			if (starts_with(cur_list.url, "https://m.youtube.com/playlist?", 0)) {
 				auto params = parse_parameters(
 				    cur_list.url.substr(std::string("https://m.youtube.com/playlist?").size(), cur_list.url.size()));
 				auto playlist_id = params["list"];
 				auto video_id = get_video_id_from_thumbnail_url(cur_list.thumbnail_url);
 				cur_list.url = "https://m.youtube.com/watch?v=" + video_id + "&list=" + playlist_id;
-			}
-			else
-			{
+			} else {
 				debug_warning("unknown playlist url");
 				return;
 			}
@@ -273,37 +240,28 @@ static void extract_item(RJson content, YouTubeVideoDetail &res)
 	}
 }
 
-std::string format_count(int count)
-{
+std::string format_count(int count) {
 	std::stringstream ss;
-	if (count >= 1000000)
-	{
+	if (count >= 1000000) {
 		ss << std::fixed << std::setprecision(1) << (count / 1000000.0) << "M";
-	}
-	else if (count >= 1000)
-	{
+	} else if (count >= 1000) {
 		ss << std::fixed << std::setprecision(1) << (count / 1000.0) << "k";
-	}
-	else
-	{
+	} else {
 		ss << count;
 	}
 	return ss.str();
 }
 
-std::string format_with_commas(int number)
-{
+std::string format_with_commas(int number) {
 	std::string num_str = std::to_string(number);
 	std::string result;
 	int count = 0;
 	std::string::size_type length = num_str.length();
 
-	for (auto it = num_str.rbegin(); it != num_str.rend(); ++it)
-	{
+	for (auto it = num_str.rbegin(); it != num_str.rend(); ++it) {
 		result += *it;
 		++count;
-		if (count % 3 == 0 && count != static_cast<int>(length))
-		{
+		if (count % 3 == 0 && count != static_cast<int>(length)) {
 			result += ',';
 		}
 	}
@@ -312,8 +270,7 @@ std::string format_with_commas(int number)
 	return result;
 }
 
-void fetch_like_dislike_counts(const std::string &video_id, YouTubeVideoDetail &res)
-{
+void fetch_like_dislike_counts(const std::string &video_id, YouTubeVideoDetail &res) {
 	std::string api_url = "https://returnyoutubedislikeapi.com/votes?videoId=" + video_id;
 
 	std::map<std::string, std::string> headers;
@@ -321,60 +278,46 @@ void fetch_like_dislike_counts(const std::string &video_id, YouTubeVideoDetail &
 
 	logger.info("Raw JSON response", response.second);
 
-	if (response.first)
-	{
+	if (response.first) {
 		rapidjson::Document document;
 		std::string error;
 
 		RJson data = RJson::parse(document, response.second.c_str(), error);
 
-		if (data.is_valid())
-		{
+		if (data.is_valid()) {
 
-			if (data.has_key("likes"))
-			{
+			if (data.has_key("likes")) {
 				int likes = data["likes"].int_value();
 				res.like_count_str = var_full_dislike_like_count ? format_with_commas(likes) : format_count(likes);
 				logger.info("Like count", res.like_count_str);
 			}
 
-			if (data.has_key("dislikes"))
-			{
+			if (data.has_key("dislikes")) {
 				int dislikes = data["dislikes"].int_value();
 				res.dislike_count_str =
 				    var_full_dislike_like_count ? format_with_commas(dislikes) : format_count(dislikes);
 				logger.info("Dislike count", res.dislike_count_str);
 			}
-		}
-		else
-		{
+		} else {
 			res.like_count_str = "Error";
 			res.dislike_count_str = "Error";
 			std::cerr << "JSON Parsing Error: " << error << std::endl;
 		}
-	}
-	else
-	{
+	} else {
 		res.like_count_str = "N/A";
 		res.dislike_count_str = "N/A";
 	}
 }
 
-static void extract_metadata(RJson data, YouTubeVideoDetail &res)
-{
+static void extract_metadata(RJson data, YouTubeVideoDetail &res) {
 	{
 		auto contents = data["contents"]["singleColumnWatchNextResults"]["results"]["results"]["contents"];
-		for (auto content : contents.array_items())
-		{
-			if (content.has_key("itemSectionRenderer"))
-			{
+		for (auto content : contents.array_items()) {
+			if (content.has_key("itemSectionRenderer")) {
 				for (auto i : content["itemSectionRenderer"]["contents"].array_items())
 					extract_item(i, res);
-			}
-			else if (content.has_key("slimVideoMetadataSectionRenderer"))
-			{
-				for (auto i : content["slimVideoMetadataSectionRenderer"]["contents"].array_items())
-				{
+			} else if (content.has_key("slimVideoMetadataSectionRenderer")) {
+				for (auto i : content["slimVideoMetadataSectionRenderer"]["contents"].array_items()) {
 					if (i.has_key("slimVideoInformationRenderer"))
 						res.title = get_text_from_object(i["slimVideoInformationRenderer"]["title"]);
 					if (i.has_key("slimOwnerRenderer"))
@@ -389,17 +332,14 @@ static void extract_metadata(RJson data, YouTubeVideoDetail &res)
 	fetch_like_dislike_counts(res.id, res);
 
 	RJson playlist_object = data["contents"]["singleColumnWatchNextResults"]["playlist"]["playlist"];
-	if (playlist_object.is_valid())
-	{
+	if (playlist_object.is_valid()) {
 		res.playlist.id = playlist_object["playlistId"].string_value();
 		res.playlist.selected_index = -1;
 		res.playlist.author_name = get_text_from_object(playlist_object["ownerName"]);
 		res.playlist.title = playlist_object["title"].string_value();
 		res.playlist.total_videos = playlist_object["totalVideos"].int_value();
-		for (auto playlist_item : playlist_object["contents"].array_items())
-		{
-			if (playlist_item.has_key("playlistPanelVideoRenderer"))
-			{
+		for (auto playlist_item : playlist_object["contents"].array_items()) {
+			if (playlist_item.has_key("playlistPanelVideoRenderer")) {
 				auto renderer = playlist_item["playlistPanelVideoRenderer"];
 				YouTubeVideoSuccinct cur_video = parse_succinct_video(renderer);
 				if (cur_video.url != "")
@@ -412,22 +352,18 @@ static void extract_metadata(RJson data, YouTubeVideoDetail &res)
 	}
 	res.comment_continue_type = -1;
 	res.comments_disabled = true;
-	for (auto i : data["engagementPanels"].array_items())
-	{
+	for (auto i : data["engagementPanels"].array_items()) {
 		for (auto j :
 		     i["engagementPanelSectionListRenderer"]["content"]["sectionListRenderer"]["continuations"].array_items())
-			if (j.has_key("reloadContinuationData"))
-			{
+			if (j.has_key("reloadContinuationData")) {
 				res.comment_continue_token = j["reloadContinuationData"]["continuation"].string_value();
 				res.comment_continue_type = 0;
 				res.comments_disabled = false;
 			}
 		for (auto j :
-		     i["engagementPanelSectionListRenderer"]["content"]["sectionListRenderer"]["contents"].array_items())
-		{
+		     i["engagementPanelSectionListRenderer"]["content"]["sectionListRenderer"]["contents"].array_items()) {
 			for (auto k : j["itemSectionRenderer"]["contents"].array_items())
-				if (k.has_key("continuationItemRenderer"))
-				{
+				if (k.has_key("continuationItemRenderer")) {
 					res.comment_continue_token =
 					    k["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"]
 					        .string_value();
@@ -437,8 +373,7 @@ static void extract_metadata(RJson data, YouTubeVideoDetail &res)
 		}
 		for (auto j :
 		     i["engagementPanelSectionListRenderer"]["content"]["structuredDescriptionContentRenderer"]["items"]
-		         .array_items())
-		{
+		         .array_items()) {
 			if (j["expandableVideoDescriptionBodyRenderer"].has_key("descriptionBodyText"))
 				res.description =
 				    get_text_from_object(j["expandableVideoDescriptionBodyRenderer"]["descriptionBodyText"]);
@@ -446,8 +381,7 @@ static void extract_metadata(RJson data, YouTubeVideoDetail &res)
 				res.description =
 				    j["expandableVideoDescriptionBodyRenderer"]["attributedDescriptionBodyText"]["content"]
 				        .string_value();
-			if (j.has_key("videoDescriptionHeaderRenderer"))
-			{
+			if (j.has_key("videoDescriptionHeaderRenderer")) {
 				res.publish_date = get_text_from_object(j["videoDescriptionHeaderRenderer"]["publishDate"]);
 				res.views_str = get_text_from_object(j["videoDescriptionHeaderRenderer"]["views"]);
 			}
@@ -455,19 +389,16 @@ static void extract_metadata(RJson data, YouTubeVideoDetail &res)
 	}
 }
 
-static std::string extractVisitorData()
-{
+static std::string extractVisitorData() {
 	std::string url = "https://www.youtube.com/sw.js_data";
 	std::map<std::string, std::string> headers = {{"Origin", "https://www.youtube.com"},
 	                                              {"Referer", "https://www.youtube.com/"}};
 	auto response = http_get(url, headers);
 
-	if (response.first)
-	{
+	if (response.first) {
 		std::string json_content = response.second;
 		const std::string unwanted_prefix = ")]}'\n";
-		if (json_content.find(unwanted_prefix) == 0)
-		{
+		if (json_content.find(unwanted_prefix) == 0) {
 			json_content = json_content.substr(unwanted_prefix.size());
 		}
 
@@ -475,29 +406,23 @@ static std::string extractVisitorData()
 		std::string error;
 		RJson data = RJson::parse(document, json_content.c_str(), error);
 
-		if (data.is_valid())
-		{
+		if (data.is_valid()) {
 			std::string visitor_data = data[static_cast<size_t>(0)][static_cast<size_t>(2)][static_cast<size_t>(0)]
 			                               [static_cast<size_t>(0)][static_cast<size_t>(13)]
 			                                   .string_value();
 			logger.info("Visitor Data", "Fetched new visitor data: " + visitor_data);
 			return visitor_data;
-		}
-		else
-		{
+		} else {
 			logger.error("Visitor Data", "JSON Parsing Error: " + error);
 			return "";
 		}
-	}
-	else
-	{
+	} else {
 		logger.error("Visitor Data", "Failed to fetch visitor data");
 		return "";
 	}
 }
 
-std::string randomVisitorData(const std::string &country_code)
-{
+std::string randomVisitorData(const std::string &country_code) {
 	ProtoBuilder pbE2, pbE, pb;
 	pbE2.string(2, "");
 	pbE2.varint(4, rand() % 256);
@@ -506,8 +431,7 @@ std::string randomVisitorData(const std::string &country_code)
 
 	std::string nonce;
 	static const char alphanum[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	for (int i = 0; i < 11; ++i)
-	{
+	for (int i = 0; i < 11; ++i) {
 		nonce += alphanum[rand() % (sizeof(alphanum) - 1)];
 	}
 
@@ -518,24 +442,20 @@ std::string randomVisitorData(const std::string &country_code)
 	return pb.toUrlencodedBase64();
 }
 
-std::string getVisitorData(const std::string &country_code)
-{
+std::string getVisitorData(const std::string &country_code) {
 	std::string visitor_data = extractVisitorData();
-	if (visitor_data.empty())
-	{
+	if (visitor_data.empty()) {
 		logger.warning("Visitor Data", "Using random visitor data");
 		visitor_data = randomVisitorData(country_code);
 	}
 	return visitor_data;
 }
 
-YouTubeVideoDetail youtube_load_video_page(std::string url)
-{
+YouTubeVideoDetail youtube_load_video_page(std::string url) {
 	YouTubeVideoDetail res;
 
 	res.id = youtube_get_video_id_by_url(url);
-	if (res.id.empty())
-	{
+	if (res.id.empty()) {
 		res.error = "Not a video URL: " + url;
 		return res;
 	}
@@ -545,26 +465,19 @@ YouTubeVideoDetail youtube_load_video_page(std::string url)
 	std::string video_content;
 	std::string visitor_data = getVisitorData(country_code);
 
-	if (var_player_response == 0)
-	{
+	if (var_player_response == 0) {
 		video_content =
 		    R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "IOS","clientVersion": "20.10.4","deviceMake": "Apple","deviceModel": "iPhone16,2","osName": "iPhone","userAgent": "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)\"","osVersion": "18.3.2.22D82", "visitorData": "%4"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
-	}
-	else if (var_player_response == 1)
-	{
+	} else if (var_player_response == 1) {
 		// For testing. By default iOS is used
 		video_content =
 		    R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "ANDROID_VR","clientVersion": "1.62.27","deviceMake": "Oculus","deviceModel": "Quest 3","androidSdkVersion": "32","osName": "Android", "userAgent": "com.google.android.apps.youtube.vr.oculus/1.62.27 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip\"","osVersion": "12L", "visitorData": "%4"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
-	}
-	else if (var_player_response == 2)
-	{
+	} else if (var_player_response == 2) {
 		// Unused client in InnerTube. Has some similar quirks to iOS, but might still be useful.
 		// Yes, we identify as an iPhone in some places. This is intentional and it works. Don't ask why.
 		video_content =
 		    R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "VISIONOS","clientVersion": "0.1","deviceMake": "Apple","deviceModel": "iPhone16,2","osName": "iPhone","userAgent": "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)\"","osVersion": "2.2.22N842", "visitorData": "%4"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
-	}
-	else
-	{
+	} else {
 		// User messed with something. Fix that.
 		logger.error("appdata", "Invalid value for player_response has been set. Falling back to 0 (iOS)!");
 		video_content =
@@ -598,10 +511,8 @@ YouTubeVideoDetail youtube_load_video_page(std::string url)
 		requests.push_back(http_post_json_request(urls[1], video_content));
 
 		results = thread_network_session_list.perform(requests);
-		for (int i = 0; i < 2; i++)
-		{
-			if (results[i].fail)
-			{
+		for (int i = 0; i < 2; i++) {
+			if (results[i].fail) {
 				res.error = "[v-#" + std::to_string(i) + "] Network request failed";
 				debug_error(res.error);
 				success = false;
@@ -609,12 +520,9 @@ YouTubeVideoDetail youtube_load_video_page(std::string url)
 		}
 	}
 
-	if (success)
-	{
-		for (int i = 0; i < 2; i++)
-		{
-			if (!results[i].data.empty())
-			{
+	if (success) {
+		for (int i = 0; i < 2; i++) {
+			if (!results[i].data.empty()) {
 				results[i].data.push_back('\0');
 				parse_json_destructive((char *)&results[i].data[0],
 				                       [&](Document &json_root, RJson data) {
@@ -627,9 +535,7 @@ YouTubeVideoDetail youtube_load_video_page(std::string url)
 					                       res.error = "[v-#" + std::to_string(i) + "] " + error;
 					                       debug_error(res.error);
 				                       });
-			}
-			else
-			{
+			} else {
 				res.error = "Empty response data for URL index: " + std::to_string(i);
 				debug_error(res.error);
 				success = false;
@@ -639,8 +545,7 @@ YouTubeVideoDetail youtube_load_video_page(std::string url)
 
 	if (res.id != "")
 		res.succinct_thumbnail_url = youtube_get_video_thumbnail_url_by_id(res.id);
-	if (res.title != "" && res.id != "")
-	{
+	if (res.title != "" && res.id != "") {
 		HistoryVideo video;
 		video.id = res.id;
 		video.title = res.title;
@@ -658,10 +563,8 @@ YouTubeVideoDetail youtube_load_video_page(std::string url)
 	return res;
 }
 
-void YouTubeVideoDetail::load_more_suggestions()
-{
-	if (suggestions_continue_token == "")
-	{
+void YouTubeVideoDetail::load_more_suggestions() {
+	if (suggestions_continue_token == "") {
 		error = "suggestion continue token empty";
 		return;
 	}
@@ -683,8 +586,7 @@ void YouTubeVideoDetail::load_more_suggestions()
 	                      [&](const std::string &error) { debug_error((this->error = "[v-sug+] " + error)); });
 }
 
-YouTubeVideoDetail::Comment extract_comment_from_comment_renderer(RJson comment_renderer, int thumbnail_height)
-{
+YouTubeVideoDetail::Comment extract_comment_from_comment_renderer(RJson comment_renderer, int thumbnail_height) {
 	YouTubeVideoDetail::Comment cur_comment;
 	// get the icon of the author with minimum size
 	cur_comment.id = comment_renderer["commentId"].string_value();
@@ -701,10 +603,8 @@ YouTubeVideoDetail::Comment extract_comment_from_comment_renderer(RJson comment_
 	    get_thumbnail_url_exact(comment_renderer["authorThumbnail"]["thumbnails"], thumbnail_height);
 	return cur_comment;
 }
-void YouTubeVideoDetail::load_more_comments()
-{
-	if (comment_continue_type == -1)
-	{
+void YouTubeVideoDetail::load_more_comments() {
+	if (comment_continue_type == -1) {
 		error = "No more comments available";
 		return;
 	}
@@ -722,8 +622,7 @@ void YouTubeVideoDetail::load_more_comments()
 		return cur_comment;
 	};
 
-	if (comment_continue_type == 0)
-	{
+	if (comment_continue_type == 0) {
 		access_and_parse_json(
 		    [&]() {
 			    return http_get("https://m.youtube.com/watch_comment?action_get_comments=1&pbj=1&ctoken=" +
@@ -733,25 +632,21 @@ void YouTubeVideoDetail::load_more_comments()
 		    [&](Document &, RJson yt_result) {
 			    comment_continue_type = -1;
 			    comment_continue_token = "";
-			    for (auto i : yt_result.array_items())
-			    {
+			    for (auto i : yt_result.array_items()) {
 				    for (auto comment :
 				         i["response"]["continuationContents"]["commentSectionContinuation"]["items"].array_items())
 					    if (comment.has_key("commentThreadRenderer"))
 						    comments.push_back(parse_comment_thread_renderer(comment));
 				    for (auto j : i["response"]["continuationContents"]["commentSectionContinuation"]["continuations"]
 				                      .array_items())
-					    if (j.has_key("nextContinuationData"))
-					    {
+					    if (j.has_key("nextContinuationData")) {
 						    comment_continue_token = j["nextContinuationData"]["continuation"].string_value();
 						    comment_continue_type = 0;
 					    }
 			    }
 		    },
 		    [&](const std::string &error) { debug_error((this->error = "[v-com+0] " + error)); });
-	}
-	else
-	{
+	} else {
 		std::string post_content =
 		    R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00", "utcOffsetMinutes": 0}, "request": {}, "user": {}}, "continuation": ")" +
 		    comment_continue_token + "\"}";
@@ -762,19 +657,16 @@ void YouTubeVideoDetail::load_more_comments()
 		                      [&](Document &, RJson yt_result) {
 			                      comment_continue_type = -1;
 			                      comment_continue_token = "";
-			                      for (auto i : yt_result["onResponseReceivedEndpoints"].array_items())
-			                      {
+			                      for (auto i : yt_result["onResponseReceivedEndpoints"].array_items()) {
 				                      RJson continuation_items =
 				                          i.has_key("reloadContinuationItemsCommand")
 				                              ? i["reloadContinuationItemsCommand"]["continuationItems"]
 				                              : i["appendContinuationItemsAction"]["continuationItems"];
 
-				                      for (auto comment : continuation_items.array_items())
-				                      {
+				                      for (auto comment : continuation_items.array_items()) {
 					                      if (comment.has_key("commentThreadRenderer"))
 						                      comments.push_back(parse_comment_thread_renderer(comment));
-					                      if (comment.has_key("continuationItemRenderer"))
-					                      {
+					                      if (comment.has_key("continuationItemRenderer")) {
 						                      comment_continue_token =
 						                          comment["continuationItemRenderer"]["continuationEndpoint"]
 						                                 ["continuationCommand"]["token"]
@@ -788,10 +680,8 @@ void YouTubeVideoDetail::load_more_comments()
 	}
 }
 
-void YouTubeVideoDetail::Comment::load_more_replies()
-{
-	if (!this->has_more_replies())
-	{
+void YouTubeVideoDetail::Comment::load_more_replies() {
+	if (!this->has_more_replies()) {
 		debug_caution("load_more_replies on a comment that has no replies to load");
 		return;
 	}
@@ -806,10 +696,8 @@ void YouTubeVideoDetail::Comment::load_more_replies()
 	    [&]() { return http_post_json(get_innertube_api_url("next"), post_content); },
 	    [&](Document &, RJson yt_result) {
 		    replies_continue_token = "";
-		    for (auto i : yt_result["onResponseReceivedEndpoints"].array_items())
-		    {
-			    for (auto item : i["appendContinuationItemsAction"]["continuationItems"].array_items())
-			    {
+		    for (auto i : yt_result["onResponseReceivedEndpoints"].array_items()) {
+			    for (auto item : i["appendContinuationItemsAction"]["continuationItems"].array_items()) {
 				    if (item.has_key("commentRenderer"))
 					    replies.push_back(extract_comment_from_comment_renderer(item["commentRenderer"], 32));
 				    if (item.has_key("continuationItemRenderer"))
@@ -822,32 +710,26 @@ void YouTubeVideoDetail::Comment::load_more_replies()
 	    [&](const std::string &error) { debug_error((this->error = "[v-rep+] " + error)); });
 }
 
-void YouTubeVideoDetail::load_caption(const std::string &base_lang_id, const std::string &translation_lang_id)
-{
+void YouTubeVideoDetail::load_caption(const std::string &base_lang_id, const std::string &translation_lang_id) {
 	int base_lang_index = -1;
 	for (size_t i = 0; i < caption_base_languages.size(); i++)
-		if (caption_base_languages[i].id == base_lang_id)
-		{
+		if (caption_base_languages[i].id == base_lang_id) {
 			base_lang_index = i;
 			break;
 		}
-	if (base_lang_index == -1)
-	{
+	if (base_lang_index == -1) {
 		debug_error("[caption] unknown base language");
 		return;
 	}
 
 	int translation_lang_index = -1;
-	if (translation_lang_id != "")
-	{
+	if (translation_lang_id != "") {
 		for (size_t i = 0; i < caption_translation_languages.size(); i++)
-			if (caption_translation_languages[i].id == translation_lang_id)
-			{
+			if (caption_translation_languages[i].id == translation_lang_id) {
 				translation_lang_index = i;
 				break;
 			}
-		if (translation_lang_index == -1)
-		{
+		if (translation_lang_index == -1) {
 			debug_error("[caption] unknown translation language");
 			return;
 		}
@@ -862,8 +744,7 @@ void YouTubeVideoDetail::load_caption(const std::string &base_lang_id, const std
 	access_and_parse_json([&]() { return http_get(url); },
 	                      [&](Document &, RJson yt_result) {
 		                      std::vector<YouTubeVideoDetail::CaptionPiece> cur_caption;
-		                      for (auto caption_piece : yt_result["events"].array_items())
-		                      {
+		                      for (auto caption_piece : yt_result["events"].array_items()) {
 			                      if (!caption_piece.has_key("segs"))
 				                      continue;
 			                      YouTubeVideoDetail::CaptionPiece cur_caption_piece;

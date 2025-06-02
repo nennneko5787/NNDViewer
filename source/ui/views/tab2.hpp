@@ -4,19 +4,14 @@
 
 // Tab selector at the top, unfixed height
 
-struct Tab2View : public FixedWidthView
-{
+struct Tab2View : public FixedWidthView {
   private:
 	std::vector<UI::FlexibleString<Tab2View>> tab_texts;
 
   public:
 	using CallBackFuncType = std::function<void(const Tab2View &value)>;
-	Tab2View(double x0, double y0, double width) : View(x0, y0), FixedWidthView(x0, y0, width)
-	{
-	}
-	virtual ~Tab2View()
-	{
-	}
+	Tab2View(double x0, double y0, double width) : View(x0, y0), FixedWidthView(x0, y0, width) {}
+	virtual ~Tab2View() {}
 
 	std::vector<View *> views;
 	double tab_selector_height = 20;
@@ -25,61 +20,41 @@ struct Tab2View : public FixedWidthView
 	int tab_holding = -1;
 	bool lr_tab_switch_enabled = true;
 
-	int get_tab_num() const
-	{
-		return std::min(tab_texts.size(), views.size());
-	}
-	float tab_width() const
-	{
-		return (x1 - x0) / get_tab_num();
-	}
-	float tab_pos_x(int tab) const
-	{
-		return x0 + (x1 - x0) * tab / get_tab_num();
-	}
+	int get_tab_num() const { return std::min(tab_texts.size(), views.size()); }
+	float tab_width() const { return (x1 - x0) / get_tab_num(); }
+	float tab_pos_x(int tab) const { return x0 + (x1 - x0) * tab / get_tab_num(); }
 
-	template <class T> Tab2View *set_tab_texts(const std::vector<T> &tab_texts)
-	{
+	template <class T> Tab2View *set_tab_texts(const std::vector<T> &tab_texts) {
 		this->tab_texts = decltype(this->tab_texts)(tab_texts.begin(), tab_texts.end());
 		return this;
 	}
-	Tab2View *set_views(const std::vector<View *> &views, int selected_tab = 0)
-	{
+	Tab2View *set_views(const std::vector<View *> &views, int selected_tab = 0) {
 		this->views = views;
 		this->selected_tab = selected_tab;
 		return this;
 	}
-	Tab2View *set_lr_tab_switch_enabled(bool lr_tab_switch_enabled)
-	{
+	Tab2View *set_lr_tab_switch_enabled(bool lr_tab_switch_enabled) {
 		this->lr_tab_switch_enabled = lr_tab_switch_enabled;
 		return this;
 	}
-	void on_scroll() override
-	{
+	void on_scroll() override {
 		tab_holding = -1;
 		views[selected_tab]->on_scroll();
 	}
-	void reset_holding_status_() override
-	{
+	void reset_holding_status_() override {
 		tab_holding = -1;
 		views[selected_tab]->reset_holding_status();
 	}
-	void recursive_delete_subviews() override
-	{
-		for (auto view : views)
-		{
+	void recursive_delete_subviews() override {
+		for (auto view : views) {
 			view->recursive_delete_subviews();
 			delete view;
 		}
 		views.clear();
 	}
-	float get_height() const override
-	{
-		return tab_selector_height + views[selected_tab]->get_height();
-	}
+	float get_height() const override { return tab_selector_height + views[selected_tab]->get_height(); }
 
-	void draw_() const override
-	{
+	void draw_() const override {
 		int tab_num = get_tab_num();
 		if (!tab_num)
 			return;
@@ -91,8 +66,7 @@ struct Tab2View : public FixedWidthView
 		             tab_selector_height);
 		Draw_texture(var_square_image[0], LIGHT3_BACK_COLOR, tab_pos_x(selected_tab), y0, tab_width(),
 		             tab_selector_selected_line_height);
-		for (int i = 0; i < tab_num; i++)
-		{
+		for (int i = 0; i < tab_num; i++) {
 			float y = y0 + (tab_selector_height - Draw_get_height(tab_texts[i], 0.5)) / 2;
 			if (i == selected_tab)
 				y -= 2;
@@ -101,19 +75,15 @@ struct Tab2View : public FixedWidthView
 			Draw_x_centered(tab_texts[i], tab_pos_x(i), tab_pos_x(i + 1), y, 0.5, 0.5, DEFAULT_TEXT_COLOR);
 		}
 	}
-	void update_(Hid_info key) override
-	{
-		if (lr_tab_switch_enabled)
-		{
-			if (key.p_r)
-			{
+	void update_(Hid_info key) override {
+		if (lr_tab_switch_enabled) {
+			if (key.p_r) {
 				selected_tab++;
 				if (selected_tab >= (int)views.size())
 					selected_tab -= views.size();
 				var_need_refresh = true;
 			}
-			if (key.p_l)
-			{
+			if (key.p_l) {
 				selected_tab--;
 				if (selected_tab < 0)
 					selected_tab += views.size();

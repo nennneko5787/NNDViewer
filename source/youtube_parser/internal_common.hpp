@@ -21,16 +21,14 @@
 
 using namespace rapidjson;
 
-namespace youtube_parser
-{
+namespace youtube_parser {
 RJson get_error_json(const std::string &error);
 
 // internal state
 extern std::string language_code;
 extern std::string country_code;
 
-inline std::string get_innertube_api_url(std::string api_name)
-{
+inline std::string get_innertube_api_url(std::string api_name) {
 	return "https://m.youtube.com/youtubei/v1/" + api_name + "?key=" + INNERTUBE_KEY + "&prettyPrint=false";
 }
 
@@ -76,8 +74,7 @@ RJson get_succeeding_json_regexes(Document &json_root, const std::string &html, 
 // parses `str` as json and calls `on_success` or `on_fail` based on the result of the parsing
 // the content of `str` will be modified
 template <class Func1, class Func2>
-void parse_json_destructive(char *str, const Func1 &on_success, const Func2 &on_fail)
-{
+void parse_json_destructive(char *str, const Func1 &on_success, const Func2 &on_fail) {
 	std::string json_err;
 	Document json_root;
 	RJson data = RJson::parse_inplace(json_root, str, json_err);
@@ -89,8 +86,7 @@ void parse_json_destructive(char *str, const Func1 &on_success, const Func2 &on_
 // calls `access` to fetch json and calls `parse` to parse the json
 // properly handles the lifetime of json objects
 template <class Func1, class Func2, class Func3>
-void access_and_parse_json(const Func1 &access, const Func2 &on_success, const Func3 &on_fail)
-{
+void access_and_parse_json(const Func1 &access, const Func2 &on_success, const Func3 &on_fail) {
 	auto result = access();
 	if (result.first)
 		parse_json_destructive(&result.second[0], on_success, on_fail);

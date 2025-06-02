@@ -8,8 +8,7 @@
 #include "ui/ui.hpp"
 #include "network_decoder/thumbnail_loader.hpp"
 
-namespace About
-{
+namespace About {
 bool thread_suspend = false;
 bool already_init = false;
 bool exiting = false;
@@ -17,18 +16,11 @@ bool exiting = false;
 const std::vector<std::string> app_description_lines = {"A work-in-progress homebrew YouTube client", "for the 3DS"};
 const std::vector<std::pair<std::string, std::vector<std::string>>> credits = {
     {"The story",
-     {"The story goes as follows:", 
-	 "ThirdTube stopped working", "then we, as the the former ThirdTube",
-      "now FourthTube community, took action",
-	  "Extra credit goes to:",
-	  "NCP 3.0, fixing the app",
-      "Smu1zel, fixing the app",
-	  "5GBurrito, minor contributions",
-	  "2B_enpitsu, new banner and icon",
-      "ItsFrocat, German translation strings",
-	  "dragontwo14, German translation strings",
-      "cooolgamer, French translation strings",
-	  "Dxni, Italian translation strings",
+     {"The story goes as follows:", "ThirdTube stopped working", "then we, as the the former ThirdTube",
+      "now FourthTube community, took action", "Extra credit goes to:", "NCP 3.0, fixing the app",
+      "Smu1zel, fixing the app", "5GBurrito, minor contributions", "2B_enpitsu, new banner and icon",
+      "ItsFrocat, German translation strings", "dragontwo14, German translation strings",
+      "cooolgamer, French translation strings", "Dxni, Italian translation strings",
       "Core 2 Extreme, for Video player for 3DS from", "which the video playback code of this app is", "taken"}},
 };
 const std::vector<std::string> license_lines = {
@@ -52,13 +44,11 @@ ScrollView *main_view = NULL;
 }; // namespace About
 using namespace About;
 
-void About_init(void)
-{
+void About_init(void) {
 	logger.info("about/init", "Initializing...");
 
 	VerticalListView *credits_view = new VerticalListView(0, 0, 320);
-	for (auto i : credits)
-	{
+	for (auto i : credits) {
 		credits_view->views.push_back((new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
 		                                  ->set_text(i.first)
 		                                  ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL));
@@ -67,8 +57,7 @@ void About_init(void)
 	}
 
 	VerticalListView *third_party_licenses_view = new VerticalListView(0, 0, 320);
-	for (auto license : third_party_licenses)
-	{
+	for (auto license : third_party_licenses) {
 		third_party_licenses_view->views.push_back(
 		    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))->set_text(license.first));
 		third_party_licenses_view->views.push_back(
@@ -130,8 +119,7 @@ void About_init(void)
 	About_resume("");
 	already_init = true;
 }
-void About_exit(void)
-{
+void About_exit(void) {
 	already_init = false;
 	thread_suspend = false;
 	exiting = true;
@@ -142,12 +130,8 @@ void About_exit(void)
 
 	logger.info("about/exit", "Exited.");
 }
-void About_suspend(void)
-{
-	thread_suspend = true;
-}
-void About_resume(std::string arg)
-{
+void About_suspend(void) { thread_suspend = true; }
+void About_resume(std::string arg) {
 	overlay_menu_on_resume();
 	main_view->reset_holding_status();
 
@@ -155,8 +139,7 @@ void About_resume(std::string arg)
 	var_need_refresh = true;
 }
 
-void About_draw(void)
-{
+void About_draw(void) {
 	Hid_info key;
 	Util_hid_query_key_state(&key);
 
@@ -166,8 +149,7 @@ void About_draw(void)
 	CONTENT_Y_HIGH = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
 	main_view->update_y_range(0, CONTENT_Y_HIGH);
 
-	if (var_need_refresh || !var_eco_mode)
-	{
+	if (var_need_refresh || !var_eco_mode) {
 		var_need_refresh = false;
 		Draw_frame_ready();
 		video_draw_top_screen();
@@ -190,20 +172,14 @@ void About_draw(void)
 		Draw_touch_pos();
 
 		Draw_apply_draw();
-	}
-	else
+	} else
 		gspWaitForVBlank();
 
-	if (Util_err_query_error_show_flag())
-	{
+	if (Util_err_query_error_show_flag()) {
 		Util_err_main(key);
-	}
-	else if (Util_expl_query_show_flag())
-	{
+	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
-	}
-	else
-	{
+	} else {
 		update_overlay_menu(&key);
 
 		main_view->update(key);

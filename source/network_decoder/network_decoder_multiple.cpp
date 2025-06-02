@@ -2,8 +2,7 @@
 #include "headers.hpp"
 #include "youtube_parser/parser.hpp"
 
-void NetworkMultipleDecoder::deinit()
-{
+void NetworkMultipleDecoder::deinit() {
 	initer_stop_request = true;
 	while (!initer_stopping)
 		usleep(10000);
@@ -15,8 +14,7 @@ void NetworkMultipleDecoder::deinit()
 	for (auto &i : fragments)
 		i.second.deinit(true);
 	fragments.clear();
-	if (mvd_inited)
-	{
+	if (mvd_inited) {
 		mvdstdExit();
 		mvd_inited = false;
 	}
@@ -25,16 +23,12 @@ void NetworkMultipleDecoder::deinit()
 	while (initer_stopping && !initer_exit_request)
 		usleep(10000);
 }
-void NetworkMultipleDecoder::init_mvd()
-{
-	if (!mvd_inited)
-	{
+void NetworkMultipleDecoder::init_mvd() {
+	if (!mvd_inited) {
 		Result mvd_result = -1;
-		for (int mb = 15; mb >= 5; mb--)
-		{
+		for (int mb = 15; mb >= 5; mb--) {
 			mvd_result = mvdstdInit(MVDMODE_VIDEOPROCESSING, MVD_INPUT_H264, MVD_OUTPUT_BGR565, 1000000 * mb, NULL);
-			if (mvd_result == 0)
-			{
+			if (mvd_result == 0) {
 				logger.info("dec/init", "mvdstdInit ok at " + std::to_string(mb) +
 				                            " MB (total : " + std::to_string(linearSpaceFree() / 1000) + " KB)");
 				break;
@@ -49,13 +43,11 @@ void NetworkMultipleDecoder::init_mvd()
 }
 Result_with_string NetworkMultipleDecoder::init(std::string video_url, std::string audio_url,
                                                 NetworkStreamDownloader &downloader, int fragment_len,
-                                                bool adjust_timestamp, bool request_hw_decoder)
-{
+                                                bool adjust_timestamp, bool request_hw_decoder) {
 
 	Result_with_string result;
 
-	if (inited)
-	{
+	if (inited) {
 		logger.caution("net/mul-dec", "double init, deiniting...");
 		deinit();
 	}
@@ -66,12 +58,10 @@ Result_with_string NetworkMultipleDecoder::init(std::string video_url, std::stri
 
 	video_audio_seperate = (video_url != audio_url);
 	is_livestream = (fragment_len != -1);
-	if (video_audio_seperate)
-	{
+	if (video_audio_seperate) {
 		this->video_url = video_url;
 		this->audio_url = audio_url;
-	}
-	else
+	} else
 		this->both_url = video_url;
 	this->fragment_len = fragment_len;
 	this->downloader = &downloader;
@@ -95,8 +85,7 @@ Result_with_string NetworkMultipleDecoder::init(std::string video_url, std::stri
 	int fragment_id = 0;
 	NetworkDecoderFFmpegIOData tmp_ffmpeg_data;
 	std::vector<NetworkStream *> streams;
-	if (video_audio_seperate)
-	{
+	if (video_audio_seperate) {
 		NetworkStream *video_stream =
 		    new NetworkStream(video_url + url_append, extract_stream_length(video_url), is_livestream, NULL);
 		NetworkStream *audio_stream =
@@ -112,9 +101,7 @@ Result_with_string NetworkMultipleDecoder::init(std::string video_url, std::stri
 		// handle redirect
 		video_url = get_base_url(video_stream->url);
 		audio_url = get_base_url(audio_stream->url);
-	}
-	else
-	{
+	} else {
 		NetworkStream *both_stream =
 		    new NetworkStream(both_url + url_append, extract_stream_length(both_url), is_livestream, NULL);
 		streams = {both_stream};
@@ -164,28 +151,22 @@ cleanup:
 	return result;
 }
 Result_with_string NetworkMultipleDecoder::init(std::string both_url, NetworkStreamDownloader &downloader,
-                                                int fragment_len, bool adjust_timestamp, bool request_hw_decoder)
-{
+                                                int fragment_len, bool adjust_timestamp, bool request_hw_decoder) {
 	return init(both_url, both_url, downloader, fragment_len, adjust_timestamp, request_hw_decoder);
 }
 
-void NetworkMultipleDecoder::check_filter_update()
-{
-	if (filter_update_request)
-	{
+void NetworkMultipleDecoder::check_filter_update() {
+	if (filter_update_request) {
 		filter_update_request = false;
 		decoder.deinit_filter();
 		decoder.init_filter();
 	}
 }
 
-NetworkMultipleDecoder::PacketType NetworkMultipleDecoder::next_decode_type()
-{
+NetworkMultipleDecoder::PacketType NetworkMultipleDecoder::next_decode_type() {
 	PacketType res = decoder.next_decode_type();
-	if (res == PacketType::EoF)
-	{
-		while (!initer_exit_request && !interrupt && seq_using + 1 < seq_num)
-		{
+	if (res == PacketType::EoF) {
+		while (!initer_exit_request && !interrupt && seq_using + 1 < seq_num) {
 			fragments_lock.lock();
 			if (fragments.count(seq_using + 1))
 				break;
@@ -202,8 +183,7 @@ NetworkMultipleDecoder::PacketType NetworkMultipleDecoder::next_decode_type()
 			res = PacketType::INTERRUPTED;
 		else if (seq_using + 1 >= seq_num)
 			res = PacketType::EoF;
-		else
-		{
+		else {
 			decoder.change_ffmpeg_io_data(fragments[seq_using + 1],
 			                              adjust_timestamp ? (seq_using + 1) * fragment_len : 0);
 			seq_using++;
@@ -214,59 +194,49 @@ NetworkMultipleDecoder::PacketType NetworkMultipleDecoder::next_decode_type()
 	}
 	return res;
 }
-void NetworkMultipleDecoder::recalc_buffered_head()
-{
+void NetworkMultipleDecoder::recalc_buffered_head() {
 	int res = seq_using;
 	while (fragments.count(res))
 		res++;
 	seq_buffered_head = res;
 }
-std::vector<std::pair<double, std::vector<double>>> NetworkMultipleDecoder::get_buffering_progress_bars(int bar_len)
-{
+std::vector<std::pair<double, std::vector<double>>> NetworkMultipleDecoder::get_buffering_progress_bars(int bar_len) {
 	if (!inited || !decoder.ready)
 		return {};
-	if (is_livestream)
-	{
+	if (is_livestream) {
 		std::pair<double, std::vector<double>> res = {0, std::vector<double>(bar_len)};
 		double pos = std::max(0.0, (double)(seq_buffered_head - seq_using - 1) / MAX_CACHE_FRAGMENTS_NUM);
 		for (int i = 0; i < bar_len; i++)
 			res.second[i] = std::min(1.0, std::max(0.0, bar_len * pos - i)) * 100;
 		return {res};
-	}
-	else
+	} else
 		return decoder.get_buffering_progress_bars(bar_len);
 }
-Result_with_string NetworkMultipleDecoder::seek(s64 microseconds)
-{
+Result_with_string NetworkMultipleDecoder::seek(s64 microseconds) {
 	Result_with_string result;
-	if (need_reinit)
-	{ // the initer function should be stopped
+	if (need_reinit) { // the initer function should be stopped
 		need_reinit = false;
 		result = fragments[(int)seq_using].reinit();
-		if (result.code != 0)
-		{
+		if (result.code != 0) {
 			fragments[(int)seq_using].deinit(true);
 			fragments.erase((int)seq_using);
 			return result;
 		}
 	}
-	if (is_livestream)
-	{
+	if (is_livestream) {
 		int next_fragment = 0;
 		if (microseconds / 1000000 > duration_first_fragment)
 			next_fragment = (int)((microseconds / 1000000 - duration_first_fragment) / fragment_len);
 		next_fragment = std::min(next_fragment, (int)seq_head); // just to be safe
 		seq_using = next_fragment;
-		while (!initer_exit_request && !decoder.interrupt)
-		{
+		while (!initer_exit_request && !decoder.interrupt) {
 			fragments_lock.lock();
 			if (fragments.count((int)seq_using))
 				break;
 			fragments_lock.unlock();
 			usleep(30000);
 		}
-		if (initer_exit_request || decoder.interrupt)
-		{
+		if (initer_exit_request || decoder.interrupt) {
 			result.code = -1;
 			result.error_description = initer_exit_request ? "The app is about to close" : "Interrupted";
 			return result;
@@ -275,9 +245,7 @@ Result_with_string NetworkMultipleDecoder::seek(s64 microseconds)
 		decoder.clear_buffer();
 		decoder.change_ffmpeg_io_data(fragments[(int)seq_using], adjust_timestamp ? seq_using * fragment_len : 0);
 		fragments_lock.unlock();
-	}
-	else
-	{
+	} else {
 		decoder.clear_buffer();
 		// flush data buffered inside the filter
 		decoder.deinit_filter();
@@ -291,12 +259,9 @@ Result_with_string NetworkMultipleDecoder::seek(s64 microseconds)
 	return result;
 }
 
-void NetworkMultipleDecoder::livestream_initer_thread_func()
-{
-	while (!initer_exit_request)
-	{
-		while (initer_stop_request && !initer_exit_request)
-		{
+void NetworkMultipleDecoder::livestream_initer_thread_func() {
+	while (!initer_exit_request) {
+		while (initer_stop_request && !initer_exit_request) {
 			initer_stopping = true;
 			usleep(10000);
 		}
@@ -304,8 +269,7 @@ void NetworkMultipleDecoder::livestream_initer_thread_func()
 			break;
 		initer_stopping = false;
 
-		if (!inited || !is_livestream)
-		{
+		if (!inited || !is_livestream) {
 			usleep(10000);
 			continue;
 		}
@@ -313,8 +277,7 @@ void NetworkMultipleDecoder::livestream_initer_thread_func()
 		int seq_next = seq_using;
 		while (fragments.count(seq_next))
 			seq_next++;
-		if (seq_next - seq_using >= MAX_CACHE_FRAGMENTS_NUM || seq_next >= seq_num)
-		{
+		if (seq_next - seq_using >= MAX_CACHE_FRAGMENTS_NUM || seq_next >= seq_num) {
 			usleep(10000);
 			continue;
 		}
@@ -322,8 +285,7 @@ void NetworkMultipleDecoder::livestream_initer_thread_func()
 
 		NetworkDecoderFFmpegIOData tmp_ffmpeg_data;
 		std::string url_prefix = "&sq=" + std::to_string(seq_next);
-		if (video_audio_seperate)
-		{
+		if (video_audio_seperate) {
 			NetworkStream *video_stream =
 			    new NetworkStream(video_url + url_prefix, extract_stream_length(video_url), is_livestream, NULL);
 			NetworkStream *audio_stream =
@@ -334,23 +296,17 @@ void NetworkMultipleDecoder::livestream_initer_thread_func()
 
 			Result_with_string result = tmp_ffmpeg_data.init(video_stream, audio_stream, &decoder);
 			// Util_log_save("debug", "init finish");
-			if (result.code != 0)
-			{
-				if (video_stream->livestream_eof || audio_stream->livestream_eof)
-				{
-					if (++error_count[seq_next] >= MAX_LIVESTREAM_RETRY)
-					{
+			if (result.code != 0) {
+				if (video_stream->livestream_eof || audio_stream->livestream_eof) {
+					if (++error_count[seq_next] >= MAX_LIVESTREAM_RETRY) {
 						logger.caution("net/live-init", "eof detected, the end of the livestream");
 						seq_num = std::min((int)seq_num, seq_next);
-					}
-					else
+					} else
 						logger.info("net/live-init",
 						            "eof detected, retrying...  retry cnt : " + std::to_string(error_count[seq_next]));
-				}
-				else
+				} else
 					error_count[seq_next] = 0;
-				if (video_stream->livestream_private || audio_stream->livestream_private)
-				{
+				if (video_stream->livestream_private || audio_stream->livestream_private) {
 					logger.caution("net/live-init", "the livestream became private");
 					seq_num = 0;
 				}
@@ -358,50 +314,36 @@ void NetworkMultipleDecoder::livestream_initer_thread_func()
 				video_stream->quit_request = true;
 				audio_stream->quit_request = true;
 				continue;
-			}
-			else if (decoder.interrupt)
-			{
+			} else if (decoder.interrupt) {
 				logger.caution("net/live-init", "init interrupt but not err : " + result.error_description);
 				video_stream->quit_request = true;
 				audio_stream->quit_request = true;
 				continue;
-			}
-			else if (result.code == 0)
-			{
+			} else if (result.code == 0) {
 				if (video_stream->seq_head != -1)
 					seq_head = video_stream->seq_head;
 			}
 			video_stream->disable_interrupt = audio_stream->disable_interrupt = false;
-		}
-		else
-		{
+		} else {
 			NetworkStream *both_stream =
 			    new NetworkStream(both_url + url_prefix, extract_stream_length(both_url), is_livestream, NULL);
 			both_stream->disable_interrupt = true;
 			downloader->add_stream(both_stream);
 			Result_with_string result = tmp_ffmpeg_data.init(both_stream, &decoder);
-			if (result.code == 0)
-			{
+			if (result.code == 0) {
 				if (both_stream->seq_head != -1)
 					seq_head = both_stream->seq_head;
-			}
-			else
-			{
-				if (both_stream->livestream_eof)
-				{
-					if (++error_count[seq_next] >= MAX_LIVESTREAM_RETRY)
-					{
+			} else {
+				if (both_stream->livestream_eof) {
+					if (++error_count[seq_next] >= MAX_LIVESTREAM_RETRY) {
 						logger.caution("net/live-init", "eof detected, the end of the livestream");
 						seq_num = std::min((int)seq_num, seq_next);
-					}
-					else
+					} else
 						logger.caution("net/live-init", "eof detected, retrying...  retry cnt : " +
 						                                    std::to_string(error_count[seq_next]));
-				}
-				else
+				} else
 					error_count[seq_next] = 0;
-				if (both_stream->livestream_private)
-				{
+				if (both_stream->livestream_private) {
 					logger.caution("net/live-init", "the livestream became private");
 					seq_num = 0;
 				}
@@ -413,15 +355,11 @@ void NetworkMultipleDecoder::livestream_initer_thread_func()
 
 		fragments_lock.lock();
 		fragments[seq_next] = tmp_ffmpeg_data;
-		if (fragments.size() > MAX_CACHE_FRAGMENTS_NUM)
-		{
-			if (fragments.begin()->first < seq_using)
-			{
+		if (fragments.size() > MAX_CACHE_FRAGMENTS_NUM) {
+			if (fragments.begin()->first < seq_using) {
 				fragments.begin()->second.deinit(true);
 				fragments.erase(fragments.begin());
-			}
-			else
-			{
+			} else {
 				std::prev(fragments.end())->second.deinit(true);
 				fragments.erase(std::prev(fragments.end()));
 			}
@@ -434,8 +372,7 @@ void NetworkMultipleDecoder::livestream_initer_thread_func()
 	initer_stopping = true;
 }
 
-void livestream_initer_thread_func(void *arg)
-{
+void livestream_initer_thread_func(void *arg) {
 	NetworkMultipleDecoder *mul_decoder = (NetworkMultipleDecoder *)arg;
 	mul_decoder->livestream_initer_thread_func();
 

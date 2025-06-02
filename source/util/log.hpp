@@ -6,16 +6,14 @@
 #include <string>
 #include <cinttypes>
 
-enum class LogLevel
-{
+enum class LogLevel {
 	INFO,
 	CAUTION,
 	WARNING,
 	ERROR,
 };
 
-class Logger
-{
+class Logger {
 	// Drawing related
   public:
 	bool draw_enabled = false;
@@ -35,8 +33,7 @@ class Logger
 	double acc_time = 0; // accumulated time from the initialization
 
 	// Content
-	struct Log
-	{
+	struct Log {
 		double time;
 		LogLevel level;
 		std::string str;
@@ -44,8 +41,7 @@ class Logger
 	Mutex content_lock;
 	std::deque<Log> logs;
 
-	u32 get_log_color(LogLevel level)
-	{
+	u32 get_log_color(LogLevel level) {
 		if (level == LogLevel::INFO)
 			return 0xFFBBBB00; // aqua
 		if (level == LogLevel::CAUTION)
@@ -57,8 +53,7 @@ class Logger
 		my_assert(0);
 		return 0;
 	}
-	std::string to_hex(u32 code)
-	{
+	std::string to_hex(u32 code) {
 		char res[32] = {0};
 		snprintf(res, 32, "%" PRIx32, code);
 		return res;
@@ -67,23 +62,15 @@ class Logger
   public:
 	void init();
 	void log(LogLevel level, const std::string &str);
-	void log(LogLevel level, const std::string &str, u32 code)
-	{
-		log(level, str + " " + to_hex(code));
-	}
-	void log(LogLevel level, const std::string &module_name, const std::string &str)
-	{
+	void log(LogLevel level, const std::string &str, u32 code) { log(level, str + " " + to_hex(code)); }
+	void log(LogLevel level, const std::string &module_name, const std::string &str) {
 		log(level, "[" + module_name + "]" + str);
 	}
-	void log(LogLevel level, const std::string &module_name, const std::string &str, u32 code)
-	{
+	void log(LogLevel level, const std::string &module_name, const std::string &str, u32 code) {
 		log(level, "[" + module_name + "]" + str, code);
 	}
 #define DEFINE_VARIANT(func_name, log_level)                                                                           \
-	template <typename... T> void func_name(T &&...args)                                                               \
-	{                                                                                                                  \
-		log(LogLevel::log_level, std::forward<T>(args)...);                                                            \
-	}
+	template <typename... T> void func_name(T &&...args) { log(LogLevel::log_level, std::forward<T>(args)...); }
 	DEFINE_VARIANT(info, INFO);
 	DEFINE_VARIANT(caution, CAUTION);
 	DEFINE_VARIANT(warning, WARNING);

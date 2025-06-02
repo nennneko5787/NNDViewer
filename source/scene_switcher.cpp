@@ -17,16 +17,12 @@
 SceneType global_current_scene;
 Intent global_intent;
 
-namespace SceneSwitcher
-{
+namespace SceneSwitcher {
 static bool menu_thread_run = false;
 static bool menu_check_exit_request = false;
 static Thread menu_worker_thread, thumbnail_downloader_thread, async_task_thread, misc_tasks_thread;
 
-static void empty_thread(void *arg)
-{
-	threadExit(0);
-}
+static void empty_thread(void *arg) { threadExit(0); }
 
 bool bot_screen_disabled = false;
 
@@ -36,15 +32,13 @@ using namespace SceneSwitcher;
 
 void Menu_worker_thread(void *arg);
 #define LOG_IF_ERROR(expr)                                                                                             \
-	do                                                                                                                 \
-	{                                                                                                                  \
+	do {                                                                                                               \
 		auto res = expr;                                                                                               \
 		if (res != 0)                                                                                                  \
 			logger.error(DEF_MENU_INIT_STR, #expr ": " + std::to_string(res));                                         \
 	} while (0)
 
-void Menu_init(void)
-{
+void Menu_init(void) {
 	Result_with_string result;
 
 	logger.init();
@@ -85,8 +79,7 @@ void Menu_init(void)
 	APT_CheckNew3DS(&var_is_new3ds);
 	CFGU_GetSystemModel(&var_model);
 
-	if (var_is_new3ds)
-	{ // check core availability
+	if (var_is_new3ds) { // check core availability
 		Thread core_2 = threadCreate(empty_thread, (void *)(""), DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, 2, false);
 		var_core2_available = (bool)core_2;
 		if (core_2)
@@ -121,24 +114,20 @@ void Menu_init(void)
 	var_wifi_state = *(u8 *)0x1FF81067;
 	// Wait for the 3DS's Wi-Fi to (hopefully) hurry up.
 	int tries = 0;
-	while (var_wifi_state != 2)
-	{
+	while (var_wifi_state != 2) {
 		tries++;
-		if (tries > 20)
-		{
+		if (tries > 20) {
 			break;
 		}
 		// Enable Wi-Fi in case the user disabled it for whatever reason.
-		if (tries < 2)
-		{
+		if (tries < 2) {
 			Util_cset_set_wifi_state(true);
 		}
 		// Sleep for one second. This will keep running until the console finally connects, or if we exceed 20 tries.
 		usleep(1000000);
 		// Fetch the updated Wi-Fi state
 		var_wifi_state = *(u8 *)0x1FF81067;
-		if (var_wifi_state == 2)
-		{
+		if (var_wifi_state == 2) {
 			// Sometimes takes a bit longer to actually have connectivity for some reason.
 			usleep(2500000);
 		}
@@ -170,8 +159,7 @@ void Menu_init(void)
 	logger.info(DEF_MENU_INIT_STR, "Initialized.");
 }
 
-void Menu_exit(void)
-{
+void Menu_exit(void) {
 	logger.info(DEF_MENU_EXIT_STR, "Exiting...");
 	u64 time_out = 10000000000;
 	Result_with_string result;
@@ -228,15 +216,13 @@ void Menu_exit(void)
 
 static std::vector<Intent> scene_stack = {{SceneType::HOME, ""}};
 
-bool Menu_main(void)
-{
+bool Menu_main(void) {
 	Util_hid_update_key_state();
 
 	Hid_info key;
 	Util_hid_query_key_state(&key);
 
-	if (sound_init_result != 0)
-	{
+	if (sound_init_result != 0) {
 		std::string error_msg = "Could not initialize NDSP (sound service)\n"
 		                        "This is probably because you haven't run DSP1.\n"
 		                        "You can download it from the link below:\n\n"
@@ -257,8 +243,7 @@ bool Menu_main(void)
 		Draw_apply_draw();
 
 		static int frame_cnt = 0;
-		if (++frame_cnt >= 30)
-		{
+		if (++frame_cnt >= 30) {
 			frame_cnt = 0;
 			logger.info(DEF_MENU_INIT_STR, "ndspInit() retry...", (sound_init_result = ndspInit())); // 0xd880A7FA
 		}
@@ -295,8 +280,7 @@ bool Menu_main(void)
 		Home_draw();
 	// add here
 
-	if (global_intent.next_scene != SceneType::NO_CHANGE)
-	{
+	if (global_intent.next_scene != SceneType::NO_CHANGE) {
 		if (global_current_scene == SceneType::VIDEO_PLAYER)
 			VideoPlayer_suspend();
 		else if (global_current_scene == SceneType::SEARCH)
@@ -329,16 +313,13 @@ bool Menu_main(void)
 
 	if (global_intent.next_scene == SceneType::EXIT)
 		return false;
-	else if (global_intent.next_scene != SceneType::NO_CHANGE && global_intent != scene_stack.back())
-	{
+	else if (global_intent.next_scene != SceneType::NO_CHANGE && global_intent != scene_stack.back()) {
 		if (scene_stack.size() >= 2 && global_intent == scene_stack[scene_stack.size() - 2])
 			global_intent.next_scene = SceneType::BACK;
-		if (global_intent.next_scene == SceneType::BACK)
-		{
+		if (global_intent.next_scene == SceneType::BACK) {
 			if (scene_stack.size() >= 2)
 				scene_stack.pop_back();
-		}
-		else
+		} else
 			scene_stack.push_back(global_intent);
 
 		global_current_scene = scene_stack.back().next_scene;
@@ -364,8 +345,7 @@ bool Menu_main(void)
 	return true;
 }
 
-void Menu_get_system_info(void)
-{
+void Menu_get_system_info(void) {
 	u8 battery_level = -1;
 	u8 battery_voltage = -1;
 	char *ssid = (char *)malloc(512);
@@ -373,14 +353,11 @@ void Menu_get_system_info(void)
 
 	PTMU_GetBatteryChargeState(&var_battery_charge);      // battery charge
 	result.code = MCUHWC_GetBatteryLevel(&battery_level); // battery level(%)
-	if (result.code == 0)
-	{
+	if (result.code == 0) {
 		MCUHWC_GetBatteryVoltage(&battery_voltage);
 		var_battery_voltage = 5.0 * (battery_voltage / 256);
 		var_battery_level_raw = battery_level;
-	}
-	else
-	{
+	} else {
 		PTMU_GetBatteryLevel(&battery_level);
 		if ((int)battery_level == 0)
 			var_battery_level_raw = 0;
@@ -421,23 +398,20 @@ void Menu_get_system_info(void)
 	var_minutes = timeStruct->tm_min;
 	var_seconds = timeStruct->tm_sec;
 
-	if (var_debug_mode)
-	{
+	if (var_debug_mode) {
 		// check free RAM
 		var_free_ram = Menu_check_free_ram();
 		var_free_linear_ram = linearSpaceFree();
 	}
 }
 
-int Menu_check_free_ram(void)
-{
+int Menu_check_free_ram(void) {
 	void *ptr[10000];
 	int head = 0;
 	int res = 0;
 
 	int cur_size = 1000 * 1000;
-	while (head < 10000 && cur_size >= 10000)
-	{
+	while (head < 10000 && cur_size >= 10000) {
 		ptr[head] = malloc(cur_size);
 		if (ptr[head])
 			res += cur_size, head++;
@@ -449,19 +423,16 @@ int Menu_check_free_ram(void)
 	return res / 1000;
 }
 
-void Menu_worker_thread(void *arg)
-{
+void Menu_worker_thread(void *arg) {
 	logger.info(DEF_MENU_WORKER_THREAD_STR, "Thread started.");
 	int count = 0;
 	Result_with_string result;
 
-	while (menu_thread_run)
-	{
+	while (menu_thread_run) {
 		usleep(49000);
 		count++;
 
-		if (count >= 20)
-		{
+		if (count >= 20) {
 			Menu_get_system_info();
 			var_need_refresh = true;
 			count = 0;
@@ -484,8 +455,7 @@ void Menu_worker_thread(void *arg)
 			next_screen_on = true, next_screen_dimmed = false;
 
 		if (cur_screen_on != next_screen_on || cur_screen_dimmed != next_screen_dimmed ||
-		    cur_bot_screen_disabled != next_bot_screen_disabled)
-		{
+		    cur_bot_screen_disabled != next_bot_screen_disabled) {
 			// first handle on/off
 			bool cur_top_on = cur_screen_on;
 			bool cur_bot_on = cur_screen_on && !cur_bot_screen_disabled;
@@ -493,8 +463,7 @@ void Menu_worker_thread(void *arg)
 			bool next_bot_on = next_screen_on && !next_bot_screen_disabled;
 			if (cur_top_on == cur_bot_on && cur_top_on != next_top_on && cur_bot_on != next_bot_on)
 				Util_cset_set_screen_state(true, true, next_top_on); // change both
-			else
-			{
+			else {
 				if (cur_top_on != next_top_on)
 					Util_cset_set_screen_state(true, false, next_top_on);
 				if (cur_bot_on != next_bot_on)

@@ -14,8 +14,7 @@
 #define COMMUNITY_IMAGE_SIZE (var_community_image_size)
 
 // used for comments and community posts
-struct PostView : public FixedWidthView
-{
+struct PostView : public FixedWidthView {
   private:
 	std::string author_name;
 	std::string time_str;
@@ -26,26 +25,13 @@ struct PostView : public FixedWidthView
 	bool fold_replies_holding = false;
 	bool show_more_replies_holding = false;
 
-	static inline bool in_range(float x, float l, float r)
-	{
-		return x >= l && x < r;
-	}
+	static inline bool in_range(float x, float l, float r) { return x >= l && x < r; }
 
 	// position-related functions
-	inline float get_icon_size() const
-	{
-		return is_reply ? REPLY_ICON_SIZE : POST_ICON_SIZE;
-	}
-	float content_x_pos() const
-	{
-		return x0 + SMALL_MARGIN * 2 + get_icon_size();
-	}
-	float left_height() const
-	{
-		return get_icon_size() + SMALL_MARGIN;
-	}
-	float right_height() const
-	{
+	inline float get_icon_size() const { return is_reply ? REPLY_ICON_SIZE : POST_ICON_SIZE; }
+	float content_x_pos() const { return x0 + SMALL_MARGIN * 2 + get_icon_size(); }
+	float left_height() const { return get_icon_size() + SMALL_MARGIN; }
+	float right_height() const {
 		float res = DEFAULT_FONT_INTERVAL * (1 + lines_shown);
 		if (lines_shown < content_lines.size())
 			res += SMALL_MARGIN + DEFAULT_FONT_INTERVAL; // "Show more"
@@ -79,31 +65,23 @@ struct PostView : public FixedWidthView
 
 	std::vector<PostView *> replies;
 
-	PostView(double x0, double y0, double width) : View(x0, y0), FixedWidthView(x0, y0, width)
-	{
-	}
-	virtual ~PostView()
-	{
-	}
+	PostView(double x0, double y0, double width) : View(x0, y0), FixedWidthView(x0, y0, width) {}
+	virtual ~PostView() {}
 
-	void recursive_delete_subviews() override
-	{
-		for (auto reply_view : replies)
-		{
+	void recursive_delete_subviews() override {
+		for (auto reply_view : replies) {
 			reply_view->recursive_delete_subviews();
 			delete reply_view;
 		}
 		replies.clear();
-		if (additional_video_view)
-		{
+		if (additional_video_view) {
 			additional_video_view->recursive_delete_subviews();
 			delete additional_video_view;
 			additional_video_view = NULL;
 		}
 		replies_shown = 0;
 	}
-	void reset_holding_status_() override
-	{
+	void reset_holding_status_() override {
 		icon_holding = false;
 		show_more_holding = false;
 		fold_replies_holding = false;
@@ -113,8 +91,7 @@ struct PostView : public FixedWidthView
 		if (additional_video_view)
 			additional_video_view->reset_holding_status();
 	}
-	void on_scroll() override
-	{
+	void on_scroll() override {
 		icon_holding = false;
 		show_more_holding = false;
 		fold_replies_holding = false;
@@ -124,8 +101,7 @@ struct PostView : public FixedWidthView
 		if (additional_video_view)
 			additional_video_view->on_scroll();
 	}
-	float get_height() const override
-	{
+	float get_height() const override {
 		float main_height = std::max(left_height(), right_height());
 		if (additional_image_url != "")
 			main_height += SMALL_MARGIN * 2 + COMMUNITY_IMAGE_SIZE;
@@ -142,73 +118,58 @@ struct PostView : public FixedWidthView
 
 		return main_height + reply_height + SMALL_MARGIN; // add margin between comments
 	}
-	float get_self_height()
-	{
-		return std::max(left_height(), right_height()) + 16 + SMALL_MARGIN * 2;
-	}
+	float get_self_height() { return std::max(left_height(), right_height()) + 16 + SMALL_MARGIN * 2; }
 
-	std::vector<std::pair<float, PostView *>> get_reply_pos_list()
-	{
+	std::vector<std::pair<float, PostView *>> get_reply_pos_list() {
 		std::vector<std::pair<float, PostView *>> res;
 		float cur_y = std::max(left_height(), right_height()) + 16 + SMALL_MARGIN * 2;
 		if (replies_shown)
 			cur_y += SMALL_MARGIN + DEFAULT_FONT_INTERVAL + SMALL_MARGIN; // fold replies
-		for (size_t i = 0; i < replies_shown; i++)
-		{
+		for (size_t i = 0; i < replies_shown; i++) {
 			res.push_back({cur_y, replies[i]});
 			cur_y += replies[i]->get_height();
 		}
 		return res;
 	}
 
-	PostView *set_author_name(const std::string &name)
-	{ // mandatory
+	PostView *set_author_name(const std::string &name) { // mandatory
 		this->author_name = name;
 		return this;
 	}
-	PostView *set_time_str(const std::string &time_str)
-	{
+	PostView *set_time_str(const std::string &time_str) {
 		this->time_str = time_str;
 		return this;
 	}
-	PostView *set_upvote_str(const std::string &upvote_str)
-	{
+	PostView *set_upvote_str(const std::string &upvote_str) {
 		this->upvote_str = upvote_str;
 		return this;
 	}
-	PostView *set_author_icon_url(const std::string &icon_url)
-	{ // mandatory
+	PostView *set_author_icon_url(const std::string &icon_url) { // mandatory
 		this->author_icon_url = icon_url;
 		return this;
 	}
-	PostView *set_additional_image_url(const std::string &additional_image_url)
-	{
+	PostView *set_additional_image_url(const std::string &additional_image_url) {
 		this->additional_image_url = additional_image_url;
 		return this;
 	}
-	PostView *set_content_lines(const std::vector<std::string> &content_lines)
-	{ // mandatory
+	PostView *set_content_lines(const std::vector<std::string> &content_lines) { // mandatory
 		this->content_lines = content_lines;
 		this->lines_shown = std::min<size_t>(3, content_lines.size());
 		return this;
 	}
-	PostView *set_has_more_replies(const std::function<bool()> &get_has_more_replies)
-	{ // mandatory
+	PostView *set_has_more_replies(const std::function<bool()> &get_has_more_replies) { // mandatory
 		this->get_has_more_replies = get_has_more_replies;
 		return this;
 	}
-	PostView *set_on_author_icon_pressed(CallBackFuncType on_author_icon_pressed_func)
-	{
+	PostView *set_on_author_icon_pressed(CallBackFuncType on_author_icon_pressed_func) {
 		this->on_author_icon_pressed_func = on_author_icon_pressed_func;
 		return this;
 	}
-	PostView *set_on_load_more_replies_pressed(CallBackFuncTypeModifiable on_load_more_replies_pressed_func)
-	{
+	PostView *set_on_load_more_replies_pressed(CallBackFuncTypeModifiable on_load_more_replies_pressed_func) {
 		this->on_load_more_replies_pressed_func = on_load_more_replies_pressed_func;
 		return this;
 	}
-	PostView *set_is_reply(bool is_reply)
-	{
+	PostView *set_is_reply(bool is_reply) {
 		this->is_reply = is_reply;
 		return this;
 	}

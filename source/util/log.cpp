@@ -1,11 +1,7 @@
 ﻿#include "headers.hpp"
 
-void Logger::init()
-{
-	osTickCounterStart(&stopwatch);
-}
-void Logger::log(LogLevel level, const std::string &str)
-{
+void Logger::init() { osTickCounterStart(&stopwatch); }
+void Logger::log(LogLevel level, const std::string &str) {
 	content_lock.lock();
 	// get time
 	osTickCounterUpdate(&stopwatch);
@@ -23,10 +19,8 @@ void Logger::log(LogLevel level, const std::string &str)
 		var_need_refresh = true;
 	content_lock.unlock();
 }
-void Logger::update(Hid_info key)
-{
-	if (draw_enabled)
-	{ // move only if drawing is enabled
+void Logger::update(Hid_info key) {
+	if (draw_enabled) { // move only if drawing is enabled
 		content_lock.lock();
 		float draw_offset_x_old = draw_offset_x;
 		int draw_offset_y_old = draw_offset_y;
@@ -44,13 +38,10 @@ void Logger::update(Hid_info key)
 	}
 }
 
-void Logger::draw()
-{
-	if (draw_enabled)
-	{
+void Logger::draw() {
+	if (draw_enabled) {
 		content_lock.lock();
-		for (int i = 0; i < DRAW_LINES && draw_offset_y + i < (int)logs.size(); i++)
-		{
+		for (int i = 0; i < DRAW_LINES && draw_offset_y + i < (int)logs.size(); i++) {
 			auto &cur_log = logs[draw_offset_y + i];
 			Draw(cur_log.str, -draw_offset_x, (1 + i) * draw_y_interval, font_size, font_size,
 			     get_log_color(cur_log.level));
@@ -58,8 +49,7 @@ void Logger::draw()
 		content_lock.unlock();
 	}
 }
-size_t Logger::get_memory_consumption()
-{
+size_t Logger::get_memory_consumption() {
 	content_lock.lock();
 	size_t res = 0;
 	res += sizeof(Logger);

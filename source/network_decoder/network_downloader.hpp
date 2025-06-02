@@ -7,16 +7,12 @@
 #include "network_io.hpp"
 
 // one instance per one url (once constructed, the url is not changeable)
-struct NetworkStream
-{
+struct NetworkStream {
 	static constexpr u64 BLOCK_SIZE = 0x40000; // 256 KiB
 	static constexpr u64 NEW3DS_MAX_CACHE_BLOCKS = 12 * 1000 * 1000 / BLOCK_SIZE;
 	static constexpr u64 OLD3DS_MAX_CACHE_BLOCKS = 4 * 1000 * 1000 / BLOCK_SIZE;
 	static constexpr int RETRY_CNT_MAX = 1;
-	static u64 get_block_num(u64 size)
-	{
-		return (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
-	}
+	static u64 get_block_num(u64 size) { return (size + BLOCK_SIZE - 1) / BLOCK_SIZE; }
 
 	std::string url;
 	Mutex downloaded_data_lock; // std::map needs locking when searching and inserting at the same time
@@ -46,9 +42,7 @@ struct NetworkStream
 	// livestreams)
 	NetworkStream(std::string url, int64_t len, bool whole_download, NetworkSessionList *session_list)
 	    : url(url), len(len < 0 ? 0 : len), block_num(get_block_num(this->len)), whole_download(whole_download),
-	      session_list(session_list)
-	{
-	}
+	      session_list(session_list) {}
 
 	double get_download_percentage();
 	std::vector<double> get_buffering_progress_bar(int res_len);
@@ -67,8 +61,7 @@ struct NetworkStream
 // each instance of this class is paired with one downloader thread
 // it owns NetworkStream instances, and the one with the least margin (as in proportion to the length of the entire
 // stream) is the target of next downloading
-class NetworkStreamDownloader
-{
+class NetworkStreamDownloader {
   private:
 	static constexpr u64 BLOCK_SIZE = NetworkStream::BLOCK_SIZE;
 	static constexpr const char *USER_AGENT = "Mozilla/5.0 (Linux; Android 11; Pixel 3a) AppleWebKit/537.36 (KHTML, "
@@ -85,10 +78,7 @@ class NetworkStreamDownloader
 	// the pointer must be one that has been new-ed : it will be deleted once quit_request is made
 	void add_stream(NetworkStream *stream);
 
-	void request_thread_exit()
-	{
-		thread_exit_reqeusted = true;
-	}
+	void request_thread_exit() { thread_exit_reqeusted = true; }
 	void delete_all();
 
 	void downloader_thread();

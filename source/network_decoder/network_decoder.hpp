@@ -8,8 +8,7 @@
 
 #include "system/fake_pthread.hpp"
 
-extern "C"
-{
+extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavfilter/avfilter.h"
@@ -20,28 +19,24 @@ extern "C"
 #include "libavutil/log.h"
 }
 
-namespace network_decoder_
-{
+namespace network_decoder_ {
 /*
     internal queue used to buffer the raw output of decoded images
     thread-safe when one thread only pushes and the other thread pops
 */
-template <typename T> class output_buffer
-{
+template <typename T> class output_buffer {
 	size_t num = 0;
 	std::vector<T> buffer;
 	volatile size_t head = 0; // the index of the element in the buffer which the next pushed element should go in
 	volatile size_t tail = 0; // the index of the element in the buffer which should be poped next
 
   public:
-	void init(const std::vector<T> &buffer_init)
-	{
+	void init(const std::vector<T> &buffer_init) {
 		num = buffer_init.size() - 1;
 		buffer = buffer_init;
 		head = tail = 0;
 	}
-	std::vector<T> deinit()
-	{
+	std::vector<T> deinit() {
 		auto res = buffer;
 		buffer.clear();
 		num = 0;
@@ -49,55 +44,38 @@ template <typename T> class output_buffer
 		return res;
 	}
 	// get the size of the queue
-	size_t size()
-	{
+	size_t size() {
 		if (head >= tail)
 			return head - tail;
 		else
 			return head + num + 1 - tail;
 	}
-	size_t size_max()
-	{
-		return num;
-	}
-	bool full()
-	{
-		return size() == num;
-	}
-	bool empty()
-	{
-		return size() == 0;
-	}
-	T get_next_pushed()
-	{
+	size_t size_max() { return num; }
+	bool full() { return size() == num; }
+	bool empty() { return size() == 0; }
+	T get_next_pushed() {
 		if (full())
 			return NULL;
 		return buffer[head];
 	}
-	bool push()
-	{
+	bool push() {
 		if (full())
 			return false;
 		head = (head == num ? 0 : head + 1);
 		return true;
 	}
-	T get_next_poped()
-	{
+	T get_next_poped() {
 		if (empty())
 			return NULL;
 		return buffer[tail];
 	}
-	bool pop()
-	{
+	bool pop() {
 		if (empty())
 			return false;
 		tail = (tail == num ? 0 : tail + 1);
 		return true;
 	}
-	void clear()
-	{
-		head = tail;
-	}
+	void clear() { head = tail; }
 };
 } // namespace network_decoder_
 
@@ -105,8 +83,7 @@ class NetworkDecoder;
 
 #define DECODER_REINIT_INTERVAL_PACKETS 40000
 
-class NetworkDecoderFFmpegIOData
-{
+class NetworkDecoderFFmpegIOData {
   private:
 	static constexpr int VIDEO = 0;
 	static constexpr int AUDIO = 1;
@@ -134,8 +111,7 @@ class NetworkDecoderFFmpegIOData
 	double get_duration();
 };
 
-class NetworkDecoderFilterData
-{
+class NetworkDecoderFilterData {
   public:
 	AVFilterGraph *audio_filter_graph = NULL;
 	AVFilterContext *audio_filter_src = NULL;
@@ -160,12 +136,11 @@ class NetworkDecoderFilterData
 
 	void deinit();
 	Result_with_string init(AVCodecContext *audio_context);
-	Result_with_string process_audio_frame(
-	    AVFrame *input, double *out_pts); // filtered frame goes to output_frame. It should NOT be freed
+	Result_with_string
+	process_audio_frame(AVFrame *input, double *out_pts); // filtered frame goes to output_frame. It should NOT be freed
 };
 
-class NetworkDecoder
-{
+class NetworkDecoder {
   private:
 	static constexpr size_t OLD_MAX_RAW_BUFFER_SIZE = 3 * 1000 * 1000;
 	static constexpr size_t NEW_MAX_RAW_BUFFER_SIZE = 8 * 1000 * 1000;
@@ -196,8 +171,7 @@ class NetworkDecoder
 	Result_with_string init_decoder(int type);
 	Result_with_string read_packet(int type);
 	Result_with_string mvd_decode(int *width, int *height);
-	AVStream *get_stream(int type)
-	{
+	AVStream *get_stream(int type) {
 		return io->format_context[is_av_separate() ? type : BOTH]->streams[io->stream_index[type]];
 	}
 
@@ -211,26 +185,13 @@ class NetworkDecoder
 	bool frame_cores_enabled[4];
 	bool slice_cores_enabled[4];
 
-	bool is_audio_only()
-	{
-		return io->audio_only;
-	}
-	bool is_av_separate()
-	{
-		return io->video_audio_seperate;
-	}
+	bool is_audio_only() { return io->audio_only; }
+	bool is_av_separate() { return io->video_audio_seperate; }
 
-	void set_frame_cores_enabled(bool *enabled)
-	{
-		memcpy(frame_cores_enabled, enabled, 4);
-	}
-	void set_slice_cores_enabled(bool *enabled)
-	{
-		memcpy(slice_cores_enabled, enabled, 4);
-	}
+	void set_frame_cores_enabled(bool *enabled) { memcpy(frame_cores_enabled, enabled, 4); }
+	void set_slice_cores_enabled(bool *enabled) { memcpy(slice_cores_enabled, enabled, 4); }
 
-	const char *get_network_waiting_status()
-	{
+	const char *get_network_waiting_status() {
 		const char *res = NULL;
 		critical_op_lock.lock();
 		if (ready && io && io->network_stream[VIDEO] && io->network_stream[VIDEO]->network_waiting_status)
@@ -242,12 +203,8 @@ class NetworkDecoder
 	}
 	std::vector<std::pair<double, std::vector<double>>> get_buffering_progress_bars(int bar_len);
 
-	size_t get_raw_buffer_num()
-	{
-		return hw_decoder_enabled ? video_mvd_tmp_frames.size() : video_tmp_frames.size();
-	}
-	size_t get_raw_buffer_num_max()
-	{
+	size_t get_raw_buffer_num() { return hw_decoder_enabled ? video_mvd_tmp_frames.size() : video_tmp_frames.size(); }
+	size_t get_raw_buffer_num_max() {
 		return hw_decoder_enabled ? video_mvd_tmp_frames.size_max() : video_tmp_frames.size_max();
 	}
 
@@ -256,25 +213,17 @@ class NetworkDecoder
 	void clear_buffer();
 
 	NetworkDecoderFilterData filter;
-	void deinit_filter()
-	{
-		filter.deinit();
-	}
+	void deinit_filter() { filter.deinit(); }
 	// should be called after this->init()
-	Result_with_string init_filter()
-	{
-		return filter.init(decoder_context[AUDIO]);
-	}
+	Result_with_string init_filter() { return filter.init(decoder_context[AUDIO]); }
 	// used for livestreams/premieres where the video is splitted into fragments
-	void change_ffmpeg_io_data(NetworkDecoderFFmpegIOData &ffmpeg_io_data, double timestamp_offset)
-	{
+	void change_ffmpeg_io_data(NetworkDecoderFFmpegIOData &ffmpeg_io_data, double timestamp_offset) {
 		interrupt = false;
 		this->io = &ffmpeg_io_data;
 		this->timestamp_offset = timestamp_offset;
 	}
 
-	struct VideoFormatInfo
-	{
+	struct VideoFormatInfo {
 		int width;
 		int height;
 		double framerate;
@@ -283,8 +232,7 @@ class NetworkDecoder
 	};
 	VideoFormatInfo get_video_info();
 
-	struct AudioFormatInfo
-	{
+	struct AudioFormatInfo {
 		int bitrate;
 		int sample_rate;
 		int ch;
@@ -293,8 +241,7 @@ class NetworkDecoder
 	};
 	AudioFormatInfo get_audio_info();
 
-	enum class PacketType
-	{
+	enum class PacketType {
 		AUDIO,
 		VIDEO,
 		EoF, // EOF is reserved so...
@@ -302,16 +249,14 @@ class NetworkDecoder
 	};
 	PacketType next_decode_type();
 
-	enum class DecoderType
-	{
+	enum class DecoderType {
 		HW,       // hardware decoder
 		MT_FRAME, // frame-multithreaded
 		MT_SLICE, // slice-multithreaded
 		ST,       // single threaded
 		NA        // not initialized
 	};
-	DecoderType get_decoder_type()
-	{
+	DecoderType get_decoder_type() {
 		DecoderType res;
 		critical_op_lock.lock();
 		if (!ready)

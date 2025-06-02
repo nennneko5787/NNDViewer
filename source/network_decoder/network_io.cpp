@@ -15,35 +15,27 @@ static volatile bool exiting = false;
 
 static std::vector<NetworkSessionList *> deinit_list;
 
-void NetworkSessionList::init()
-{
+void NetworkSessionList::init() {
 	inited = true;
 	deinit_list.push_back(this);
 }
-void NetworkSessionList::deinit()
-{
+void NetworkSessionList::deinit() {
 	inited = false;
 
 	// curl cleanup
-	if (curl_multi)
-	{
+	if (curl_multi) {
 		curl_multi_cleanup(curl_multi);
 		curl_multi = NULL;
 	}
 }
-void NetworkSessionList::exit_request()
-{
-	exiting = true;
-}
-void NetworkSessionList::at_exit()
-{
+void NetworkSessionList::exit_request() { exiting = true; }
+void NetworkSessionList::at_exit() {
 	for (auto session_list : deinit_list)
 		session_list->deinit();
 	deinit_list.clear();
 }
 
-static std::string remove_leading_whitespaces(std::string str)
-{
+static std::string remove_leading_whitespaces(std::string str) {
 	size_t i = 0;
 	while (i < str.size() && str[i] == ' ')
 		i++;
@@ -51,16 +43,14 @@ static std::string remove_leading_whitespaces(std::string str)
 }
 
 // libcurl callback functions
-static size_t curl_receive_data_callback_func(char *in_ptr, size_t, size_t len, void *user_data)
-{
+static size_t curl_receive_data_callback_func(char *in_ptr, size_t, size_t len, void *user_data) {
 	std::vector<u8> *out = (std::vector<u8> *)user_data;
 	out->insert(out->end(), in_ptr, in_ptr + len);
 
 	// Util_log_save("curl", "received : " + std::to_string(len));
 	return len;
 }
-static size_t curl_receive_headers_callback_func(char *in_ptr, size_t, size_t len, void *user_data)
-{
+static size_t curl_receive_headers_callback_func(char *in_ptr, size_t, size_t len, void *user_data) {
 	std::map<std::string, std::string> *out = (std::map<std::string, std::string> *)user_data;
 
 	std::string cur_line = std::string(in_ptr, in_ptr + len);
@@ -69,12 +59,9 @@ static size_t curl_receive_headers_callback_func(char *in_ptr, size_t, size_t le
 	if (cur_line.size() && cur_line.back() == '\r')
 		cur_line.pop_back();
 	auto colon = std::find(cur_line.begin(), cur_line.end(), ':');
-	if (colon == cur_line.end())
-	{
+	if (colon == cur_line.end()) {
 		// Util_log_save("curl", "unknown header line : " + cur_line);
-	}
-	else
-	{
+	} else {
 		std::string header_name = remove_leading_whitespaces(std::string(cur_line.begin(), colon));
 		std::string header_content = remove_leading_whitespaces(std::string(colon + 1, cur_line.end()));
 		// Util_log_save("curl", "header line : " + header_name + " : " + header_content);
@@ -84,8 +71,7 @@ static size_t curl_receive_headers_callback_func(char *in_ptr, size_t, size_t le
 	}
 	return len;
 }
-static int curl_set_socket_options(void *, curl_socket_t sockfd, curlsocktype purpose)
-{
+static int curl_set_socket_options(void *, curl_socket_t sockfd, curlsocktype purpose) {
 	static const int SOCKET_BUFFER_MAX_SIZE = 0x8000;
 
 	// expand socket buffer size
@@ -94,14 +80,12 @@ static int curl_set_socket_options(void *, curl_socket_t sockfd, curlsocktype pu
 	return CURL_SOCKOPT_OK;
 }
 static int curl_progress_callback_func(void *data, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal,
-                                       curl_off_t ulnow)
-{
+                                       curl_off_t ulnow) {
 	if (*(std::function<void(u64, u64)> *)data)
 		(*(std::function<void(u64, u64)> *)data)(dlnow, dltotal);
 	return CURL_PROGRESSFUNC_CONTINUE;
 }
-static int curl_debug_callback_func(CURL *handle, curl_infotype type, char *data, size_t size, void *userptr)
-{
+static int curl_debug_callback_func(CURL *handle, curl_infotype type, char *data, size_t size, void *userptr) {
 	std::string prefix;
 	if (type == CURLINFO_HEADER_OUT)
 		prefix = "h>";
@@ -119,10 +103,8 @@ static int curl_debug_callback_func(CURL *handle, curl_infotype type, char *data
 	return 0;
 }
 
-void NetworkSessionList::curl_add_request(const HttpRequest &request, NetworkResult *res)
-{
-	if (!curl_multi)
-	{
+void NetworkSessionList::curl_add_request(const HttpRequest &request, NetworkResult *res) {
+	if (!curl_multi) {
 		curl_multi = curl_multi_init();
 		curl_multi_setopt(curl_multi, CURLMOPT_PIPELINING, CURLPIPE_MULTIPLEX);
 	}
@@ -161,30 +143,24 @@ void NetworkSessionList::curl_add_request(const HttpRequest &request, NetworkRes
 	curl_multi_add_handle(curl_multi, curl);
 	curl_requests.push_back({curl, res, curl_errbuf, request.url, request.on_finish});
 }
-CURLMcode NetworkSessionList::curl_perform_requests()
-{
+CURLMcode NetworkSessionList::curl_perform_requests() {
 	auto read_multi_info = [this]() {
 		CURLMsg *msg;
 		int msg_left;
-		while ((msg = curl_multi_info_read(curl_multi, &msg_left)))
-		{
-			if (msg->msg == CURLMSG_DONE)
-			{
+		while ((msg = curl_multi_info_read(curl_multi, &msg_left))) {
+			if (msg->msg == CURLMSG_DONE) {
 				CURL *curl = msg->easy_handle;
 
 				int request_index = -1;
-				for (size_t i = 0; i < curl_requests.size(); i++)
-				{
-					if (curl_requests[i].curl == msg->easy_handle)
-					{
+				for (size_t i = 0; i < curl_requests.size(); i++) {
+					if (curl_requests[i].curl == msg->easy_handle) {
 						request_index = i;
 						break;
 					}
 				}
 				// Util_log_save("bench", "finished #" + std::to_string(request_index));
 
-				if (request_index == -1)
-				{
+				if (request_index == -1) {
 					logger.error("curl", "unexpected : while processing multi message corresponding request not found");
 					continue;
 				}
@@ -192,8 +168,7 @@ CURLMcode NetworkSessionList::curl_perform_requests()
 				NetworkResult &res = *req.res;
 
 				CURLcode each_result = msg->data.result;
-				if (each_result == CURLE_OK)
-				{
+				if (each_result == CURLE_OK) {
 					long status_code;
 					curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status_code);
 					res.status_code = status_code;
@@ -203,9 +178,7 @@ CURLMcode NetworkSessionList::curl_perform_requests()
 					res.redirected_url = redirected_url;
 					if (res.redirected_url != req.orig_url)
 						logger.info("curl", "redir : " + res.redirected_url);
-				}
-				else
-				{
+				} else {
 					logger.error("curl",
 					             std::string("deep fail : ") + curl_easy_strerror(each_result) + " / " + req.errbuf);
 					res.fail = true;
@@ -218,15 +191,12 @@ CURLMcode NetworkSessionList::curl_perform_requests()
 	};
 
 	int running_request_num;
-	do
-	{
+	do {
 		CURLMcode res = curl_multi_perform(curl_multi, &running_request_num);
-		if (res)
-		{
+		if (res) {
 			std::string err = curl_multi_strerror(res);
 			logger.error("curl", "curl multi deep fail : " + err);
-			for (auto &i : curl_requests)
-			{
+			for (auto &i : curl_requests) {
 				i.res->fail = true;
 				i.res->error = err;
 			}
@@ -234,10 +204,8 @@ CURLMcode NetworkSessionList::curl_perform_requests()
 		}
 		if (running_request_num)
 			curl_multi_poll(curl_multi, NULL, 0, 10000, NULL);
-		if (exiting)
-		{
-			for (auto &i : curl_requests)
-			{
+		if (exiting) {
+			for (auto &i : curl_requests) {
 				i.res->fail = true;
 				i.res->error = "The app is exiting";
 			}
@@ -248,10 +216,8 @@ CURLMcode NetworkSessionList::curl_perform_requests()
 
 	return CURLM_OK;
 }
-void NetworkSessionList::curl_clear_requests()
-{
-	for (auto &i : curl_requests)
-	{
+void NetworkSessionList::curl_clear_requests() {
+	for (auto &i : curl_requests) {
 		free(i.errbuf);
 		curl_multi_remove_handle(curl_multi, i.curl);
 		curl_easy_cleanup(i.curl);
@@ -259,12 +225,10 @@ void NetworkSessionList::curl_clear_requests()
 	curl_requests.clear();
 }
 
-NetworkResult NetworkSessionList::perform(const HttpRequest &request)
-{
+NetworkResult NetworkSessionList::perform(const HttpRequest &request) {
 	NetworkResult result;
 
-	if (!this->inited)
-	{
+	if (!this->inited) {
 		result.fail = true;
 		result.error = "invalid session list";
 		return result;
@@ -275,14 +239,11 @@ NetworkResult NetworkSessionList::perform(const HttpRequest &request)
 	this->curl_clear_requests();
 	return result;
 }
-std::vector<NetworkResult> NetworkSessionList::perform(const std::vector<HttpRequest> &requests)
-{
+std::vector<NetworkResult> NetworkSessionList::perform(const std::vector<HttpRequest> &requests) {
 	std::vector<NetworkResult> results(requests.size());
 
-	if (!this->inited)
-	{
-		for (auto result : results)
-		{
+	if (!this->inited) {
+		for (auto result : results) {
 			result.fail = true;
 			result.error = "invalid session list";
 		}
@@ -296,19 +257,16 @@ std::vector<NetworkResult> NetworkSessionList::perform(const std::vector<HttpReq
 	return results;
 }
 
-std::string NetworkResult::get_header(std::string key)
-{
+std::string NetworkResult::get_header(std::string key) {
 	for (auto &c : key)
 		c = tolower(c);
 	return response_headers.count(key) ? response_headers[key] : "";
 }
 
 static bool exclusive_state_entered = false;
-void lock_network_state()
-{
+void lock_network_state() {
 	int res = 0;
-	if (!exclusive_state_entered)
-	{
+	if (!exclusive_state_entered) {
 		res = ndmuInit();
 		if (res != 0)
 			logger.error("init", "ndmuInit(): " + std::to_string(res));
@@ -318,11 +276,9 @@ void lock_network_state()
 		exclusive_state_entered = R_SUCCEEDED(res);
 	}
 }
-void unlock_network_state()
-{
+void unlock_network_state() {
 	int res = 0;
-	if (exclusive_state_entered)
-	{
+	if (exclusive_state_entered) {
 		res = NDMU_UnlockState();
 		if (R_SUCCEEDED(res))
 			res = NDMU_LeaveExclusiveState();

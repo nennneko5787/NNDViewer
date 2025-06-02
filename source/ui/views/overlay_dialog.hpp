@@ -2,8 +2,7 @@
 #include "overlay.hpp"
 
 // for margin
-struct OverlayDialogView : public OverlayView
-{
+struct OverlayDialogView : public OverlayView {
   public:
 	static constexpr int DEFAULT_DIALOG_WIDTH = 240;
 	static constexpr int DEFAULT_DIALOG_MESSAGE_HEIGHT = 30;
@@ -12,22 +11,14 @@ struct OverlayDialogView : public OverlayView
 
 	CallBackFuncType on_button_pressed;
 
-	VerticalListView *get_main_vertical_list_view()
-	{
-		return dynamic_cast<VerticalListView *>(subview);
-	}
-	TextView *get_message_view()
-	{
-		return dynamic_cast<TextView *>(get_main_vertical_list_view()->views[0]);
-	}
-	HorizontalListView *get_buttons_view()
-	{
+	VerticalListView *get_main_vertical_list_view() { return dynamic_cast<VerticalListView *>(subview); }
+	TextView *get_message_view() { return dynamic_cast<TextView *>(get_main_vertical_list_view()->views[0]); }
+	HorizontalListView *get_buttons_view() {
 		return dynamic_cast<HorizontalListView *>(get_main_vertical_list_view()->views[2]);
 	}
 
 	OverlayDialogView(double x0, double y0, double width, double height)
-	    : View(x0, y0), OverlayView(x0, y0, width, height)
-	{
+	    : View(x0, y0), OverlayView(x0, y0, width, height) {
 		subview = (new VerticalListView(0, 0, DEFAULT_DIALOG_WIDTH))
 		              ->set_views({(new TextView(0, 0, DEFAULT_DIALOG_WIDTH, DEFAULT_DIALOG_MESSAGE_HEIGHT))
 		                               ->set_x_alignment(TextView::XAlign::CENTER)
@@ -44,16 +35,14 @@ struct OverlayDialogView : public OverlayView
 		});
 	}
 	template <typename T>
-	OverlayDialogView *set_buttons(const std::vector<T> &button_strs, CallBackFuncType on_button_pressed)
-	{
+	OverlayDialogView *set_buttons(const std::vector<T> &button_strs, CallBackFuncType on_button_pressed) {
 		this->on_button_pressed = on_button_pressed;
 
 		HorizontalListView *buttons_view = get_buttons_view();
 		buttons_view->recursive_delete_subviews();
 
 		size_t n = button_strs.size();
-		for (size_t i = 0; i < button_strs.size(); i++)
-		{
+		for (size_t i = 0; i < button_strs.size(); i++) {
 			int width = (DEFAULT_DIALOG_WIDTH + 1) / n;
 			if (i < (DEFAULT_DIALOG_WIDTH + 1) % n)
 				width++;
@@ -79,7 +68,5 @@ struct OverlayDialogView : public OverlayView
 		}
 		return this;
 	}
-	virtual ~OverlayDialogView()
-	{
-	}
+	virtual ~OverlayDialogView() {}
 };

@@ -16,8 +16,7 @@
 
 #define MAX_THUMBNAIL_LOAD_REQUEST 12
 
-namespace WatchHistory
-{
+namespace WatchHistory {
 bool thread_suspend = false;
 bool already_init = false;
 bool exiting = false;
@@ -39,8 +38,7 @@ using namespace WatchHistory;
 
 static void update_watch_history(const std::vector<HistoryVideo> &new_watch_history);
 
-void History_init(void)
-{
+void History_init(void) {
 	logger.info("history/init", "Initializing...");
 
 	on_long_tap_dialog = new OverlayView(0, 0, 320, 240);
@@ -51,20 +49,15 @@ void History_init(void)
 	History_resume("");
 	already_init = true;
 }
-void History_exit(void)
-{
+void History_exit(void) {
 	already_init = false;
 	thread_suspend = false;
 	exiting = true;
 
 	logger.info("history/exit", "Exited.");
 }
-void History_suspend(void)
-{
-	thread_suspend = true;
-}
-void History_resume(std::string arg)
-{
+void History_suspend(void) { thread_suspend = true; }
+void History_resume(std::string arg) {
 	(void)arg;
 
 	if (main_view)
@@ -76,8 +69,7 @@ void History_resume(std::string arg)
 	update_watch_history(get_valid_watch_history());
 }
 
-static void update_watch_history(const std::vector<HistoryVideo> &new_watch_history)
-{
+static void update_watch_history(const std::vector<HistoryVideo> &new_watch_history) {
 	watch_history = new_watch_history;
 
 	if (main_view)
@@ -88,13 +80,11 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 	video_list_view = (new VerticalListView(0, 0, 320))
 	                      ->set_margin(SMALL_MARGIN)
 	                      ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HISTORY);
-	for (auto i : watch_history)
-	{
+	for (auto i : watch_history) {
 		std::string view_count_str;
 		{
 			std::string view_count_str_tmp = LOCALIZED(MY_VIEW_COUNT_WITH_NUMBER);
-			for (size_t j = 0; j < view_count_str_tmp.size();)
-			{
+			for (size_t j = 0; j < view_count_str_tmp.size();) {
 				if (j + 1 < view_count_str_tmp.size() && view_count_str_tmp[j] == '%' &&
 				    view_count_str_tmp[j + 1] == '0')
 					view_count_str += std::to_string(i.my_view_count), j += 2;
@@ -179,8 +169,7 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 });
 }
 
-void History_draw(void)
-{
+void History_draw(void) {
 	Hid_info key;
 	Util_hid_query_key_state(&key);
 
@@ -190,8 +179,7 @@ void History_draw(void)
 	CONTENT_Y_HIGHT = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
 	main_view->update_y_range(0, CONTENT_Y_HIGHT);
 
-	if (var_need_refresh || !var_eco_mode)
-	{
+	if (var_need_refresh || !var_eco_mode) {
 		var_need_refresh = false;
 		Draw_frame_ready();
 		video_draw_top_screen();
@@ -215,35 +203,26 @@ void History_draw(void)
 		Draw_touch_pos();
 
 		Draw_apply_draw();
-	}
-	else
+	} else
 		gspWaitForVBlank();
 
-	if (Util_err_query_error_show_flag())
-	{
+	if (Util_err_query_error_show_flag()) {
 		Util_err_main(key);
-	}
-	else if (Util_expl_query_show_flag())
-	{
+	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
-	}
-	else
-	{
+	} else {
 		if (on_long_tap_dialog->is_visible)
 			on_long_tap_dialog->update(key);
-		else
-		{
+		else {
 			update_overlay_menu(&key);
 
 			main_view->update(key);
-			if (clicked_url != "")
-			{
+			if (clicked_url != "") {
 				global_intent.next_scene = SceneType::VIDEO_PLAYER;
 				global_intent.arg = clicked_url;
 				clicked_url = "";
 			}
-			if (sort_request != -1)
-			{
+			if (sort_request != -1) {
 				auto tmp_watch_history = watch_history;
 				std::sort(tmp_watch_history.begin(), tmp_watch_history.end(),
 				          [](const HistoryVideo &i, const HistoryVideo &j) {
@@ -258,8 +237,7 @@ void History_draw(void)
 
 				sort_request = -1;
 			}
-			if (erase_request != "")
-			{
+			if (erase_request != "") {
 				// erase
 				std::vector<HistoryVideo> tmp_watch_history;
 				for (auto video : watch_history)

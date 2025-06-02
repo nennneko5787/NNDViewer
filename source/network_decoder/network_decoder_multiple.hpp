@@ -7,8 +7,7 @@
 #include "network_decoder.hpp"
 #include "network_downloader.hpp"
 
-class NetworkMultipleDecoder
-{
+class NetworkMultipleDecoder {
   private:
 	static constexpr int MAX_CACHE_FRAGMENTS_NUM = 10;
 	static constexpr int MAX_LIVESTREAM_RETRY = 2;
@@ -55,35 +54,25 @@ class NetworkMultipleDecoder
 	volatile const bool &ready = decoder.ready;
 
 	volatile bool filter_update_request = false;
-	void set_preamp(double volume)
-	{
+	void set_preamp(double volume) {
 		decoder.filter.volume_request = volume;
 		filter_update_request = true;
 	}
-	void set_tempo(double tempo)
-	{
+	void set_tempo(double tempo) {
 		decoder.filter.tempo_request = tempo;
 		filter_update_request = true;
 	}
-	void set_pitch(double pitch)
-	{
+	void set_pitch(double pitch) {
 		decoder.filter.pitch_request = pitch;
 		filter_update_request = true;
 	}
-	void set_equalizer_value(int i, double value)
-	{
+	void set_equalizer_value(int i, double value) {
 		decoder.filter.equalizer_values_request[i] = value;
 		filter_update_request = true;
 	}
-	double get_tempo()
-	{
-		return decoder.filter.tempo;
-	}
+	double get_tempo() { return decoder.filter.tempo; }
 
-	const char *get_network_waiting_status()
-	{
-		return decoder.get_network_waiting_status();
-	}
+	const char *get_network_waiting_status() { return decoder.get_network_waiting_status(); }
 
 	NetworkMultipleDecoder() = default;
 
@@ -95,54 +84,25 @@ class NetworkMultipleDecoder
 	                        bool adjust_timestamp, bool request_hw_decoder);
 
 	void livestream_initer_thread_func();
-	void request_thread_exit()
-	{
-		initer_exit_request = true;
-	}
+	void request_thread_exit() { initer_exit_request = true; }
 
-	void set_frame_cores_enabled(bool *enabled)
-	{
-		decoder.set_frame_cores_enabled(enabled);
-	}
-	void set_slice_cores_enabled(bool *enabled)
-	{
-		decoder.set_slice_cores_enabled(enabled);
-	}
-	void request_avformat_reinit()
-	{
-		decoder.avformat_reinit_request[0] = decoder.avformat_reinit_request[1] = true;
-	}
+	void set_frame_cores_enabled(bool *enabled) { decoder.set_frame_cores_enabled(enabled); }
+	void set_slice_cores_enabled(bool *enabled) { decoder.set_slice_cores_enabled(enabled); }
+	void request_avformat_reinit() { decoder.avformat_reinit_request[0] = decoder.avformat_reinit_request[1] = true; }
 
 	using VideoFormatInfo = NetworkDecoder::VideoFormatInfo;
 	using AudioFormatInfo = NetworkDecoder::AudioFormatInfo;
-	VideoFormatInfo get_video_info()
-	{
-		return decoder.get_video_info();
-	}
-	AudioFormatInfo get_audio_info()
-	{
-		return decoder.get_audio_info();
-	}
+	VideoFormatInfo get_video_info() { return decoder.get_video_info(); }
+	AudioFormatInfo get_audio_info() { return decoder.get_audio_info(); }
 
-	size_t get_raw_buffer_num()
-	{
-		return decoder.get_raw_buffer_num();
-	}
-	size_t get_raw_buffer_num_max()
-	{
-		return decoder.get_raw_buffer_num_max();
-	}
+	size_t get_raw_buffer_num() { return decoder.get_raw_buffer_num(); }
+	size_t get_raw_buffer_num_max() { return decoder.get_raw_buffer_num_max(); }
 
-	double get_duration()
-	{
+	double get_duration() {
 		return duration_first_fragment + (fragment_len != -1 ? std::min(seq_num - 1, (int)seq_head) * fragment_len : 0);
 	}
-	double get_forward_buffer()
-	{
-		return fragment_len == -1 ? 0 : (seq_buffered_head - seq_using - 1) * fragment_len;
-	}
-	double get_timestamp_from_bar_pos(double pos)
-	{
+	double get_forward_buffer() { return fragment_len == -1 ? 0 : (seq_buffered_head - seq_using - 1) * fragment_len; }
+	double get_timestamp_from_bar_pos(double pos) {
 		pos = std::min(1.0, std::max(0.0, pos));
 		double duration = get_duration();
 		if (is_livestream && !adjust_timestamp)
@@ -150,8 +110,7 @@ class NetworkMultipleDecoder
 		else
 			return duration * pos;
 	}
-	double get_bar_pos_from_timestamp(double timestamp)
-	{
+	double get_bar_pos_from_timestamp(double timestamp) {
 		double duration = get_duration();
 		double res;
 		if (is_livestream && !adjust_timestamp)
@@ -168,22 +127,17 @@ class NetworkMultipleDecoder
 	PacketType next_decode_type();
 
 	using DecoderType = NetworkDecoder::DecoderType;
-	DecoderType get_decoder_type()
-	{
-		return decoder.get_decoder_type();
-	}
+	DecoderType get_decoder_type() { return decoder.get_decoder_type(); }
 
 	// decode the previously read video packet
 	// decoded image is stored internally and can be acquired via get_decoded_video_frame()
-	Result_with_string decode_video(int *width, int *height, bool *key_frame)
-	{
+	Result_with_string decode_video(int *width, int *height, bool *key_frame) {
 		auto res = decoder.decode_video(width, height, key_frame);
 		return res;
 	}
 
 	// decode the previously read audio packet
-	Result_with_string decode_audio(int *size, u8 **data, double *cur_pos)
-	{
+	Result_with_string decode_audio(int *size, u8 **data, double *cur_pos) {
 		check_filter_update();
 		auto res = decoder.decode_audio(size, data, cur_pos);
 		return res;
@@ -191,8 +145,7 @@ class NetworkMultipleDecoder
 
 	// get the previously decoded video frame raw data
 	// the pointer stored in *data should NOT be freed
-	Result_with_string get_decoded_video_frame(int width, int height, u8 **data, double *cur_pos)
-	{
+	Result_with_string get_decoded_video_frame(int width, int height, u8 **data, double *cur_pos) {
 		auto res = decoder.get_decoded_video_frame(width, height, data, cur_pos);
 		return res;
 	}

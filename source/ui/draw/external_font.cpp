@@ -53,25 +53,18 @@
     6804 ~ 7571  (768) Miscellaneous symbols and pictographs
 */
 
-static bool inline is_top_byte(u32 c)
-{
-	return (c & 0xC0) != 0x80;
-}
+static bool inline is_top_byte(u32 c) { return (c & 0xC0) != 0x80; }
 /*
     Characters that are not provided in the font but not printed as '?' either, thus "ignored"
     E2 80 8? (U+200?) : Various Whitespaces(EN QUAD, EM QUAD, etc...)
     EF B8 8? (U+FE0?) : Variation Selectors
 */
-static bool inline is_ignored_character(u32 c)
-{
-	return (c >> 4) == 0xE2808 || (c >> 4) == 0xEFB88;
-}
+static bool inline is_ignored_character(u32 c) { return (c >> 4) == 0xE2808 || (c >> 4) == 0xEFB88; }
 
 // For performance reasons, it handles multibyte characters by groups of 64 consecutive characters
 // For multibyte characters the last byte always begins with 0b10, so one group corresponds to one combination of the
 // upper byte(s) There are currently 144 groups
-struct FontTable
-{
+struct FontTable {
 	std::string font_block_names[FONT_BLOCK_NUM];
 	int font_block_char_num[FONT_BLOCK_NUM] = {
 	    128, 96, 96,  80,  112, 135, 256, 48,  89, 88,  255,  128, 79,  72,  96,  88,  90,
@@ -109,40 +102,32 @@ struct FontTable
 
 	// returns (u32) -1 if it's out of the loaded font
 	// in case of an invalid utf-8 char, it may return wrong answer but does not cause out-out-bounds access
-	u32 char_to_font_index(u32 c)
-	{
+	u32 char_to_font_index(u32 c) {
 		if (c < 0x80)
 			return c;
 
 		u32 c2 = c >> 8;
 		u8 group_index;
-		if (c2 <= TWO_BYTE_HIGH)
-		{
+		if (c2 <= TWO_BYTE_HIGH) {
 			if (c2 < TWO_BYTE_LOW)
 				return -1;
 			group_index = group_index_2[c2 - TWO_BYTE_LOW];
-		}
-		else if (c2 <= THREE_BYTE_HIGH)
-		{
+		} else if (c2 <= THREE_BYTE_HIGH) {
 			if (c2 < THREE_BYTE_LOW)
 				return -1;
 			group_index = group_index_3[c2 - THREE_BYTE_LOW];
-		}
-		else if (c2 <= FOUR_BYTE_HIGH)
-		{
+		} else if (c2 <= FOUR_BYTE_HIGH) {
 			if (c2 < FOUR_BYTE_LOW)
 				return -1;
 			group_index = group_index_4[c2 - FOUR_BYTE_LOW];
-		}
-		else
+		} else
 			return -1;
 		if (group_index == (u8)-1)
 			return -1;
 		return 0x80 + ((u32)group_index << 6) + (c & 63);
 	}
 
-	void load_initial()
-	{
+	void load_initial() {
 		u8 *fs_buffer = (u8 *)malloc(0x8000);
 		u32 size_read = 0;
 		Result_with_string result;
@@ -175,28 +160,22 @@ struct FontTable
 		std::fill(std::begin(group_index_2), std::end(group_index_2), (u8)-1);
 		std::fill(std::begin(group_index_3), std::end(group_index_3), (u8)-1);
 		std::fill(std::begin(group_index_4), std::end(group_index_4), (u8)-1);
-		for (int i = 0; i < characters; i++)
-		{
+		for (int i = 0; i < characters; i++) {
 			u32 c = font_samples[i];
 			u32 c2 = c >> 8;
 			if (!c2)
 				continue;
-			if (c2 < 0x100)
-			{
+			if (c2 < 0x100) {
 				if (c2 < TWO_BYTE_LOW || c2 > TWO_BYTE_HIGH)
 					logger.error(DEF_EXTFONT_INIT_STR, "Unknown character in sample: " + std::to_string(c));
 				else
 					group_index_2[c2 - TWO_BYTE_LOW] = 0; // flag indicating the group is used
-			}
-			else if (c2 < 0x10000)
-			{
+			} else if (c2 < 0x10000) {
 				if (c2 < THREE_BYTE_LOW || c2 > THREE_BYTE_HIGH)
 					logger.error(DEF_EXTFONT_INIT_STR, "Unknown character in sample: " + std::to_string(c));
 				else
 					group_index_3[c2 - THREE_BYTE_LOW] = 0; // flag indicating the group is used
-			}
-			else
-			{
+			} else {
 				if (c2 < FOUR_BYTE_LOW || c2 > FOUR_BYTE_HIGH)
 					logger.error(DEF_EXTFONT_INIT_STR, "Unknown character in sample: " + std::to_string(c));
 				else
@@ -240,14 +219,12 @@ struct FontTable
 		// clear font_images
 		memset(font_images, 0, sizeof(font_images));
 	}
-	void deinit()
-	{
+	void deinit() {
 		free(font_samples);
 		font_samples = NULL;
 	}
 
-	void unload_font_block(int block_id)
-	{
+	void unload_font_block(int block_id) {
 		int start = font_block_start_index[block_id];
 		int end = font_block_start_index[block_id + 1];
 		Draw_free_texture(5 + block_id);
@@ -255,8 +232,7 @@ struct FontTable
 			font_images[j].tex = NULL, font_images[j].subtex = NULL;
 	}
 
-	Result_with_string load_font_block(int block_id)
-	{
+	Result_with_string load_font_block(int block_id) {
 		int start_index = font_block_start_index[block_id];
 		int end_index = font_block_start_index[block_id + 1];
 		int char_num = font_block_char_num[block_id];
@@ -264,11 +240,9 @@ struct FontTable
 		                                              block_id + 5, font_images, start_index, char_num);
 		// move them to the correct position(due to gaps, the correct position may be later than where it is now)
 		int base = std::accumulate(font_block_char_num, font_block_char_num + block_id, 0);
-		for (int i = char_num; i--;)
-		{
+		for (int i = char_num; i--;) {
 			int to = char_to_font_index(font_samples[base + i]);
-			if (to > start_index + i)
-			{
+			if (to > start_index + i) {
 				font_images[to] = font_images[start_index + i];
 				font_images[start_index + i].tex = NULL;
 				font_images[start_index + i].subtex = NULL;
@@ -277,34 +251,27 @@ struct FontTable
 				logger.error("to < i (" + std::to_string(to) + " < " + std::to_string(start_index + i) + ")");
 		}
 
-		if (result.code == 0)
-		{
-			for (int i = 0; i < char_num; i++)
-			{
+		if (result.code == 0) {
+			for (int i = 0; i < char_num; i++) {
 				int index = char_to_font_index(font_samples[base + i]);
 				C3D_TexSetFilter(font_images[index].tex, GPU_LINEAR, GPU_LINEAR);
 				C3D_TexSetWrap(font_images[index].tex, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
 			}
-		}
-		else
+		} else
 			unload_font_block(block_id);
 		return result;
 	}
 	// returns the number of characters written to *out
-	int parse_utf8_str_to_u32(const char *in, u32 *out, int out_size)
-	{
+	int parse_utf8_str_to_u32(const char *in, u32 *out, int out_size) {
 		while (!is_top_byte(*in))
 			in++; // NULL is also a top byte
 		int i;
-		for (i = 0; i < out_size && *in;)
-		{
+		for (i = 0; i < out_size && *in;) {
 			u32 cur_c = 0;
 			int j;
-			for (j = 1; j <= 4; j++)
-			{
+			for (j = 1; j <= 4; j++) {
 				cur_c = (cur_c << 8) + in[j - 1];
-				if (is_top_byte(in[j]))
-				{
+				if (is_top_byte(in[j])) {
 					out[i++] = cur_c;
 					in += j;
 					break;
@@ -316,11 +283,9 @@ struct FontTable
 		}
 		return i;
 	}
-	void sort_rtl(u32 *s, int n)
-	{
+	void sort_rtl(u32 *s, int n) {
 		int reverse_start = -1;
-		for (int i = 0; i < n; i++)
-		{
+		for (int i = 0; i < n; i++) {
 			bool is_right_to_left = false;
 
 			if (s[i] == RLM)
@@ -330,9 +295,8 @@ struct FontTable
 				    (std::find(rtl_characters, rtl_characters + rtl_char_num, s[i]) != rtl_characters + rtl_char_num);
 
 			if (is_right_to_left && reverse_start == -1)
-				reverse_start = i; // start of reverse characters
-			if (!is_right_to_left && reverse_start != -1)
-			{ // end of reverse characters
+				reverse_start = i;                          // start of reverse characters
+			if (!is_right_to_left && reverse_start != -1) { // end of reverse characters
 				std::reverse(s + reverse_start, s + i);
 				reverse_start = -1;
 			}
@@ -341,16 +305,9 @@ struct FontTable
 			std::reverse(s + reverse_start, s + n);
 	}
 
-	bool is_font_available(int index)
-	{
-		return font_images[index].subtex;
-	}
-	float get_width_by_index(int index)
-	{
-		return font_images[index].subtex->width;
-	}
-	float get_width_one(u32 c, float size)
-	{
+	bool is_font_available(int index) { return font_images[index].subtex; }
+	float get_width_by_index(int index) { return font_images[index].subtex->width; }
+	float get_width_one(u32 c, float size) {
 		u32 index = char_to_font_index(c);
 		// out of bounds or font not loaded/unused character -> the width of <?>
 		if (index != (u32)-1)
@@ -360,8 +317,7 @@ struct FontTable
 			                                                        : (get_width_by_index(0) + INTERVAL_OFFSET) * size;
 		return (get_width_by_index(index) + INTERVAL_OFFSET) * size;
 	}
-	float get_width(const std::string &s, float size)
-	{
+	float get_width(const std::string &s, float size) {
 		u32 *buf = (u32 *)malloc(sizeof(u32) * s.size());
 		int char_num = parse_utf8_str_to_u32(s.c_str(), buf, s.size());
 		float res = 0;
@@ -372,17 +328,14 @@ struct FontTable
 	}
 
 	void draw(u32 *s, size_t len, float x, float y, float texture_size_x, float texture_size_y, int abgr8888,
-	          float *out_width)
-	{
+	          float *out_width) {
 		float x_offset = 0.0;
 
-		for (size_t i = 0; i < len; i++)
-		{
+		for (size_t i = 0; i < len; i++) {
 			if (!s[i])
 				break;
 			u32 index = char_to_font_index(s[i]);
-			if (index == (u32)-1)
-			{
+			if (index == (u32)-1) {
 				if (is_ignored_character(s[i]))
 					continue;
 				index = 0; // index 0: <?>
@@ -399,8 +352,7 @@ struct FontTable
 };
 static FontTable font_table;
 
-namespace ExtFont
-{
+namespace ExtFont {
 // zero-cleared
 bool font_block_loaded[FONT_BLOCK_NUM];
 volatile bool font_block_requested_state[FONT_BLOCK_NUM];
@@ -412,16 +364,12 @@ volatile bool loader_thread_should_be_running = false;
 }; // namespace ExtFont
 using namespace ExtFont;
 
-static void loader_thread_func(void *)
-{
-	while (loader_thread_should_be_running)
-	{
+static void loader_thread_func(void *) {
+	while (loader_thread_should_be_running) {
 		// external font
 		for (int i = 0; i < FONT_BLOCK_NUM; i++)
-			if (font_block_loaded[i] != font_block_requested_state[i])
-			{
-				if (font_block_requested_state[i])
-				{ // load
+			if (font_block_loaded[i] != font_block_requested_state[i]) {
+				if (font_block_requested_state[i]) { // load
 					auto result = font_table.load_font_block(i);
 					if (result.code != 0)
 						logger.error(DEF_EXTFONT_LOAD_FONT_THREAD_STR,
@@ -430,23 +378,18 @@ static void loader_thread_func(void *)
 						             result.code);
 					else
 						font_block_loaded[i] = true;
-				}
-				else
-				{ // unload
+				} else { // unload
 					font_block_loaded[i] = false;
 					font_table.unload_font_block(i);
 				}
 			}
 		// system font
 		for (int i = 0; i < SYSTEM_FONT_NUM; i++)
-			if (system_font_loaded[i] != system_font_requested_state[i])
-			{
-				if (system_font_requested_state[i])
-				{ // load
+			if (system_font_loaded[i] != system_font_requested_state[i]) {
+				if (system_font_requested_state[i]) { // load
 					if (i == var_system_region)
 						system_font_loaded[i] = true; // already loaded
-					else
-					{
+					else {
 						auto result = Draw_load_system_font(i);
 						if (result.code != 0)
 							logger.error(DEF_EXTFONT_LOAD_FONT_THREAD_STR,
@@ -456,11 +399,8 @@ static void loader_thread_func(void *)
 						else
 							system_font_loaded[i] = true;
 					}
-				}
-				else
-				{ // unload
-					if (i != var_system_region)
-					{
+				} else { // unload
+					if (i != var_system_region) {
 						system_font_loaded[i] = false;
 						Draw_free_system_font(i);
 					}
@@ -470,8 +410,7 @@ static void loader_thread_func(void *)
 	}
 }
 
-void Extfont_init(void)
-{
+void Extfont_init(void) {
 	logger.info(DEF_EXTFONT_INIT_STR, "Initializing...");
 
 	font_table.load_initial();
@@ -481,8 +420,7 @@ void Extfont_init(void)
 	logger.info(DEF_EXTFONT_INIT_STR, "Initialized.");
 }
 
-void Extfont_exit(void)
-{
+void Extfont_exit(void) {
 	logger.info(DEF_EXTFONT_EXIT_STR, "Exiting...");
 
 	loader_thread_should_be_running = false;
@@ -494,45 +432,26 @@ void Extfont_exit(void)
 	logger.info(DEF_EXTFONT_EXIT_STR, "Exited.");
 }
 
-void Extfont_request_extfont_status(int i, bool loaded)
-{
-	font_block_requested_state[i] = loaded;
-}
-void Extfont_request_sysfont_status(int i, bool loaded)
-{
-	system_font_requested_state[i] = loaded;
-}
-bool Extfont_is_extfont_loaded(int block_id)
-{
+void Extfont_request_extfont_status(int i, bool loaded) { font_block_requested_state[i] = loaded; }
+void Extfont_request_sysfont_status(int i, bool loaded) { system_font_requested_state[i] = loaded; }
+bool Extfont_is_extfont_loaded(int block_id) {
 	my_assert(block_id >= 0 && block_id < FONT_BLOCK_NUM);
 	return font_block_loaded[block_id];
 }
-bool Extfont_is_sysfont_loaded(int id)
-{
+bool Extfont_is_sysfont_loaded(int id) {
 	my_assert(id >= 0 && id < SYSTEM_FONT_NUM);
 	return system_font_loaded[id];
 }
 
-float Extfont_get_width_one(u32 c, float size)
-{
-	return font_table.get_width_one(c, size);
-}
-float Extfont_get_width(const std::string &s, float size)
-{
-	return font_table.get_width(s, size);
-}
+float Extfont_get_width_one(u32 c, float size) { return font_table.get_width_one(c, size); }
+float Extfont_get_width(const std::string &s, float size) { return font_table.get_width(s, size); }
 
-int Extfont_parse_utf8_str_to_u32(const char *in, u32 *out, int out_size)
-{
+int Extfont_parse_utf8_str_to_u32(const char *in, u32 *out, int out_size) {
 	return font_table.parse_utf8_str_to_u32(in, out, out_size);
 }
-void Extfont_sort_rtl(u32 *s, int n)
-{
-	return font_table.sort_rtl(s, n);
-}
+void Extfont_sort_rtl(u32 *s, int n) { return font_table.sort_rtl(s, n); }
 
 void Extfont_draw_extfonts(u32 *s, size_t len, float x, float y, float texture_size_x, float texture_size_y,
-                           int abgr8888, float *out_width)
-{
+                           int abgr8888, float *out_width) {
 	font_table.draw(s, len, x, y, texture_size_x, texture_size_y, abgr8888, out_width);
 }

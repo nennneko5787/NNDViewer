@@ -10,12 +10,10 @@
 #define CAPTION_OVERLAY_MAX_WIDTH 280
 
 // drawn on the top screen
-struct CaptionOverlayView : public FixedSizeView
-{
+struct CaptionOverlayView : public FixedSizeView {
   private:
 	static constexpr int OVERLAY_SIDE_MARGIN = 3;
-	struct CaptionPiece
-	{
+	struct CaptionPiece {
 		float start_time;
 		float end_time;
 		std::vector<std::string> lines; // wrapped
@@ -26,21 +24,17 @@ struct CaptionOverlayView : public FixedSizeView
 	using CallBackFuncType = std::function<void(const CaptionOverlayView &)>;
 
 	CaptionOverlayView(double x0, double y0, double width, double height)
-	    : View(x0, y0), FixedSizeView(x0, y0, width, height)
-	{
+	    : View(x0, y0), FixedSizeView(x0, y0, width, height) {
 		is_touchable = false;
 	}
-	virtual ~CaptionOverlayView()
-	{
-	}
+	virtual ~CaptionOverlayView() {}
 
 	float cur_timestamp = 0;
 
-	CaptionOverlayView *set_caption_data(const std::vector<YouTubeVideoDetail::CaptionPiece> &caption_data)
-	{ // mandatory
+	CaptionOverlayView *
+	set_caption_data(const std::vector<YouTubeVideoDetail::CaptionPiece> &caption_data) { // mandatory
 		this->caption_data.clear();
-		for (auto caption_piece : caption_data)
-		{
+		for (auto caption_piece : caption_data) {
 			auto &cur_content = caption_piece.content;
 			if (cur_content == "" || cur_content == "\n")
 				continue;
@@ -51,8 +45,7 @@ struct CaptionOverlayView : public FixedSizeView
 
 			std::vector<std::string> cur_lines;
 			auto itr = cur_content.begin();
-			while (itr != cur_content.end())
-			{
+			while (itr != cur_content.end()) {
 				if (cur_lines.size() >= 10)
 					break;
 				auto next_itr = std::find(itr, cur_content.end(), '\n');
@@ -72,14 +65,12 @@ struct CaptionOverlayView : public FixedSizeView
 		return this;
 	}
 
-	void draw_() const override
-	{
+	void draw_() const override {
 		int start_pos;
 		{
 			int l = -1;
 			int r = caption_data.size();
-			while (r - l > 1)
-			{
+			while (r - l > 1) {
 				int m = l + ((r - l) >> 1);
 				if (caption_data[m].end_time < cur_timestamp)
 					l = m;
@@ -89,8 +80,7 @@ struct CaptionOverlayView : public FixedSizeView
 			start_pos = r;
 		}
 		std::vector<std::string> lines;
-		for (size_t i = start_pos; i < caption_data.size() && caption_data[i].start_time < cur_timestamp; i++)
-		{
+		for (size_t i = start_pos; i < caption_data.size() && caption_data[i].start_time < cur_timestamp; i++) {
 			auto &cur_lines = caption_data[i].lines;
 			lines.insert(lines.end(), cur_lines.begin(), cur_lines.end());
 		}
@@ -98,8 +88,7 @@ struct CaptionOverlayView : public FixedSizeView
 			lines.pop_back();
 
 		float start_y = 240 - 10 - DEFAULT_FONT_INTERVAL * lines.size();
-		for (size_t i = 0; i < lines.size(); i++)
-		{
+		for (size_t i = 0; i < lines.size(); i++) {
 			float width = Draw_get_width(lines[i], 0.5);
 
 			Draw_texture(var_square_image[0], 0xBB000000, (400 - width) / 2 - OVERLAY_SIDE_MARGIN,
@@ -107,7 +96,5 @@ struct CaptionOverlayView : public FixedSizeView
 			Draw(lines[i], (400 - width) / 2, start_y + i * DEFAULT_FONT_INTERVAL - 2, 0.5, 0.5, (u32)-1);
 		}
 	}
-	void update_(Hid_info key) override
-	{
-	}
+	void update_(Hid_info key) override {}
 };

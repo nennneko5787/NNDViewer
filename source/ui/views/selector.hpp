@@ -3,8 +3,7 @@
 #include "view.hpp"
 #include "../ui_common.hpp"
 
-struct SelectorView : public FixedSizeView
-{
+struct SelectorView : public FixedSizeView {
   private:
 	UI::FlexibleString<SelectorView> title;
 
@@ -20,40 +19,19 @@ struct SelectorView : public FixedSizeView
 	int button_num;
 	std::vector<UI::FlexibleString<SelectorView>> button_texts;
 
-	inline double get_title_height() const
-	{
-		return (std::string)title != "" ? DEFAULT_FONT_INTERVAL : 0;
-	}
-	inline double unit_num() const
-	{
-		return button_num * MARGIN_BUTTON_RATIO + (button_num + 1);
-	}
-	inline double margin_x_size() const
-	{
-		return (x1 - x0) / unit_num();
-	}
-	inline double button_x_size() const
-	{
-		return margin_x_size() * MARGIN_BUTTON_RATIO;
-	}
-	inline double button_x_left(int button_id) const
-	{
+	inline double get_title_height() const { return (std::string)title != "" ? DEFAULT_FONT_INTERVAL : 0; }
+	inline double unit_num() const { return button_num * MARGIN_BUTTON_RATIO + (button_num + 1); }
+	inline double margin_x_size() const { return (x1 - x0) / unit_num(); }
+	inline double button_x_size() const { return margin_x_size() * MARGIN_BUTTON_RATIO; }
+	inline double button_x_left(int button_id) const {
 		return x0 + margin_x_size() * (1 + button_id * (1 + MARGIN_BUTTON_RATIO));
 	}
-	inline double button_x_right(int button_id) const
-	{
+	inline double button_x_right(int button_id) const {
 		return x0 + margin_x_size() * (button_id + 1) * (1 + MARGIN_BUTTON_RATIO);
 	}
-	inline double button_y_pos() const
-	{
-		return y0 + get_title_height() + (y1 - y0 - get_title_height()) * 0.1;
-	}
-	inline double button_y_size() const
-	{
-		return (y1 - y0 - get_title_height()) * 0.8;
-	}
-	inline double get_button_id_from_x(double x) const
-	{
+	inline double button_y_pos() const { return y0 + get_title_height() + (y1 - y0 - get_title_height()) * 0.1; }
+	inline double button_y_size() const { return (y1 - y0 - get_title_height()) * 0.8; }
+	inline double get_button_id_from_x(double x) const {
 		int id = (x - x0) / margin_x_size() / (1 + MARGIN_BUTTON_RATIO);
 		if (id < 0 || id >= button_num)
 			return -1;
@@ -65,24 +43,15 @@ struct SelectorView : public FixedSizeView
 
 	CallBackFuncType on_change_func;
 
-	SelectorView(double x0, double y0, double width, double height) : View(x0, y0), FixedSizeView(x0, y0, width, height)
-	{
-	}
-	virtual ~SelectorView()
-	{
-	}
+	SelectorView(double x0, double y0, double width, double height)
+	    : View(x0, y0), FixedSizeView(x0, y0, width, height) {}
+	virtual ~SelectorView() {}
 
-	void reset_holding_status_() override
-	{
-		holding_button = -1;
-	}
-	void on_scroll() override
-	{
-		holding_button = -1;
-	}
+	void reset_holding_status_() override { holding_button = -1; }
+	void on_scroll() override { holding_button = -1; }
 
-	SelectorView *set_texts(const std::vector<UI::FlexibleString<SelectorView>> &button_texts, int init_selected)
-	{ // mandatory
+	SelectorView *set_texts(const std::vector<UI::FlexibleString<SelectorView>> &button_texts,
+	                        int init_selected) { // mandatory
 		this->button_num = button_texts.size();
 		this->button_texts = button_texts;
 		this->selected_button = init_selected;
@@ -95,24 +64,20 @@ struct SelectorView : public FixedSizeView
 	    this->selected_button = init_selected;
 	    return this;
 	}*/
-	SelectorView *set_title(const std::string &title)
-	{
+	SelectorView *set_title(const std::string &title) {
 		this->title = UI::FlexibleString<SelectorView>(title);
 		return this;
 	}
-	SelectorView *set_title(std::function<std::string(const SelectorView &)> title_func)
-	{
+	SelectorView *set_title(std::function<std::string(const SelectorView &)> title_func) {
 		this->title = UI::FlexibleString<SelectorView>(title_func, *this);
 		return this;
 	}
-	SelectorView *set_on_change(CallBackFuncType on_change_func)
-	{
+	SelectorView *set_on_change(CallBackFuncType on_change_func) {
 		this->on_change_func = on_change_func;
 		return this;
 	}
 
-	void draw_() const override
-	{
+	void draw_() const override {
 		Draw(title, x0 + SMALL_MARGIN, y0, 0.5, 0.5, DEFAULT_TEXT_COLOR);
 
 		Draw_texture(var_square_image[0], DEF_DRAW_WEAK_AQUA, button_x_left(selected_button), button_y_pos(),
@@ -121,8 +86,7 @@ struct SelectorView : public FixedSizeView
 			Draw_x_centered(button_texts[i], button_x_left(i), button_x_right(i), button_y_pos(), 0.5, 0.5,
 			                DEFAULT_TEXT_COLOR);
 	}
-	void update_(Hid_info key) override
-	{
+	void update_(Hid_info key) override {
 		if (key.p_touch && key.touch_y >= button_y_pos() && key.touch_y < button_y_pos() + button_y_size())
 			holding_button = get_button_id_from_x(key.touch_x);
 
@@ -132,8 +96,7 @@ struct SelectorView : public FixedSizeView
 
 		if (holding_button != -1 && current_holding_button != -1 && holding_button != current_holding_button)
 			holding_button = -1;
-		if (holding_button != -1 && key.touch_x == -1)
-		{
+		if (holding_button != -1 && key.touch_x == -1) {
 			selected_button = holding_button;
 			var_need_refresh = true;
 			if (on_change_func)

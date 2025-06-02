@@ -2,8 +2,7 @@
 #include "types.hpp"
 #include "scene_switcher.hpp"
 
-enum class ThumbnailType
-{
+enum class ThumbnailType {
 	DEFAULT,
 	VIDEO_THUMBNAIL, // default.jpg is offered in 4:3 aspect ratio, so trim to 16:9
 	VIDEO_BANNER,    // if width is 1060, it's manually trimmed into 1024
