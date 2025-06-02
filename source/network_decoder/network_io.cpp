@@ -30,15 +30,17 @@ void NetworkSessionList::deinit() {
 }
 void NetworkSessionList::exit_request() { exiting = true; }
 void NetworkSessionList::at_exit() {
-	for (auto session_list : deinit_list)
+	for (auto session_list : deinit_list) {
 		session_list->deinit();
+	}
 	deinit_list.clear();
 }
 
 static std::string remove_leading_whitespaces(std::string str) {
 	size_t i = 0;
-	while (i < str.size() && str[i] == ' ')
+	while (i < str.size() && str[i] == ' ') {
 		i++;
+	}
 	return str.substr(i, str.size() - i);
 }
 
@@ -54,10 +56,12 @@ static size_t curl_receive_headers_callback_func(char *in_ptr, size_t, size_t le
 	std::map<std::string, std::string> *out = (std::map<std::string, std::string> *)user_data;
 
 	std::string cur_line = std::string(in_ptr, in_ptr + len);
-	if (cur_line.size() && cur_line.back() == '\n')
+	if (cur_line.size() && cur_line.back() == '\n') {
 		cur_line.pop_back();
-	if (cur_line.size() && cur_line.back() == '\r')
+	}
+	if (cur_line.size() && cur_line.back() == '\r') {
 		cur_line.pop_back();
+	}
 	auto colon = std::find(cur_line.begin(), cur_line.end(), ':');
 	if (colon == cur_line.end()) {
 		// Util_log_save("curl", "unknown header line : " + cur_line);
@@ -65,8 +69,9 @@ static size_t curl_receive_headers_callback_func(char *in_ptr, size_t, size_t le
 		std::string header_name = remove_leading_whitespaces(std::string(cur_line.begin(), colon));
 		std::string header_content = remove_leading_whitespaces(std::string(colon + 1, cur_line.end()));
 		// Util_log_save("curl", "header line : " + header_name + " : " + header_content);
-		for (auto &c : header_name)
+		for (auto &c : header_name) {
 			c = tolower(c);
+		}
 		(*out)[header_name] = header_content;
 	}
 	return len;
@@ -81,24 +86,31 @@ static int curl_set_socket_options(void *, curl_socket_t sockfd, curlsocktype pu
 }
 static int curl_progress_callback_func(void *data, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal,
                                        curl_off_t ulnow) {
-	if (*(std::function<void(u64, u64)> *)data)
+	if (*(std::function<void(u64, u64)> *)data) {
 		(*(std::function<void(u64, u64)> *)data)(dlnow, dltotal);
+	}
 	return CURL_PROGRESSFUNC_CONTINUE;
 }
 static int curl_debug_callback_func(CURL *handle, curl_infotype type, char *data, size_t size, void *userptr) {
 	std::string prefix;
-	if (type == CURLINFO_HEADER_OUT)
+	if (type == CURLINFO_HEADER_OUT) {
 		prefix = "h>";
-	if (type == CURLINFO_HEADER_IN)
+	}
+	if (type == CURLINFO_HEADER_IN) {
 		prefix = "h<";
-	if (type == CURLINFO_DATA_OUT)
+	}
+	if (type == CURLINFO_DATA_OUT) {
 		prefix = "d>";
-	if (type == CURLINFO_SSL_DATA_OUT)
+	}
+	if (type == CURLINFO_SSL_DATA_OUT) {
 		prefix = "D>";
-	if (type == CURLINFO_DATA_IN)
+	}
+	if (type == CURLINFO_DATA_IN) {
 		prefix = "d<";
-	if (type == CURLINFO_SSL_DATA_IN)
+	}
+	if (type == CURLINFO_SSL_DATA_IN) {
 		prefix = "D<";
+	}
 	logger.info("curl", prefix + std::string(data, data + size));
 	return 0;
 }
@@ -136,8 +148,9 @@ void NetworkSessionList::curl_add_request(const HttpRequest &request, NetworkRes
 	curl_easy_setopt(curl, CURLOPT_URL, request.url.c_str());
 
 	struct curl_slist *request_headers_list = NULL;
-	for (auto i : request.headers)
+	for (auto i : request.headers) {
 		request_headers_list = curl_slist_append(request_headers_list, (i.first + ": " + i.second).c_str());
+	}
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, request_headers_list);
 
 	curl_multi_add_handle(curl_multi, curl);
@@ -176,16 +189,18 @@ CURLMcode NetworkSessionList::curl_perform_requests() {
 					char *redirected_url;
 					curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &redirected_url);
 					res.redirected_url = redirected_url;
-					if (res.redirected_url != req.orig_url)
+					if (res.redirected_url != req.orig_url) {
 						logger.info("curl", "redir : " + res.redirected_url);
+					}
 				} else {
 					logger.error("curl",
 					             std::string("deep fail : ") + curl_easy_strerror(each_result) + " / " + req.errbuf);
 					res.fail = true;
 					res.error = req.errbuf;
 				}
-				if (req.on_finish)
+				if (req.on_finish) {
 					req.on_finish(res, request_index);
+				}
 			}
 		}
 	};
@@ -202,8 +217,9 @@ CURLMcode NetworkSessionList::curl_perform_requests() {
 			}
 			return res;
 		}
-		if (running_request_num)
+		if (running_request_num) {
 			curl_multi_poll(curl_multi, NULL, 0, 10000, NULL);
+		}
 		if (exiting) {
 			for (auto &i : curl_requests) {
 				i.res->fail = true;
@@ -250,16 +266,18 @@ std::vector<NetworkResult> NetworkSessionList::perform(const std::vector<HttpReq
 		return results;
 	}
 
-	for (size_t i = 0; i < requests.size(); i++)
+	for (size_t i = 0; i < requests.size(); i++) {
 		this->curl_add_request(requests[i], &results[i]);
+	}
 	this->curl_perform_requests();
 	this->curl_clear_requests();
 	return results;
 }
 
 std::string NetworkResult::get_header(std::string key) {
-	for (auto &c : key)
+	for (auto &c : key) {
 		c = tolower(c);
+	}
 	return response_headers.count(key) ? response_headers[key] : "";
 }
 
@@ -268,11 +286,13 @@ void lock_network_state() {
 	int res = 0;
 	if (!exclusive_state_entered) {
 		res = ndmuInit();
-		if (res != 0)
+		if (res != 0) {
 			logger.error("init", "ndmuInit(): " + std::to_string(res));
+		}
 		res = NDMU_EnterExclusiveState(NDM_EXCLUSIVE_STATE_INFRASTRUCTURE);
-		if (R_SUCCEEDED(res))
+		if (R_SUCCEEDED(res)) {
 			res = NDMU_LockState(); // prevents ndm from switching to StreetPass when the lid is closed
+		}
 		exclusive_state_entered = R_SUCCEEDED(res);
 	}
 }
@@ -280,8 +300,9 @@ void unlock_network_state() {
 	int res = 0;
 	if (exclusive_state_entered) {
 		res = NDMU_UnlockState();
-		if (R_SUCCEEDED(res))
+		if (R_SUCCEEDED(res)) {
 			res = NDMU_LeaveExclusiveState();
+		}
 		ndmuExit();
 		exclusive_state_entered = R_FAILED(res);
 	}

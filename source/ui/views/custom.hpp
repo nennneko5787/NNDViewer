@@ -23,7 +23,8 @@ struct CustomView : public FixedSizeView {
 
 	void draw_() const override { draw_func(*this); }
 	void update_(Hid_info key) override {
-		if (update_func)
+		if (update_func) {
 			update_func(*this, key);
+		}
 	}
 };

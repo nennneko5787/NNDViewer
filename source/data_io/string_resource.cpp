@@ -5,10 +5,12 @@ static std::map<std::string, std::string> *string_resources = NULL;
 static std::map<std::string, std::string> *string_resources_alt = NULL;
 
 std::string get_string_resource(std::string id) {
-	if (!string_resources)
+	if (!string_resources) {
 		return "[SR Null Err]";
-	if (!string_resources->count(id))
+	}
+	if (!string_resources->count(id)) {
 		return "[SR Not Found]";
+	}
 	return (*string_resources)[id];
 }
 
@@ -35,10 +37,11 @@ Result_with_string load_string_resources(std::string lang) {
 	for (auto &item : *new_resources) {
 		std::string tmp_value;
 		for (size_t i = 0; i < item.second.size();) {
-			if (i + 1 < item.second.size() && item.second[i] == '\\' && item.second[i + 1] == 'n')
+			if (i + 1 < item.second.size() && item.second[i] == '\\' && item.second[i + 1] == 'n') {
 				tmp_value.push_back('\n'), i += 2;
-			else
+			} else {
 				tmp_value.push_back(item.second[i]), i++;
+			}
 		}
 		item.second = tmp_value;
 	}

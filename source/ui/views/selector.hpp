@@ -33,11 +33,13 @@ struct SelectorView : public FixedSizeView {
 	inline double button_y_size() const { return (y1 - y0 - get_title_height()) * 0.8; }
 	inline double get_button_id_from_x(double x) const {
 		int id = (x - x0) / margin_x_size() / (1 + MARGIN_BUTTON_RATIO);
-		if (id < 0 || id >= button_num)
+		if (id < 0 || id >= button_num) {
 			return -1;
+		}
 		double remainder = (x - x0) - id * margin_x_size() * (1 + MARGIN_BUTTON_RATIO);
-		if (remainder >= margin_x_size() && remainder <= margin_x_size() * (1 + MARGIN_BUTTON_RATIO))
+		if (remainder >= margin_x_size() && remainder <= margin_x_size() * (1 + MARGIN_BUTTON_RATIO)) {
 			return id;
+		}
 		return -1;
 	}
 
@@ -82,25 +84,30 @@ struct SelectorView : public FixedSizeView {
 
 		Draw_texture(var_square_image[0], DEF_DRAW_WEAK_AQUA, button_x_left(selected_button), button_y_pos(),
 		             button_x_size(), button_y_size());
-		for (int i = 0; i < button_num; i++)
+		for (int i = 0; i < button_num; i++) {
 			Draw_x_centered(button_texts[i], button_x_left(i), button_x_right(i), button_y_pos(), 0.5, 0.5,
 			                DEFAULT_TEXT_COLOR);
+		}
 	}
 	void update_(Hid_info key) override {
-		if (key.p_touch && key.touch_y >= button_y_pos() && key.touch_y < button_y_pos() + button_y_size())
+		if (key.p_touch && key.touch_y >= button_y_pos() && key.touch_y < button_y_pos() + button_y_size()) {
 			holding_button = get_button_id_from_x(key.touch_x);
+		}
 
 		int current_holding_button = get_button_id_from_x(key.touch_x);
-		if (key.touch_y != -1 && (key.touch_y < button_y_pos() || key.touch_y >= button_y_pos() + button_y_size()))
+		if (key.touch_y != -1 && (key.touch_y < button_y_pos() || key.touch_y >= button_y_pos() + button_y_size())) {
 			holding_button = -1;
+		}
 
-		if (holding_button != -1 && current_holding_button != -1 && holding_button != current_holding_button)
+		if (holding_button != -1 && current_holding_button != -1 && holding_button != current_holding_button) {
 			holding_button = -1;
+		}
 		if (holding_button != -1 && key.touch_x == -1) {
 			selected_button = holding_button;
 			var_need_refresh = true;
-			if (on_change_func)
+			if (on_change_func) {
 				on_change_func(*this);
+			}
 			changed_num++;
 			holding_button = -1;
 		}

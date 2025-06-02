@@ -15,11 +15,11 @@ Result_with_string Util_cam_init(std::string color_format) {
 		return result;
 	}
 
-	if (color_format == "bgr565")
+	if (color_format == "bgr565") {
 		color = OUTPUT_RGB_565;
-	else if (color_format == "yuv422")
+	} else if (color_format == "yuv422") {
 		color = OUTPUT_YUV_422;
-	else {
+	} else {
 		result.code = DEF_ERR_INVALID_ARG;
 		result.string = DEF_ERR_INVALID_ARG_STR;
 		return result;
@@ -189,23 +189,23 @@ Result_with_string Util_cam_set_resolution(int width, int height) {
 		return result;
 	}
 
-	if (width == 640 && height == 480)
+	if (width == 640 && height == 480) {
 		size = SIZE_VGA;
-	else if (width == 512 && height == 384)
+	} else if (width == 512 && height == 384) {
 		size = SIZE_DS_LCDx4;
-	else if (width == 400 && height == 240)
+	} else if (width == 400 && height == 240) {
 		size = SIZE_CTR_TOP_LCD;
-	else if (width == 352 && height == 288)
+	} else if (width == 352 && height == 288) {
 		size = SIZE_CIF;
-	else if (width == 320 && height == 240)
+	} else if (width == 320 && height == 240) {
 		size = SIZE_QVGA;
-	else if (width == 256 && height == 192)
+	} else if (width == 256 && height == 192) {
 		size = SIZE_DS_LCD;
-	else if (width == 176 && height == 144)
+	} else if (width == 176 && height == 144) {
 		size = SIZE_QCIF;
-	else if (width == 160 && height == 120)
+	} else if (width == 160 && height == 120) {
 		size = SIZE_QQVGA;
-	else {
+	} else {
 		result.code = DEF_ERR_INVALID_ARG;
 		result.string = DEF_ERR_INVALID_ARG_STR;
 		return result;

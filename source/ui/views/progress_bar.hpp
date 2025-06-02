@@ -33,8 +33,9 @@ struct ProgressBarView : public FixedSizeView {
 		Draw_texture(var_square_image[0], get_color(), (int)x0 + SMALL_MARGIN, (int)y0, width, (int)get_height());
 	}
 	void update_(Hid_info key) override {
-		if (progress != progress_displayed)
+		if (progress != progress_displayed) {
 			var_need_refresh = true;
+		}
 		progress_displayed =
 		    std::min(progress, progress_displayed + (progress - progress_displayed) * progress_displayed_change_speed);
 	}

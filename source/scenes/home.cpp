@@ -81,19 +81,22 @@ void Home_init(void) {
 	            {(new TextView(0, 0, 320, FEED_RELOAD_BUTTON_HEIGHT))
 	                 ->set_text((std::function<std::string()>)[]() {
 		                 auto res = LOCALIZED(RELOAD);
-		                 if (is_async_task_running(load_subscription_feed))
+		                 if (is_async_task_running(load_subscription_feed)) {
 			                 res += " (" + std::to_string(feed_loading_progress) + "/" +
 			                        std::to_string(feed_loading_total) + ")";
+		                 }
 		                 return res;
 	                 })
 	                 ->set_text_offset(SMALL_MARGIN, -1)
 	                 ->set_on_view_released([](View &) {
-		                 if (!is_async_task_running(load_subscription_feed))
+		                 if (!is_async_task_running(load_subscription_feed)) {
 			                 queue_async_task(load_subscription_feed, NULL);
+		                 }
 	                 })
 	                 ->set_get_background_color([](const View &view) -> u32 {
-		                 if (is_async_task_running(load_subscription_feed))
+		                 if (is_async_task_running(load_subscription_feed)) {
 			                 return LIGHT0_BACK_COLOR;
+		                 }
 		                 return View::STANDARD_BACKGROUND(view);
 	                 }),
 	             (new RuleView(0, 0, 320, SMALL_MARGIN))->set_margin(0)->set_get_background_color([](const View &) {
@@ -176,19 +179,22 @@ static void update_home_bottom_view(bool force_show_loading) {
 	if (home_info.has_more_results() || force_show_loading) {
 		home_videos_bottom_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 		                              ->set_text([]() {
-			                              if (home_info.error != "")
+			                              if (home_info.error != "") {
 				                              return home_info.error;
-			                              else
+			                              } else {
 				                              return LOCALIZED(LOADING);
+			                              }
 		                              })
 		                              ->set_x_alignment(TextView::XAlign::CENTER)
 		                              ->set_on_drawn([](View &) {
 			                              if (!is_async_task_running(load_home_page) &&
-			                                  !is_async_task_running(load_home_page_more) && home_info.error == "")
+			                                  !is_async_task_running(load_home_page_more) && home_info.error == "") {
 				                              queue_async_task(load_home_page_more, NULL);
+			                              }
 		                              });
-	} else
+	} else {
 		home_videos_bottom_view = new EmptyView(0, 0, 320, 0);
+	}
 	home_tab_view->set_views({home_videos_list_view, home_videos_bottom_view});
 }
 static void load_home_page(void *) {
@@ -203,8 +209,9 @@ static void load_home_page(void *) {
 
 	logger.info("home", "truncate/view creation start");
 	std::vector<View *> new_videos_view;
-	for (auto video : results.videos)
+	for (auto video : results.videos) {
 		new_videos_view.push_back(convert_video_to_view(video));
+	}
 	logger.info("home", "truncate/view creation end");
 
 	resource_lock.lock();
@@ -213,8 +220,9 @@ static void load_home_page(void *) {
 		home_videos_list_view->recursive_delete_subviews();
 		home_videos_list_view->set_views(new_videos_view);
 		update_home_bottom_view(false);
-	} else
+	} else {
 		home_info.error = results.error;
+	}
 	var_need_refresh = true;
 	resource_lock.unlock();
 }
@@ -224,8 +232,9 @@ static void load_home_page_more(void *) {
 
 	logger.info("home-c", "truncate/view creation start");
 	std::vector<View *> new_videos_view;
-	for (size_t i = home_info.videos.size(); i < new_result.videos.size(); i++)
+	for (size_t i = home_info.videos.size(); i < new_result.videos.size(); i++) {
 		new_videos_view.push_back(convert_video_to_view(new_result.videos[i]));
+	}
 	logger.info("home-c", "truncate/view creation end");
 
 	resource_lock.lock();
@@ -243,8 +252,9 @@ static void load_subscription_feed(void *) {
 	resource_lock.unlock();
 
 	std::vector<std::string> ids;
-	for (auto channel : channels)
+	for (auto channel : channels) {
 		ids.push_back(channel.id);
+	}
 	add_cpu_limit(ADDITIONAL_CPU_LIMIT);
 	auto results = youtube_load_channel_page_multi(ids, [](int cur, int total) {
 		feed_loading_progress = cur;
@@ -270,9 +280,11 @@ static void load_subscription_feed(void *) {
 		int loaded_cnt = 0;
 		for (auto video : result.videos) {
 			std::string date_number_str;
-			for (auto c : video.publish_date)
-				if (isdigit(c))
+			for (auto c : video.publish_date) {
+				if (isdigit(c)) {
 					date_number_str.push_back(c);
+				}
+			}
 
 			// 1 : seconds
 			char *end;
@@ -297,11 +309,12 @@ static void load_subscription_feed(void *) {
 			}
 			for (size_t i = 0; i < unit_list.size(); i++) {
 				bool matched = false;
-				for (auto pattern : unit_list[i])
+				for (auto pattern : unit_list[i]) {
 					if (video.publish_date.find(pattern) != std::string::npos) {
 						matched = true;
 						break;
 					}
+				}
 				if (matched) {
 					unit = i;
 					break;
@@ -311,8 +324,9 @@ static void load_subscription_feed(void *) {
 				logger.error("subsc", "failed to parse the unit of date : " + video.publish_date);
 				continue;
 			}
-			if (std::pair<int, int>{unit, number} > std::pair<int, int>{5, 2})
+			if (std::pair<int, int>{unit, number} > std::pair<int, int>{5, 2}) {
 				continue; // more than 2 months old
+			}
 			loaded_cnt++;
 			loaded_videos[{unit, number}].push_back(video);
 		}
@@ -393,21 +407,25 @@ void Home_draw(void) {
 		main_view->draw();
 		resource_lock.unlock();
 
-		if (video_playing_bar_show)
+		if (video_playing_bar_show) {
 			video_draw_playing_bar();
+		}
 		draw_overlay_menu(CONTENT_Y_HIGH - OVERLAY_MENU_ICON_SIZE - main_tab_view->tab_selector_height);
 
-		if (Util_expl_query_show_flag())
+		if (Util_expl_query_show_flag()) {
 			Util_expl_draw();
+		}
 
-		if (Util_err_query_error_show_flag())
+		if (Util_err_query_error_show_flag()) {
 			Util_err_draw();
+		}
 
 		Draw_touch_pos();
 
 		Draw_apply_draw();
-	} else
+	} else {
 		gspWaitForVBlank();
+	}
 
 	resource_lock.lock();
 
@@ -428,14 +446,17 @@ void Home_draw(void) {
 			global_intent.arg = clicked_url;
 			clicked_url = "";
 		}
-		if (video_playing_bar_show)
+		if (video_playing_bar_show) {
 			video_update_playing_bar(key);
+		}
 
-		if (key.p_a)
+		if (key.p_a) {
 			Search_show_search_keyboard();
+		}
 
-		if (key.p_b)
+		if (key.p_b) {
 			global_intent.next_scene = SceneType::BACK;
+		}
 	}
 	resource_lock.unlock();
 }

@@ -30,8 +30,9 @@ void misc_tasks_thread_func(void *arg) {
 		} else if (request[TASK_SAVE_SUBSCRIPTION]) {
 			request[TASK_SAVE_SUBSCRIPTION] = false;
 			save_subscription();
-		} else
+		} else {
 			usleep(50000);
+		}
 	}
 
 	logger.info("misc-task", "Thread exit.");

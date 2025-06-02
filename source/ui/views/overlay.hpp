@@ -30,8 +30,9 @@ struct OverlayView : public FixedSizeView {
 	void on_scroll() override { subview->on_scroll(); }
 	void reset_holding_status_() override { holding_outside = false; }
 	void recursive_delete_subviews() override {
-		if (subview)
+		if (subview) {
 			subview->recursive_delete_subviews();
+		}
 		delete subview;
 		subview = NULL;
 	}
@@ -44,12 +45,15 @@ struct OverlayView : public FixedSizeView {
 		bool in_outside = key.touch_x >= x0 && key.touch_x < x1 && key.touch_y >= y0 && key.touch_y < y1 &&
 		                  !(key.touch_x >= content_x() && key.touch_x < content_x() + subview->get_width() &&
 		                    key.touch_y >= content_y() && key.touch_y < content_y() + subview->get_height());
-		if (key.p_touch && in_outside)
+		if (key.p_touch && in_outside) {
 			holding_outside = true;
-		if (key.touch_x == -1 && holding_outside && on_cancel_func)
+		}
+		if (key.touch_x == -1 && holding_outside && on_cancel_func) {
 			on_cancel_func(*this);
-		if (!in_outside)
+		}
+		if (!in_outside) {
 			holding_outside = false;
+		}
 
 		subview->update(key, content_x(), content_y());
 	}

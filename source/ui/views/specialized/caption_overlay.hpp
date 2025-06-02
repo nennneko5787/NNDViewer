@@ -36,8 +36,9 @@ struct CaptionOverlayView : public FixedSizeView {
 		this->caption_data.clear();
 		for (auto caption_piece : caption_data) {
 			auto &cur_content = caption_piece.content;
-			if (cur_content == "" || cur_content == "\n")
+			if (cur_content == "" || cur_content == "\n") {
 				continue;
+			}
 
 			CaptionPiece cur_piece;
 			cur_piece.start_time = caption_piece.start_time;
@@ -46,17 +47,19 @@ struct CaptionOverlayView : public FixedSizeView {
 			std::vector<std::string> cur_lines;
 			auto itr = cur_content.begin();
 			while (itr != cur_content.end()) {
-				if (cur_lines.size() >= 10)
+				if (cur_lines.size() >= 10) {
 					break;
+				}
 				auto next_itr = std::find(itr, cur_content.end(), '\n');
 				auto tmp = truncate_str(std::string(itr, next_itr), CAPTION_OVERLAY_MAX_WIDTH, 10 - cur_lines.size(),
 				                        0.5, 0.5);
 				cur_lines.insert(cur_lines.end(), tmp.begin(), tmp.end());
 
-				if (next_itr != cur_content.end())
+				if (next_itr != cur_content.end()) {
 					itr = std::next(next_itr);
-				else
+				} else {
 					break;
+				}
 			}
 			cur_piece.lines = cur_lines;
 
@@ -72,10 +75,11 @@ struct CaptionOverlayView : public FixedSizeView {
 			int r = caption_data.size();
 			while (r - l > 1) {
 				int m = l + ((r - l) >> 1);
-				if (caption_data[m].end_time < cur_timestamp)
+				if (caption_data[m].end_time < cur_timestamp) {
 					l = m;
-				else
+				} else {
 					r = m;
+				}
 			}
 			start_pos = r;
 		}
@@ -84,8 +88,9 @@ struct CaptionOverlayView : public FixedSizeView {
 			auto &cur_lines = caption_data[i].lines;
 			lines.insert(lines.end(), cur_lines.begin(), cur_lines.end());
 		}
-		while (lines.size() && lines.back() == "")
+		while (lines.size() && lines.back() == "") {
 			lines.pop_back();
+		}
 
 		float start_y = 240 - 10 - DEFAULT_FONT_INTERVAL * lines.size();
 		for (size_t i = 0; i < lines.size(); i++) {

@@ -142,22 +142,28 @@ struct YouTubeVideoDetail {
 	bool comments_disabled;
 
 	bool has_next_video() const {
-		if (playlist.videos.size() && playlist.selected_index != (int)playlist.videos.size() - 1)
+		if (playlist.videos.size() && playlist.selected_index != (int)playlist.videos.size() - 1) {
 			return true;
-		for (auto suggestion : suggestions)
-			if (suggestion.type == YouTubeSuccinctItem::VIDEO)
+		}
+		for (auto suggestion : suggestions) {
+			if (suggestion.type == YouTubeSuccinctItem::VIDEO) {
 				return true;
+			}
+		}
 		return false;
 	}
 	bool has_next_video_in_playlist() const {
 		return playlist.videos.size() && playlist.selected_index != (int)playlist.videos.size() - 1;
 	}
 	YouTubeVideoSuccinct get_next_video() const {
-		if (playlist.videos.size() && playlist.selected_index != (int)playlist.videos.size() - 1)
+		if (playlist.videos.size() && playlist.selected_index != (int)playlist.videos.size() - 1) {
 			return playlist.videos[std::max(0, playlist.selected_index + 1)];
-		for (auto suggestion : suggestions)
-			if (suggestion.type == YouTubeSuccinctItem::VIDEO)
+		}
+		for (auto suggestion : suggestions) {
+			if (suggestion.type == YouTubeSuccinctItem::VIDEO) {
 				return suggestion.video;
+			}
+		}
 		return YouTubeVideoSuccinct();
 	}
 	bool has_more_suggestions() const { return suggestions_continue_token != ""; }

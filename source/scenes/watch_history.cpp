@@ -60,8 +60,9 @@ void History_suspend(void) { thread_suspend = true; }
 void History_resume(std::string arg) {
 	(void)arg;
 
-	if (main_view)
+	if (main_view) {
 		main_view->on_resume();
+	}
 	overlay_menu_on_resume();
 	thread_suspend = false;
 	var_need_refresh = true;
@@ -72,8 +73,9 @@ void History_resume(std::string arg) {
 static void update_watch_history(const std::vector<HistoryVideo> &new_watch_history) {
 	watch_history = new_watch_history;
 
-	if (main_view)
+	if (main_view) {
 		main_view->recursive_delete_subviews();
+	}
 	delete main_view;
 
 	// prepare new views
@@ -86,10 +88,11 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 			std::string view_count_str_tmp = LOCALIZED(MY_VIEW_COUNT_WITH_NUMBER);
 			for (size_t j = 0; j < view_count_str_tmp.size();) {
 				if (j + 1 < view_count_str_tmp.size() && view_count_str_tmp[j] == '%' &&
-				    view_count_str_tmp[j + 1] == '0')
+				    view_count_str_tmp[j + 1] == '0') {
 					view_count_str += std::to_string(i.my_view_count), j += 2;
-				else
+				} else {
 					view_count_str.push_back(view_count_str_tmp[j]), j++;
+				}
 			}
 		}
 		std::string last_watch_time_str;
@@ -109,8 +112,9 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		cur_view
 		    ->set_get_background_color([](const View &view) {
 			    int darkness = std::min<int>(0xFF, 0xD0 + 0x30 * (1 - view.touch_darkness));
-			    if (var_night_mode)
+			    if (var_night_mode) {
 				    darkness = 0xFF - darkness;
+			    }
 			    return COLOR_GRAY(darkness);
 		    })
 		    ->set_on_view_released([i](View &view) { clicked_url = youtube_get_video_url_by_id(i.id); })
@@ -131,8 +135,9 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 			                })
 			                ->set_get_background_color([](const View &view) {
 				                int darkness = std::min<int>(0xFF, 0xD0 + 0x30 * (1 - view.touch_darkness));
-				                if (var_night_mode)
+				                if (var_night_mode) {
 					                darkness = 0xFF - darkness;
+				                }
 				                return COLOR_GRAY(darkness);
 			                }))
 			        ->set_on_cancel([](OverlayView &view) {
@@ -189,31 +194,35 @@ void History_draw(void) {
 		main_view->draw();
 		on_long_tap_dialog->draw();
 
-		if (video_playing_bar_show)
+		if (video_playing_bar_show) {
 			video_draw_playing_bar();
+		}
 		draw_overlay_menu(video_playing_bar_show ? 240 - OVERLAY_MENU_ICON_SIZE - VIDEO_PLAYING_BAR_HEIGHT
 		                                         : 240 - OVERLAY_MENU_ICON_SIZE);
 
-		if (Util_expl_query_show_flag())
+		if (Util_expl_query_show_flag()) {
 			Util_expl_draw();
+		}
 
-		if (Util_err_query_error_show_flag())
+		if (Util_err_query_error_show_flag()) {
 			Util_err_draw();
+		}
 
 		Draw_touch_pos();
 
 		Draw_apply_draw();
-	} else
+	} else {
 		gspWaitForVBlank();
+	}
 
 	if (Util_err_query_error_show_flag()) {
 		Util_err_main(key);
 	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
 	} else {
-		if (on_long_tap_dialog->is_visible)
+		if (on_long_tap_dialog->is_visible) {
 			on_long_tap_dialog->update(key);
-		else {
+		} else {
 			update_overlay_menu(&key);
 
 			main_view->update(key);
@@ -226,10 +235,12 @@ void History_draw(void) {
 				auto tmp_watch_history = watch_history;
 				std::sort(tmp_watch_history.begin(), tmp_watch_history.end(),
 				          [](const HistoryVideo &i, const HistoryVideo &j) {
-					          if (sort_request == 0)
+					          if (sort_request == 0) {
 						          return i.last_watch_time > j.last_watch_time;
-					          if (sort_request == 1)
+					          }
+					          if (sort_request == 1) {
 						          return i.my_view_count > j.my_view_count;
+					          }
 					          // should not reach here
 					          return false;
 				          });
@@ -240,20 +251,24 @@ void History_draw(void) {
 			if (erase_request != "") {
 				// erase
 				std::vector<HistoryVideo> tmp_watch_history;
-				for (auto video : watch_history)
-					if (video.id != erase_request)
+				for (auto video : watch_history) {
+					if (video.id != erase_request) {
 						tmp_watch_history.push_back(video);
+					}
+				}
 				update_watch_history(tmp_watch_history);
 				history_erase_by_id(erase_request);
 				misc_tasks_request(TASK_SAVE_HISTORY);
 
 				erase_request = "";
 			}
-			if (video_playing_bar_show)
+			if (video_playing_bar_show) {
 				video_update_playing_bar(key);
+			}
 		}
 
-		if (key.p_b)
+		if (key.p_b) {
 			global_intent.next_scene = SceneType::BACK;
+		}
 	}
 }

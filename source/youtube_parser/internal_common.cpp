@@ -34,8 +34,9 @@ static void confirm_thread_network_session_list_inited() {
 
 HttpRequest http_get_request(const std::string &url, std::map<std::string, std::string> headers) {
 	confirm_thread_network_session_list_inited();
-	if (!headers.count("Accept-Language"))
+	if (!headers.count("Accept-Language")) {
 		headers["Accept-Language"] = language_code + ";q=0.9";
+	}
 	return HttpRequest::GET(url, headers);
 }
 std::pair<bool, std::string> http_get(const std::string &url, std::map<std::string, std::string> headers) {
@@ -54,8 +55,9 @@ HttpRequest http_post_json_request(const std::string &url, const std::string &js
                                    std::map<std::string, std::string> headers) {
 	confirm_thread_network_session_list_inited();
 
-	if (!headers.count("Accept-Language"))
+	if (!headers.count("Accept-Language")) {
 		headers["Accept-Language"] = language_code + ";q=0.9";
+	}
 	headers["Content-Type"] = "application/json";
 	return HttpRequest::POST(url, headers, json);
 }
@@ -86,8 +88,9 @@ std::string url_decode(std::string input) {
 		if (input[i] == '%') {
 			res.push_back((char)stoi(input.substr(i + 1, 2), nullptr, 16));
 			i += 2;
-		} else
+		} else {
 			res.push_back(input[i]);
+		}
 	}
 	return res;
 }
@@ -102,12 +105,13 @@ std::map<std::string, std::string> parse_parameters(std::string input) {
 			std::string second;
 			bool is_second = false;
 			for (size_t j = start; j < i; j++) {
-				if (input[j] == '=')
+				if (input[j] == '=') {
 					is_second = true;
-				else if (is_second)
+				} else if (is_second) {
 					second.push_back(input[j]);
-				else
+				} else {
 					first.push_back(input[j]);
+				}
 			}
 			first = url_decode(first);
 			second = url_decode(second);
@@ -119,12 +123,14 @@ std::map<std::string, std::string> parse_parameters(std::string input) {
 }
 
 std::string get_text_from_object(RJson json) {
-	if (json["simpleText"].is_valid())
+	if (json["simpleText"].is_valid()) {
 		return json["simpleText"].string_value();
+	}
 	if (json["runs"].is_valid()) {
 		std::string res;
-		for (auto i : json["runs"].array_items())
+		for (auto i : json["runs"].array_items()) {
 			res += i["text"].string_value();
+		}
 		return res;
 	}
 	return "";
@@ -132,12 +138,14 @@ std::string get_text_from_object(RJson json) {
 YouTubeVideoSuccinct parse_succinct_video(RJson video_renderer) {
 	YouTubeVideoSuccinct res;
 	std::string video_id = video_renderer["videoId"].string_value();
-	if (video_id == "")
+	if (video_id == "") {
 		debug_error("!!!!!!!!!!!!!!!!!!!!! video id empty !!!!!!!!!!!!!!!!!!!!!!!!!");
+	}
 	res.url = "https://m.youtube.com/watch?v=" + video_id;
 	res.title = get_text_from_object(video_renderer["title"]);
-	if (res.title == "")
+	if (res.title == "") {
 		res.title = get_text_from_object(video_renderer["headline"]);
+	}
 	res.duration_text = get_text_from_object(video_renderer["lengthText"]);
 	res.publish_date = get_text_from_object(video_renderer["publishedTimeText"]);
 	res.views_str = get_text_from_object(video_renderer["shortViewCountText"]);
@@ -158,13 +166,15 @@ std::string get_thumbnail_url_closest(RJson thumbnails, int target_width) {
 			best_icon_url = thumbnail["url"].string_value();
 		}
 	}
-	if (best_icon_url.substr(0, 2) == "//")
+	if (best_icon_url.substr(0, 2) == "//") {
 		best_icon_url = "https:" + best_icon_url;
+	}
 	return best_icon_url;
 }
 std::string get_thumbnail_url_exact(RJson thumbnails, int target_width) {
-	if (!thumbnails.array_items().size())
+	if (!thumbnails.array_items().size()) {
 		return "";
+	}
 	auto thumbnail = thumbnails.array_items()[0];
 	std::string icon_url = thumbnail["url"].string_value();
 	std::string icon_url_modified;
@@ -175,17 +185,20 @@ std::string get_thumbnail_url_exact(RJson thumbnails, int target_width) {
 			icon_url_modified.push_back(icon_url[i]);
 			icon_url_modified += replace_to;
 			i += 1 + replace_from.size();
-		} else
+		} else {
 			icon_url_modified.push_back(icon_url[i++]);
+		}
 	}
-	if (icon_url_modified.substr(0, 2) == "//")
+	if (icon_url_modified.substr(0, 2) == "//") {
 		icon_url_modified = "https:" + icon_url_modified;
+	}
 	return icon_url_modified;
 }
 
 std::string remove_garbage(const std::string &str, size_t start) {
-	while (start < str.size() && str[start] == ' ')
+	while (start < str.size() && str[start] == ' ') {
 		start++;
+	}
 	if (start >= str.size()) {
 		debug_warning("remove_garbage : empty");
 		return "";
@@ -195,11 +208,13 @@ std::string remove_garbage(const std::string &str, size_t start) {
 		size_t pos = start + 1;
 		for (; pos < str.size(); pos++) {
 			if (str[pos] == '\\') {
-				if (pos + 1 == str.size())
+				if (pos + 1 == str.size()) {
 					break;
+				}
 				if (str[pos + 1] == 'x') {
-					if (pos + 3 >= str.size())
+					if (pos + 3 >= str.size()) {
 						break;
+					}
 					int char_code = 0;
 					bool ok = true;
 					for (int i = 0; i < 2; i++) {
@@ -209,13 +224,13 @@ std::string remove_garbage(const std::string &str, size_t start) {
 						}
 						char cur_char = str[pos + 2 + i];
 						char_code <<= 4; // * 16
-						if ('0' <= cur_char && cur_char <= '9')
+						if ('0' <= cur_char && cur_char <= '9') {
 							char_code += cur_char - '0';
-						else if ('a' <= cur_char && cur_char <= 'f')
+						} else if ('a' <= cur_char && cur_char <= 'f') {
 							char_code += cur_char - 'a' + 10;
-						else if ('A' <= cur_char && cur_char <= 'F')
+						} else if ('A' <= cur_char && cur_char <= 'F') {
 							char_code += cur_char - 'A' + 10;
-						else {
+						} else {
 							ok = false;
 							break;
 						}
@@ -230,10 +245,11 @@ std::string remove_garbage(const std::string &str, size_t start) {
 					res_str.push_back(str[pos + 1]);
 					pos++;
 				}
-			} else if (str[pos] == '\'')
+			} else if (str[pos] == '\'') {
 				break;
-			else
+			} else {
 				res_str.push_back(str[pos]);
+			}
 		}
 		return res_str;
 	} else if (str[start] == '(' || str[start] == '{' || str[start] == '[') {
@@ -241,17 +257,20 @@ std::string remove_garbage(const std::string &str, size_t start) {
 		int level = 1;
 		bool in_string = false;
 		for (; pos < str.size(); pos++) {
-			if (str[pos] == '"')
+			if (str[pos] == '"') {
 				in_string = !in_string;
-			else if (in_string) {
-				if (str[pos] == '\\')
+			} else if (in_string) {
+				if (str[pos] == '\\') {
 					pos++;
-			} else if (str[pos] == '{' || str[pos] == '[' || str[pos] == '(')
+				}
+			} else if (str[pos] == '{' || str[pos] == '[' || str[pos] == '(') {
 				level++;
-			else if (str[pos] == '}' || str[pos] == ']' || str[pos] == ')')
+			} else if (str[pos] == '}' || str[pos] == ']' || str[pos] == ')') {
 				level--;
-			if (level == 0)
+			}
+			if (level == 0) {
 				break;
+			}
 		}
 		if (level != 0) {
 			debug_error("remove_garbage : the first parenthesis is never closed");
@@ -268,8 +287,9 @@ RJson to_json(Document &json_root, const std::string &html, size_t start) {
 	auto content = remove_garbage(html, start);
 	std::string error;
 	auto res = RJson::parse(json_root, (char *)&content[0], error);
-	if (error != "")
+	if (error != "") {
 		get_error_json(error);
+	}
 	return res;
 }
 // search for `var_name` = ' or `var_name` = {
@@ -277,21 +297,25 @@ bool fast_extract_initial(Document &json_root, const std::string &html, const st
 	size_t head = 0;
 	while (head < html.size()) {
 		auto pos = html.find(var_name, head);
-		if (pos == std::string::npos)
+		if (pos == std::string::npos) {
 			break;
+		}
 		pos += var_name.size();
-		while (pos < html.size() && isspace(html[pos]))
+		while (pos < html.size() && isspace(html[pos])) {
 			pos++;
+		}
 		if (pos < html.size() && html[pos] == '=') {
 			pos++;
-			while (pos < html.size() && isspace(html[pos]))
+			while (pos < html.size() && isspace(html[pos])) {
 				pos++;
+			}
 			if (pos < html.size() && (html[pos] == '\'' || html[pos] == '{')) {
 				res = to_json(json_root, html, pos);
-				if (res.has_key("Error"))
+				if (res.has_key("Error")) {
 					debug_error(std::string("fast_extract_initial : ") + res["Error"].string_value());
-				else if (res.is_valid())
+				} else if (res.is_valid()) {
 					return true;
+				}
 			}
 		}
 		head = pos;
@@ -305,8 +329,9 @@ RJson get_succeeding_json_regexes(Document &json_root, const std::string &html, 
 		if (std::regex_search(html, match_res, pattern)) {
 			size_t start = match_res.suffix().first - html.begin() - 1;
 			auto res = to_json(json_root, html, start);
-			if (!res.has_key("Error"))
+			if (!res.has_key("Error")) {
 				return res;
+			}
 		}
 	}
 	return RJson();
@@ -316,22 +341,26 @@ std::string convert_url_to_mobile(std::string url) {
 	// strip out of http:// or https://
 	{
 		auto pos = url.find("://");
-		if (pos != std::string::npos)
+		if (pos != std::string::npos) {
 			url = url.substr(pos + 3, url.size());
+		}
 	}
-	if (url.substr(0, 4) == "www.")
+	if (url.substr(0, 4) == "www.") {
 		url = "m." + url.substr(4, url.size());
+	}
 	return "https://" + url;
 }
 std::string convert_url_to_desktop(std::string url) {
 	// strip out of http:// or https://
 	{
 		auto pos = url.find("://");
-		if (pos != std::string::npos)
+		if (pos != std::string::npos) {
 			url = url.substr(pos + 3, url.size());
+		}
 	}
-	if (url.substr(0, 2) == "m.")
+	if (url.substr(0, 2) == "m.") {
 		url = "www." + url.substr(2, url.size());
+	}
 	return "https://" + url;
 }
 

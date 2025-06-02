@@ -57,13 +57,15 @@ struct TabView : public FixedSizeView {
 
 	void draw_() const override {
 		int tab_num = get_tab_num();
-		if (!tab_num)
+		if (!tab_num) {
 			return;
+		}
 
 		if (stretch_subview) {
 			FixedHeightView *cur_view = dynamic_cast<FixedHeightView *>(views[selected_tab]);
-			if (cur_view)
+			if (cur_view) {
 				cur_view->update_y_range(0, y1 - tab_selector_height - y0);
+			}
 		}
 		views[selected_tab]->draw(x0, y0);
 
@@ -75,10 +77,11 @@ struct TabView : public FixedSizeView {
 		             tab_width(), tab_selector_selected_line_height);
 		for (int i = 0; i < tab_num; i++) {
 			float y = y1 - tab_selector_height + (tab_selector_height - Draw_get_height(tab_texts[i], 0.5)) / 2;
-			if (i == selected_tab)
+			if (i == selected_tab) {
 				y -= 2;
-			else
+			} else {
 				y -= 3;
+			}
 			Draw_x_centered(tab_texts[i], tab_pos_x(i), tab_pos_x(i + 1), y, tab_font_size, tab_font_size,
 			                DEFAULT_TEXT_COLOR);
 		}
@@ -87,32 +90,39 @@ struct TabView : public FixedSizeView {
 		if (lr_tab_switch_enabled) {
 			if (key.p_r) {
 				selected_tab++;
-				if (selected_tab >= (int)views.size())
+				if (selected_tab >= (int)views.size()) {
 					selected_tab -= views.size();
+				}
 				var_need_refresh = true;
 			}
 			if (key.p_l) {
 				selected_tab--;
-				if (selected_tab < 0)
+				if (selected_tab < 0) {
 					selected_tab += views.size();
+				}
 				var_need_refresh = true;
 			}
 		}
 		int tab_holded = -1;
-		if (key.touch_y >= y1 - tab_selector_height && key.touch_y < y1)
+		if (key.touch_y >= y1 - tab_selector_height && key.touch_y < y1) {
 			tab_holded = std::max(0, std::min<int>(get_tab_num() - 1, (key.touch_x - x0) * get_tab_num() / (x1 - x0)));
+		}
 
-		if (key.p_touch)
+		if (key.p_touch) {
 			tab_holding = tab_holded;
-		if (key.touch_x == -1 && tab_holding != -1)
+		}
+		if (key.touch_x == -1 && tab_holding != -1) {
 			selected_tab = tab_holding, var_need_refresh = true;
-		if (tab_holded != tab_holding)
+		}
+		if (tab_holded != tab_holding) {
 			tab_holding = -1;
+		}
 
 		if (stretch_subview) {
 			FixedHeightView *cur_view = dynamic_cast<FixedHeightView *>(views[selected_tab]);
-			if (cur_view)
+			if (cur_view) {
 				cur_view->update_y_range(0, y1 - tab_selector_height - y0);
+			}
 		}
 		views[selected_tab]->update(key, x0, y0);
 	}

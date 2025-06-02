@@ -57,10 +57,11 @@ void Menu_init(void) {
 	{
 		constexpr int SOC_BUFFERSIZE = 0x100000;
 		u32 *soc_buffer = (u32 *)memalign(0x1000, SOC_BUFFERSIZE);
-		if (!soc_buffer)
+		if (!soc_buffer) {
 			logger.error(DEF_MENU_INIT_STR, "soc buffer out of memory");
-		else
+		} else {
 			LOG_IF_ERROR(socInit(soc_buffer, SOC_BUFFERSIZE));
+		}
 	}
 	LOG_IF_ERROR(sslcInit(0));
 	LOG_IF_ERROR(httpcInit(0x200000));
@@ -82,14 +83,16 @@ void Menu_init(void) {
 	if (var_is_new3ds) { // check core availability
 		Thread core_2 = threadCreate(empty_thread, (void *)(""), DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, 2, false);
 		var_core2_available = (bool)core_2;
-		if (core_2)
+		if (core_2) {
 			threadJoin(core_2, U64_MAX);
+		}
 		threadFree(core_2);
 
 		Thread core_3 = threadCreate(empty_thread, (void *)(""), DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, 3, false);
 		var_core3_available = (bool)core_3;
-		if (core_3)
+		if (core_3) {
 			threadJoin(core_3, U64_MAX);
+		}
 		threadFree(core_3);
 	}
 
@@ -101,10 +104,12 @@ void Menu_init(void) {
 
 	Util_expl_init();
 	Extfont_init();
-	for (int i = 0; i < FONT_BLOCK_NUM; i++)
+	for (int i = 0; i < FONT_BLOCK_NUM; i++) {
 		Extfont_request_extfont_status(i, true);
-	for (int i = 0; i < SYSTEM_FONT_NUM; i++)
+	}
+	for (int i = 0; i < SYSTEM_FONT_NUM; i++) {
 		Extfont_request_sysfont_status(i, true);
+	}
 
 	menu_thread_run = true;
 	menu_worker_thread =
@@ -248,97 +253,111 @@ bool Menu_main(void) {
 			logger.info(DEF_MENU_INIT_STR, "ndspInit() retry...", (sound_init_result = ndspInit())); // 0xd880A7FA
 		}
 
-		if (key.h_a)
+		if (key.h_a) {
 			return false;
+		}
 		return true;
 	}
 
-	if (var_show_fps)
+	if (var_show_fps) {
 		sprintf(var_status, "%02dfps %04d/%02d/%02d %02d:%02d:%02d ", (int)Draw_query_fps(), var_years, var_months,
 		        var_days, var_hours, var_minutes, var_seconds);
-	else
+	} else {
 		sprintf(var_status, "%04d/%02d/%02d %02d:%02d:%02d ", var_years, var_months, var_days, var_hours, var_minutes,
 		        var_seconds);
+	}
 
-	if (var_debug_mode)
+	if (var_debug_mode) {
 		var_need_refresh = true;
+	}
 
 	global_intent = Intent();
-	if (global_current_scene == SceneType::VIDEO_PLAYER)
+	if (global_current_scene == SceneType::VIDEO_PLAYER) {
 		VideoPlayer_draw();
-	else if (global_current_scene == SceneType::SEARCH)
+	} else if (global_current_scene == SceneType::SEARCH) {
 		Search_draw();
-	else if (global_current_scene == SceneType::CHANNEL)
+	} else if (global_current_scene == SceneType::CHANNEL) {
 		Channel_draw();
-	else if (global_current_scene == SceneType::SETTINGS)
+	} else if (global_current_scene == SceneType::SETTINGS) {
 		Sem_draw();
-	else if (global_current_scene == SceneType::ABOUT)
+	} else if (global_current_scene == SceneType::ABOUT) {
 		About_draw();
-	else if (global_current_scene == SceneType::HISTORY)
+	} else if (global_current_scene == SceneType::HISTORY) {
 		History_draw();
-	else if (global_current_scene == SceneType::HOME)
+	} else if (global_current_scene == SceneType::HOME) {
 		Home_draw();
+	}
 	// add here
 
 	if (global_intent.next_scene != SceneType::NO_CHANGE) {
-		if (global_current_scene == SceneType::VIDEO_PLAYER)
+		if (global_current_scene == SceneType::VIDEO_PLAYER) {
 			VideoPlayer_suspend();
-		else if (global_current_scene == SceneType::SEARCH)
+		} else if (global_current_scene == SceneType::SEARCH) {
 			Search_suspend();
-		else if (global_current_scene == SceneType::CHANNEL)
+		} else if (global_current_scene == SceneType::CHANNEL) {
 			Channel_suspend();
-		else if (global_current_scene == SceneType::SETTINGS)
+		} else if (global_current_scene == SceneType::SETTINGS) {
 			Sem_suspend();
-		else if (global_current_scene == SceneType::ABOUT)
+		} else if (global_current_scene == SceneType::ABOUT) {
 			About_suspend();
-		else if (global_current_scene == SceneType::HISTORY)
+		} else if (global_current_scene == SceneType::HISTORY) {
 			History_suspend();
-		else if (global_current_scene == SceneType::HOME)
+		} else if (global_current_scene == SceneType::HOME) {
 			Home_suspend();
+		}
 		// add here
 	}
 
 	// common updates
-	if (key.h_select && key.p_y)
+	if (key.h_select && key.p_y) {
 		var_debug_mode = !var_debug_mode;
-	if (key.h_select && key.h_r && key.p_a)
+	}
+	if (key.h_select && key.h_r && key.p_a) {
 		var_show_fps = !var_show_fps;
-	if (key.h_select && key.p_x)
+	}
+	if (key.h_select && key.p_x) {
 		logger.draw_enabled ^= 1, var_need_refresh = true; // toggle log drawing
+	}
 	logger.update(key);
-	if (key.h_touch || key.p_touch)
+	if (key.h_touch || key.p_touch) {
 		var_need_refresh = true;
-	if (((key.h_select && key.p_start) || (key.h_start && key.p_select)) && var_model != CFG_MODEL_2DS)
+	}
+	if (((key.h_select && key.p_start) || (key.h_start && key.p_select)) && var_model != CFG_MODEL_2DS) {
 		bot_screen_disabled = !bot_screen_disabled;
+	}
 
-	if (global_intent.next_scene == SceneType::EXIT)
+	if (global_intent.next_scene == SceneType::EXIT) {
 		return false;
-	else if (global_intent.next_scene != SceneType::NO_CHANGE && global_intent != scene_stack.back()) {
-		if (scene_stack.size() >= 2 && global_intent == scene_stack[scene_stack.size() - 2])
+	} else if (global_intent.next_scene != SceneType::NO_CHANGE && global_intent != scene_stack.back()) {
+		if (scene_stack.size() >= 2 && global_intent == scene_stack[scene_stack.size() - 2]) {
 			global_intent.next_scene = SceneType::BACK;
+		}
 		if (global_intent.next_scene == SceneType::BACK) {
-			if (scene_stack.size() >= 2)
+			if (scene_stack.size() >= 2) {
 				scene_stack.pop_back();
-		} else
+			}
+		} else {
 			scene_stack.push_back(global_intent);
+		}
 
 		global_current_scene = scene_stack.back().next_scene;
 		std::string arg = scene_stack.back().arg;
 
-		if (global_current_scene == SceneType::VIDEO_PLAYER)
+		if (global_current_scene == SceneType::VIDEO_PLAYER) {
 			VideoPlayer_resume(arg);
-		else if (global_current_scene == SceneType::SEARCH)
+		} else if (global_current_scene == SceneType::SEARCH) {
 			Search_resume(arg);
-		else if (global_current_scene == SceneType::CHANNEL)
+		} else if (global_current_scene == SceneType::CHANNEL) {
 			Channel_resume(arg);
-		else if (global_current_scene == SceneType::SETTINGS)
+		} else if (global_current_scene == SceneType::SETTINGS) {
 			Sem_resume(arg);
-		else if (global_current_scene == SceneType::ABOUT)
+		} else if (global_current_scene == SceneType::ABOUT) {
 			About_resume(arg);
-		else if (global_current_scene == SceneType::HISTORY)
+		} else if (global_current_scene == SceneType::HISTORY) {
 			History_resume(arg);
-		else if (global_current_scene == SceneType::HOME)
+		} else if (global_current_scene == SceneType::HOME) {
 			Home_resume(arg);
+		}
 		// add here
 	}
 
@@ -359,34 +378,37 @@ void Menu_get_system_info(void) {
 		var_battery_level_raw = battery_level;
 	} else {
 		PTMU_GetBatteryLevel(&battery_level);
-		if ((int)battery_level == 0)
+		if ((int)battery_level == 0) {
 			var_battery_level_raw = 0;
-		else if ((int)battery_level == 1)
+		} else if ((int)battery_level == 1) {
 			var_battery_level_raw = 5;
-		else if ((int)battery_level == 2)
+		} else if ((int)battery_level == 2) {
 			var_battery_level_raw = 10;
-		else if ((int)battery_level == 3)
+		} else if ((int)battery_level == 3) {
 			var_battery_level_raw = 30;
-		else if ((int)battery_level == 4)
+		} else if ((int)battery_level == 4) {
 			var_battery_level_raw = 60;
-		else if ((int)battery_level == 5)
+		} else if ((int)battery_level == 5) {
 			var_battery_level_raw = 100;
+		}
 	}
 
 	// ssid
 	result.code = ACU_GetSSID(ssid);
-	if (result.code == 0)
+	if (result.code == 0) {
 		var_connected_ssid = ssid;
-	else
+	} else {
 		var_connected_ssid = "";
+	}
 
 	free(ssid);
 	ssid = NULL;
 
 	var_wifi_signal = osGetWifiStrength();
 	var_wifi_state = *(u8 *)0x1FF81067;
-	if (var_wifi_state != 2)
+	if (var_wifi_state != 2) {
 		var_wifi_signal = 8;
+	}
 
 	// Get time
 	time_t unixTime = time(NULL);
@@ -413,13 +435,15 @@ int Menu_check_free_ram(void) {
 	int cur_size = 1000 * 1000;
 	while (head < 10000 && cur_size >= 10000) {
 		ptr[head] = malloc(cur_size);
-		if (ptr[head])
+		if (ptr[head]) {
 			res += cur_size, head++;
-		else
+		} else {
 			cur_size /= 10;
+		}
 	}
-	for (int i = 0; i < head; i++)
+	for (int i = 0; i < head; i++) {
 		free(ptr[i]);
+	}
 	return res / 1000;
 }
 
@@ -447,12 +471,13 @@ void Menu_worker_thread(void *arg) {
 		bool next_screen_dimmed = cur_screen_dimmed;
 		bool next_bot_screen_disabled = bot_screen_disabled && !var_app_suspended;
 
-		if (var_afk_time > var_time_to_turn_off_lcd)
+		if (var_afk_time > var_time_to_turn_off_lcd) {
 			next_screen_on = false;
-		else if (var_afk_time > std::max<float>(var_time_to_turn_off_lcd * 0.5, (var_time_to_turn_off_lcd - 10)))
+		} else if (var_afk_time > std::max<float>(var_time_to_turn_off_lcd * 0.5, (var_time_to_turn_off_lcd - 10))) {
 			next_screen_on = true, next_screen_dimmed = true;
-		else
+		} else {
 			next_screen_on = true, next_screen_dimmed = false;
+		}
 
 		if (cur_screen_on != next_screen_on || cur_screen_dimmed != next_screen_dimmed ||
 		    cur_bot_screen_disabled != next_bot_screen_disabled) {
@@ -461,17 +486,20 @@ void Menu_worker_thread(void *arg) {
 			bool cur_bot_on = cur_screen_on && !cur_bot_screen_disabled;
 			bool next_top_on = next_screen_on;
 			bool next_bot_on = next_screen_on && !next_bot_screen_disabled;
-			if (cur_top_on == cur_bot_on && cur_top_on != next_top_on && cur_bot_on != next_bot_on)
+			if (cur_top_on == cur_bot_on && cur_top_on != next_top_on && cur_bot_on != next_bot_on) {
 				Util_cset_set_screen_state(true, true, next_top_on); // change both
-			else {
-				if (cur_top_on != next_top_on)
+			} else {
+				if (cur_top_on != next_top_on) {
 					Util_cset_set_screen_state(true, false, next_top_on);
-				if (cur_bot_on != next_bot_on)
+				}
+				if (cur_bot_on != next_bot_on) {
 					Util_cset_set_screen_state(false, true, next_bot_on);
+				}
 			}
 
-			if (cur_screen_dimmed != next_screen_dimmed)
+			if (cur_screen_dimmed != next_screen_dimmed) {
 				Util_cset_set_screen_brightness(true, true, next_screen_dimmed ? 10 : var_lcd_brightness);
+			}
 			cur_screen_on = next_screen_on;
 			cur_screen_dimmed = next_screen_dimmed;
 			cur_bot_screen_disabled = next_bot_screen_disabled;

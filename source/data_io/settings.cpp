@@ -13,41 +13,49 @@ void load_settings() {
 	auto settings = parse_xml_like_text(buf);
 
 	auto load_int = [&](std::string key, int default_value) {
-		if (!settings.count(key))
+		if (!settings.count(key)) {
 			return default_value;
+		}
 		char *end;
 		long res = strtol(settings[key].c_str(), &end, 10);
-		if (*end)
+		if (*end) {
 			return default_value;
+		}
 		res = std::min<long>(res, std::numeric_limits<int>::max());
 		res = std::max<long>(res, std::numeric_limits<int>::min());
 		return (int)res;
 	};
 	auto load_double = [&](std::string key, double default_value) {
-		if (!settings.count(key))
+		if (!settings.count(key)) {
 			return default_value;
+		}
 		char *end;
 		double res = strtod(settings[key].c_str(), &end);
-		if (*end)
+		if (*end) {
 			return default_value;
+		}
 		return res;
 	};
 	auto load_string = [&](std::string key, std::string default_value) {
 		return settings.count(key) ? settings[key] : default_value;
 	};
 	var_lang = load_string("lang_ui", "en");
-	if (var_lang != "en" && var_lang != "ja" && var_lang != "de" && var_lang != "fr" && var_lang != "it")
+	if (var_lang != "en" && var_lang != "ja" && var_lang != "de" && var_lang != "fr" && var_lang != "it") {
 		var_lang = "en";
+	}
 	var_lang_content = load_string("lang_content", "en");
 	if (var_lang_content != "en" && var_lang_content != "ja" && var_lang_content != "de" && var_lang_content != "fr" &&
-	    var_lang_content != "it")
+	    var_lang_content != "it") {
 		var_lang_content = "en";
+	}
 	var_lcd_brightness = load_int("lcd_brightness", 100);
-	if (var_lcd_brightness < 15 || var_lcd_brightness > 163)
+	if (var_lcd_brightness < 15 || var_lcd_brightness > 163) {
 		var_lcd_brightness = 100;
+	}
 	var_time_to_turn_off_lcd = load_int("time_to_turn_off_lcd", 150);
-	if (var_time_to_turn_off_lcd < 10)
+	if (var_time_to_turn_off_lcd < 10) {
 		var_time_to_turn_off_lcd = 150;
+	}
 	var_eco_mode = load_int("eco_mode", 1);
 	var_full_screen_mode = load_int("full_screen_mode", 0);
 	var_full_dislike_like_count = load_int("full_dislike_like_count", 0);

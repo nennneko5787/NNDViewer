@@ -16,13 +16,15 @@ YouTubeHomeResult youtube_load_home_page() {
 		    res.visitor_data = yt_result["responseContext"]["visitorData"].string_value();
 		    for (auto tab : yt_result["contents"]["singleColumnBrowseResultsRenderer"]["tabs"].array_items()) {
 			    for (auto section : tab["tabRenderer"]["content"]["sectionListRenderer"]["contents"].array_items()) {
-				    if (section.has_key("continuationItemRenderer"))
+				    if (section.has_key("continuationItemRenderer")) {
 					    res.continue_token =
 					        section["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"]
 					            .string_value();
+				    }
 				    for (auto item : section["itemSectionRenderer"]["contents"].array_items()) {
-					    if (item.has_key("videoWithContextRenderer"))
+					    if (item.has_key("videoWithContextRenderer")) {
 						    res.videos.push_back(parse_succinct_video(item["videoWithContextRenderer"]));
+					    }
 				    }
 			    }
 		    }
@@ -35,10 +37,12 @@ YouTubeHomeResult youtube_load_home_page() {
 	return res;
 }
 void YouTubeHomeResult::load_more_results() {
-	if (continue_token == "")
+	if (continue_token == "") {
 		error = "[home] continue token not set";
-	if (visitor_data == "")
+	}
+	if (visitor_data == "") {
 		error = "[home] visitor data not set";
+	}
 	if (error != "") {
 		debug_error(error);
 		return;
@@ -56,17 +60,20 @@ void YouTubeHomeResult::load_more_results() {
 	access_and_parse_json(
 	    [&]() { return http_post_json(get_innertube_api_url("browse"), post_content); },
 	    [&](Document &, RJson yt_result) {
-		    if (yt_result["responseContext"]["visitorData"].string_value() != "")
+		    if (yt_result["responseContext"]["visitorData"].string_value() != "") {
 			    visitor_data = yt_result["responseContext"]["visitorData"].string_value();
+		    }
 		    for (auto action : yt_result["onResponseReceivedActions"].array_items()) {
 			    for (auto section : action["appendContinuationItemsAction"]["continuationItems"].array_items()) {
-				    if (section.has_key("continuationItemRenderer"))
+				    if (section.has_key("continuationItemRenderer")) {
 					    continue_token =
 					        section["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"]
 					            .string_value();
+				    }
 				    for (auto item : section["itemSectionRenderer"]["contents"].array_items()) {
-					    if (item.has_key("videoWithContextRenderer"))
+					    if (item.has_key("videoWithContextRenderer")) {
 						    videos.push_back(parse_succinct_video(item["videoWithContextRenderer"]));
+					    }
 				    }
 			    }
 		    }

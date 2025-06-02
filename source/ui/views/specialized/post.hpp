@@ -33,8 +33,9 @@ struct PostView : public FixedWidthView {
 	float left_height() const { return get_icon_size() + SMALL_MARGIN; }
 	float right_height() const {
 		float res = DEFAULT_FONT_INTERVAL * (1 + lines_shown);
-		if (lines_shown < content_lines.size())
+		if (lines_shown < content_lines.size()) {
 			res += SMALL_MARGIN + DEFAULT_FONT_INTERVAL; // "Show more"
+		}
 		return res;
 	}
 
@@ -86,35 +87,44 @@ struct PostView : public FixedWidthView {
 		show_more_holding = false;
 		fold_replies_holding = false;
 		show_more_replies_holding = false;
-		for (auto reply_view : replies)
+		for (auto reply_view : replies) {
 			reply_view->reset_holding_status();
-		if (additional_video_view)
+		}
+		if (additional_video_view) {
 			additional_video_view->reset_holding_status();
+		}
 	}
 	void on_scroll() override {
 		icon_holding = false;
 		show_more_holding = false;
 		fold_replies_holding = false;
 		show_more_replies_holding = false;
-		for (auto reply_view : replies)
+		for (auto reply_view : replies) {
 			reply_view->on_scroll();
-		if (additional_video_view)
+		}
+		if (additional_video_view) {
 			additional_video_view->on_scroll();
+		}
 	}
 	float get_height() const override {
 		float main_height = std::max(left_height(), right_height());
-		if (additional_image_url != "")
+		if (additional_image_url != "") {
 			main_height += SMALL_MARGIN * 2 + COMMUNITY_IMAGE_SIZE;
-		if (additional_video_view)
+		}
+		if (additional_video_view) {
 			main_height += additional_video_view->get_height() + SMALL_MARGIN * 2;
+		}
 		main_height += 16 + SMALL_MARGIN * 2; // upvote icon/str
 		float reply_height = 0;
-		if (replies_shown)
+		if (replies_shown) {
 			reply_height += SMALL_MARGIN + DEFAULT_FONT_INTERVAL + SMALL_MARGIN; // fold replies
-		for (size_t i = 0; i < replies_shown; i++)
+		}
+		for (size_t i = 0; i < replies_shown; i++) {
 			reply_height += replies[i]->get_height();
-		if (get_has_more_replies() || replies_shown < replies.size())
+		}
+		if (get_has_more_replies() || replies_shown < replies.size()) {
 			reply_height += SMALL_MARGIN + DEFAULT_FONT_INTERVAL; // load more replies
+		}
 
 		return main_height + reply_height + SMALL_MARGIN; // add margin between comments
 	}
@@ -123,8 +133,9 @@ struct PostView : public FixedWidthView {
 	std::vector<std::pair<float, PostView *>> get_reply_pos_list() {
 		std::vector<std::pair<float, PostView *>> res;
 		float cur_y = std::max(left_height(), right_height()) + 16 + SMALL_MARGIN * 2;
-		if (replies_shown)
+		if (replies_shown) {
 			cur_y += SMALL_MARGIN + DEFAULT_FONT_INTERVAL + SMALL_MARGIN; // fold replies
+		}
 		for (size_t i = 0; i < replies_shown; i++) {
 			res.push_back({cur_y, replies[i]});
 			cur_y += replies[i]->get_height();

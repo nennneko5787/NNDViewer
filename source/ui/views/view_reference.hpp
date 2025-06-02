@@ -11,17 +11,20 @@ struct ViewReferenceView : public View {
 	float get_height() const override { return subview ? subview->get_height() : 0; }
 	float get_width() const override { return subview ? subview->get_width() : 0; }
 	void on_scroll() override {
-		if (subview)
+		if (subview) {
 			subview->on_scroll();
+		}
 	}
 	void reset_holding_status_() override {
-		if (subview)
+		if (subview) {
 			subview->reset_holding_status();
+		}
 	}
 
 	void recursive_delete_subviews() override {
-		if (subview)
+		if (subview) {
 			subview->recursive_delete_subviews();
+		}
 		delete subview;
 		subview = NULL;
 	}
@@ -33,11 +36,13 @@ struct ViewReferenceView : public View {
 	}
 
 	void draw_() const override {
-		if (subview)
+		if (subview) {
 			subview->draw();
+		}
 	}
 	void update_(Hid_info key) override {
-		if (subview)
+		if (subview) {
 			subview->update(key);
+		}
 	}
 };

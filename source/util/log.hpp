@@ -42,14 +42,18 @@ class Logger {
 	std::deque<Log> logs;
 
 	u32 get_log_color(LogLevel level) {
-		if (level == LogLevel::INFO)
+		if (level == LogLevel::INFO) {
 			return 0xFFBBBB00; // aqua
-		if (level == LogLevel::CAUTION)
+		}
+		if (level == LogLevel::CAUTION) {
 			return 0xFF00C5FF; // yellow
-		if (level == LogLevel::WARNING)
+		}
+		if (level == LogLevel::WARNING) {
 			return 0xFF0078FF; // orange
-		if (level == LogLevel::ERROR)
+		}
+		if (level == LogLevel::ERROR) {
 			return 0xFF0000FF; // red
+		}
 		my_assert(0);
 		return 0;
 	}

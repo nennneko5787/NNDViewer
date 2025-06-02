@@ -44,8 +44,9 @@ class ScrollView : public FixedSizeView {
 	void reset_holding_status_() override {
 		grabbed = false;
 		scrolling = false;
-		for (auto view : views)
+		for (auto view : views) {
 			view->reset_holding_status();
+		}
 	}
 
 	// direct access to `views` is also allowed
@@ -56,13 +57,15 @@ class ScrollView : public FixedSizeView {
 	}
 	ScrollView *set_on_child_drawn(int index, OnDrawnCallBackFuncType func) {
 		bool found = false;
-		for (auto &i : on_child_drawn_callbacks)
+		for (auto &i : on_child_drawn_callbacks) {
 			if (i.first == index) {
 				found = true;
 				i.second = func;
 			}
-		if (!found)
+		}
+		if (!found) {
 			on_child_drawn_callbacks.push_back({index, func});
+		}
 		return this;
 	}
 	ScrollView *set_margin(double margin) {
@@ -77,9 +80,11 @@ class ScrollView : public FixedSizeView {
 			double cur_height = view->get_height();
 			if (y_offset < y1 && y_offset + cur_height > 0) {
 				view->draw(x0, y_offset);
-				for (auto &callback : on_child_drawn_callbacks)
-					if (callback.first == i)
+				for (auto &callback : on_child_drawn_callbacks) {
+					if (callback.first == i) {
 						callback.second(*this, i);
+					}
+				}
 			}
 			y_offset += cur_height + margin;
 		}
@@ -95,8 +100,9 @@ class ScrollView : public FixedSizeView {
 		}
 		double y_offset = y0 - offset;
 		for (auto view : views) {
-			if (scrolling)
+			if (scrolling) {
 				view->on_scroll();
+			}
 			view->update(key, x0, y_offset);
 			y_offset += view->get_height() + margin;
 		}

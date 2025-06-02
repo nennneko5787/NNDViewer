@@ -49,15 +49,17 @@ std::string ProtoBuilder::base64UrlEncode(const std::vector<uint8_t> &data) cons
 			valb -= 6;
 		}
 	}
-	if (valb > -6)
+	if (valb > -6) {
 		result.push_back(base64_chars[((val << 8) >> (valb + 8)) & 0x3F]);
+	}
 	return result;
 }
 
 std::string ProtoBuilder::urlEncode(const std::string &str) const {
 	CURL *curl = curl_easy_init();
-	if (!curl)
+	if (!curl) {
 		return "";
+	}
 	char *encoded = curl_easy_escape(curl, str.c_str(), str.size());
 	std::string result(encoded);
 	curl_free(encoded);

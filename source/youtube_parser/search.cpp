@@ -75,30 +75,36 @@ YouTubeSearchResult youtube_load_search(std::string url) {
 
 	std::string query_word;
 	auto pos = url.find("?search_query=");
-	if (pos == std::string::npos)
+	if (pos == std::string::npos) {
 		pos = url.find("&search_query=");
+	}
 	if (pos != std::string::npos) {
 		size_t head = pos + std::string("?search_query=").size();
-		while (head < url.size() && url[head] != '&')
+		while (head < url.size() && url[head] != '&') {
 			query_word.push_back(url[head++]);
+		}
 	}
 	url = convert_url_to_mobile(url);
 	std::string new_query_word;
 	for (size_t i = 0; i < query_word.size();) {
 		auto hex_to_int = [](char c) {
-			if (isdigit(c))
+			if (isdigit(c)) {
 				return c - '0';
-			if (isupper(c))
+			}
+			if (isupper(c)) {
 				return c - 'A' + 10;
-			if (islower(c))
+			}
+			if (islower(c)) {
 				return c - 'a' + 10;
+			}
 			return 0;
 		};
 		if (query_word[i] == '%' && i + 2 < query_word.size()) {
 			new_query_word.push_back(hex_to_int(query_word[i + 1]) * 16 + hex_to_int(query_word[i + 2]));
 			i += 3;
-		} else
+		} else {
 			new_query_word.push_back(query_word[i++]);
+		}
 	}
 	query_word = new_query_word;
 
@@ -147,8 +153,9 @@ YouTubeSearchResult youtube_load_search(std::string url) {
 			    debug_caution("unexpected result structure");
 			    success = false;
 		    }
-		    if (res.continue_token == "")
+		    if (res.continue_token == "") {
 			    debug_caution("failed to get next continue token");
+		    }
 	    },
 	    [&](const std::string &error) {
 		    res.error = "[se] " + error;
@@ -183,16 +190,19 @@ void YouTubeSearchResult::load_more_results() {
 		    for (auto i : yt_result["onResponseReceivedCommands"].array_items()) {
 			    for (auto j : i["appendContinuationItemsAction"]["continuationItems"].array_items()) {
 				    if (j.has_key("itemSectionRenderer")) {
-					    for (auto item : j["itemSectionRenderer"]["contents"].array_items())
+					    for (auto item : j["itemSectionRenderer"]["contents"].array_items()) {
 						    parse_searched_item(item, results);
-				    } else if (j.has_key("continuationItemRenderer"))
+					    }
+				    } else if (j.has_key("continuationItemRenderer")) {
 					    continue_token =
 					        j["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"]
 					            .string_value();
+				    }
 			    }
 		    }
-		    if (continue_token == "")
+		    if (continue_token == "") {
 			    debug_caution("failed to get next continue token");
+		    }
 	    },
 	    [&](const std::string &error) { debug_error((this->error = "[se+] " + error)); });
 }

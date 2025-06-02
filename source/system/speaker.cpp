@@ -24,8 +24,9 @@ void Util_speaker_init(int play_ch, int music_ch, int sample_rate) {
 	ndspChnSetInterp(play_ch, NDSP_INTERP_LINEAR);
 	ndspChnSetRate(play_ch, sample_rate);
 	memset(util_ndsp_buffer[play_ch], 0, sizeof(util_ndsp_buffer[play_ch]));
-	for (int i = 0; i < BUFFER_SIZE; i++)
+	for (int i = 0; i < BUFFER_SIZE; i++) {
 		util_ndsp_buffer[play_ch][i].data_vaddr = NULL;
+	}
 }
 
 Result_with_string Util_speaker_add_buffer(int play_ch, int music_ch, u8 *buffer, int size, double pts) {
@@ -65,20 +66,25 @@ Result_with_string Util_speaker_add_buffer(int play_ch, int music_ch, u8 *buffer
 }
 
 double Util_speaker_get_current_timestamp(int play_ch, int sample_rate) {
-	if (!Util_speaker_is_playing(play_ch))
+	if (!Util_speaker_is_playing(play_ch)) {
 		return -1;
+	}
 	double queued_min = INFINITY;
 	for (int i = 0; i < BUFFER_SIZE; i++) {
-		if (util_ndsp_buffer[play_ch][i].status == NDSP_WBUF_PLAYING)
+		if (util_ndsp_buffer[play_ch][i].status == NDSP_WBUF_PLAYING) {
 			return util_ndsp_buffer_timestamp[play_ch][i] + (double)ndspChnGetSamplePos(play_ch) / sample_rate;
-		if (util_ndsp_buffer[play_ch][i].status == NDSP_WBUF_QUEUED)
+		}
+		if (util_ndsp_buffer[play_ch][i].status == NDSP_WBUF_QUEUED) {
 			queued_min = std::min(queued_min, util_ndsp_buffer_timestamp[play_ch][i]);
+		}
 	}
-	if (queued_min != INFINITY)
+	if (queued_min != INFINITY) {
 		return queued_min;
+	}
 	// weired...
-	if (!Util_speaker_is_playing(play_ch))
+	if (!Util_speaker_is_playing(play_ch)) {
 		return -1;
+	}
 	// really weired...
 	logger.error("speaker", "unexpected behavior in get_current_timestamp");
 	return -1;
@@ -86,8 +92,9 @@ double Util_speaker_get_current_timestamp(int play_ch, int sample_rate) {
 
 void Util_speaker_clear_buffer(int play_ch) {
 	ndspChnWaveBufClear(play_ch);
-	while (Util_speaker_is_playing(play_ch))
+	while (Util_speaker_is_playing(play_ch)) {
 		usleep(10000);
+	}
 	for (int i = 0; i < BUFFER_SIZE; i++) {
 		util_ndsp_buffer[play_ch][i].status = NDSP_WBUF_FREE;
 		util_ndsp_buffer_timestamp[play_ch][i] = 0.0;

@@ -24,14 +24,17 @@ struct BarView : public FixedSizeView {
 	}
 	void set_value(double new_val) {
 		internal_value = new_val;
-		if (synced_value_double)
+		if (synced_value_double) {
 			*synced_value_double = internal_value;
-		if (synced_value_int)
+		}
+		if (synced_value_int) {
 			*synced_value_int = internal_value;
+		}
 	}
 	void fix_close_values(double low, double mid, double high) {
-		if (get_value() >= low && get_value() <= high)
+		if (get_value() >= low && get_value() <= high) {
 			set_value(mid);
+		}
 	}
 
 	inline double bar_x0() const { return x0 + (x1 - x0) * 0.1; }
@@ -87,8 +90,9 @@ struct BarView : public FixedSizeView {
 	}
 
 	void draw_() const override {
-		if ((std::string)title != "")
+		if ((std::string)title != "") {
 			Draw(title, x0 + SMALL_MARGIN, y0, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+		}
 		Draw_texture(var_square_image[0], DEF_DRAW_LIGHT_GRAY, bar_x0(), bar_y() - 1, bar_len(), 3);
 		Draw_texture(var_square_image[0], DEF_DRAW_WEAK_AQUA, bar_x0(), bar_y() - 1,
 		             get_x_from_value(get_value()) - bar_x0(), 3);
@@ -96,17 +100,21 @@ struct BarView : public FixedSizeView {
 	}
 	void update_(Hid_info key) override {
 		if (key.p_touch && key.touch_y >= bar_y() - 5 && key.touch_y <= bar_y() + 5 && key.touch_x >= bar_x0() - 5 &&
-		    key.touch_x <= bar_x1() + 5)
+		    key.touch_x <= bar_x1() + 5) {
 			holding = true;
+		}
 		if (holding && key.touch_x == -1) {
 			var_need_refresh = true;
-			if (on_release_func)
+			if (on_release_func) {
 				on_release_func(*this);
+			}
 			holding = false;
 		}
-		if (holding)
+		if (holding) {
 			set_value(get_value_from_x(key.touch_x));
-		if (holding && while_holding_func)
+		}
+		if (holding && while_holding_func) {
 			while_holding_func(*this);
+		}
 	}
 };

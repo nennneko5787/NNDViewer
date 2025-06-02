@@ -5,8 +5,9 @@ int main() {
 
 	// Main loop
 	while (aptMainLoop()) {
-		if (!Menu_main())
+		if (!Menu_main()) {
 			break;
+		}
 	}
 
 	Menu_exit();

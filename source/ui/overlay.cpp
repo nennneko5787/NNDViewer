@@ -54,11 +54,13 @@ static bool in_icon(int x, int y) {
 	       y < menu_icon_y + OVERLAY_MENU_ICON_SIZE;
 }
 static int content_at(int x, int y) {
-	if (x < 320 - CONTENT_WIDTH)
+	if (x < 320 - CONTENT_WIDTH) {
 		return -1;
+	}
 	int y_base = menu_icon_y - contents.size() * CONTENT_HEIGHT;
-	if (y < y_base || y >= menu_icon_y)
+	if (y < y_base || y >= menu_icon_y) {
 		return -1;
+	}
 	return (y - y_base) / CONTENT_HEIGHT;
 }
 
@@ -89,8 +91,9 @@ void draw_overlay_menu(int y) {
 			Draw(contents[i].string, string_x, y_base + i * CONTENT_HEIGHT + 5, 0.5, 0.5, menu_content_string_color);
 		}
 	}
-	if (menu_status == CONFIRMING_CLOSE)
+	if (menu_status == CONFIRMING_CLOSE) {
 		dialog_view->draw();
+	}
 }
 void update_overlay_menu(Hid_info *key) {
 	static bool exit_confirmed = false;
@@ -100,17 +103,22 @@ void update_overlay_menu(Hid_info *key) {
 		prev_scene = global_current_scene;
 	}
 	contents.clear();
-	if (global_current_scene != SceneType::HOME)
+	if (global_current_scene != SceneType::HOME) {
 		contents.push_back({LOCALIZED(HOME), Content::Type::HOME});
-	if (global_current_scene != SceneType::SEARCH)
+	}
+	if (global_current_scene != SceneType::SEARCH) {
 		contents.push_back({LOCALIZED(GOTO_SEARCH), Content::Type::SEARCH});
-	if (global_current_scene != SceneType::HISTORY)
+	}
+	if (global_current_scene != SceneType::HISTORY) {
 		contents.push_back({LOCALIZED(WATCH_HISTORY), Content::Type::HISTORY});
+	}
 	contents.push_back({LOCALIZED(EXIT_APP), Content::Type::EXIT});
-	if (global_current_scene != SceneType::SETTINGS)
+	if (global_current_scene != SceneType::SETTINGS) {
 		contents.push_back({LOCALIZED(SETTINGS), Content::Type::SETTINGS});
-	if (global_current_scene != SceneType::ABOUT)
+	}
+	if (global_current_scene != SceneType::ABOUT) {
 		contents.push_back({LOCALIZED(ABOUT), Content::Type::ABOUT});
+	}
 
 	if (menu_status == CONFIRMING_CLOSE) {
 		holding_touch = false;
@@ -123,10 +131,11 @@ void update_overlay_menu(Hid_info *key) {
 	} else {
 		if (holding_touch && key->touch_x == -1 && last_touch_x != -1) {
 			if (in_icon(last_touch_x, last_touch_y)) {
-				if (menu_status == CLOSED)
+				if (menu_status == CLOSED) {
 					menu_status = OPEN;
-				else
+				} else {
 					menu_status = CLOSED;
+				}
 			} else if (menu_status != CLOSED && content_at(last_touch_x, last_touch_y) != -1) {
 				int id = content_at(last_touch_x, last_touch_y);
 				if (contents[id].type == Content::Type::SEARCH) {
@@ -139,10 +148,11 @@ void update_overlay_menu(Hid_info *key) {
 					dialog_view->set_buttons<std::function<std::string()>>(
 					    {[]() { return LOCALIZED(CANCEL); }, []() { return LOCALIZED(EXIT_APP); }},
 					    [](OverlayDialogView &, int button_pressed) {
-						    if (button_pressed == 0)
+						    if (button_pressed == 0) {
 							    menu_status = OPEN;
-						    else if (button_pressed == 1)
+						    } else if (button_pressed == 1) {
 							    exit_confirmed = true;
+						    }
 						    return true; // close
 					    });
 					dialog_view->set_is_visible(true);
@@ -166,28 +176,32 @@ void update_overlay_menu(Hid_info *key) {
 					global_intent.next_scene = SceneType::HOME;
 					global_intent.arg = "";
 				}
-			} else
+			} else {
 				menu_status = CLOSED;
+			}
 			var_need_refresh = true;
 		}
 
-		if (holding_touch && last_touch_x != -1 && key->touch_x == -1)
+		if (holding_touch && last_touch_x != -1 && key->touch_x == -1) {
 			var_need_refresh = true;
+		}
 
 		if (key->p_touch) {
-			if (in_icon(key->touch_x, key->touch_y))
+			if (in_icon(key->touch_x, key->touch_y)) {
 				holding_touch = true;
-			else if (menu_status != CLOSED && content_at(key->touch_x, key->touch_y) != -1)
+			} else if (menu_status != CLOSED && content_at(key->touch_x, key->touch_y) != -1) {
 				holding_touch = true;
-			else
+			} else {
 				menu_status = CLOSED;
+			}
 		}
 
 		last_touch_x = key->touch_x;
 		last_touch_y = key->touch_y;
 
-		if (key->touch_x == -1)
+		if (key->touch_x == -1) {
 			holding_touch = false;
+		}
 		if (holding_touch) {
 			key->touch_x = key->touch_y = -1;
 			key->p_touch = false;

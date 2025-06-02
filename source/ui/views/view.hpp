@@ -79,8 +79,9 @@ struct View {
 	virtual float get_height() const = 0;
 	virtual void draw_background() const {
 		u32 color = get_background_color ? get_background_color(*this) : background_color;
-		if (color >> 24)
+		if (color >> 24) {
 			Draw_texture(var_square_image[0], color, (int)x0, (int)y0, (int)get_width(), (int)get_height());
+		}
 	}
 	void draw() const {
 		// Draw_line(x0, y0, 0xFF000000, x0 + get_width(), y0, 0xFF000000, 1);
@@ -92,8 +93,9 @@ struct View {
 	virtual void draw_() const = 0;
 	void draw(double x_offset, double y_offset) {
 		add_offset(x_offset, y_offset);
-		if (on_drawn)
+		if (on_drawn) {
 			on_drawn(*this);
+		}
 		draw();
 		add_offset(-x_offset, -y_offset);
 	}
@@ -104,19 +106,25 @@ struct View {
 			                   key.touch_y < y0 + get_height();
 			if (inside_view && (key.p_touch || view_holding_time)) {
 				view_holding_time++;
-				if (!scrolled)
+				if (!scrolled) {
 					touch_darkness = std::min(1.0, touch_darkness + TOUCH_DARKNESS_SPEED);
-				else
+				} else {
 					touch_darkness = std::max(0.0, touch_darkness - TOUCH_DARKNESS_SPEED);
-				for (auto on_long_hold : on_long_holds)
-					if (on_long_hold.first == view_holding_time)
+				}
+				for (auto on_long_hold : on_long_holds) {
+					if (on_long_hold.first == view_holding_time) {
 						on_long_hold.second(*this);
-			} else
+					}
+				}
+			} else {
 				touch_darkness = std::max(0.0, touch_darkness - TOUCH_DARKNESS_SPEED);
-			if (key.touch_x == -1 && view_holding_time && on_view_released)
+			}
+			if (key.touch_x == -1 && view_holding_time && on_view_released) {
 				on_view_released(*this);
-			if (!inside_view)
+			}
+			if (!inside_view) {
 				view_holding_time = 0;
+			}
 			update_(key);
 		}
 		scrolled = false;

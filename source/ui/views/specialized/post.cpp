@@ -20,23 +20,26 @@ void PostView::draw_() const {
 		x += Draw_get_width(author_name + " ", 0.5);
 		Draw(time_str, x, cur_y - 2, 0.45, 0.45, LIGHT1_TEXT_COLOR);
 	}
-	if (cur_y < 240 && cur_y + get_icon_size() > 0)
+	if (cur_y < 240 && cur_y + get_icon_size() > 0) {
 		thumbnail_draw(author_icon_handle, x0 + SMALL_MARGIN, cur_y, get_icon_size(), get_icon_size());
+	}
 	cur_y += DEFAULT_FONT_INTERVAL;
 
 	for (size_t line = 0; line < lines_shown; line++) {
-		if (cur_y < 240 && cur_y + DEFAULT_FONT_INTERVAL > 0)
+		if (cur_y < 240 && cur_y + DEFAULT_FONT_INTERVAL > 0) {
 			Draw(content_lines[line], content_x_pos(), cur_y - 2, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+		}
 		cur_y += DEFAULT_FONT_INTERVAL;
 	}
 	if (lines_shown < content_lines.size()) {
 		cur_y += SMALL_MARGIN;
 		if (cur_y < 240 && cur_y + DEFAULT_FONT_INTERVAL > 0) {
 			Draw(LOCALIZED(SHOW_MORE), content_x_pos(), cur_y - 2, 0.5, 0.5, DEF_DRAW_GRAY);
-			if (show_more_holding)
+			if (show_more_holding) {
 				Draw_line(content_x_pos(), cur_y + DEFAULT_FONT_INTERVAL, DEF_DRAW_GRAY,
 				          content_x_pos() + Draw_get_width(LOCALIZED(SHOW_MORE), 0.5), cur_y + DEFAULT_FONT_INTERVAL,
 				          DEF_DRAW_GRAY, 1);
+			}
 		}
 		cur_y += DEFAULT_FONT_INTERVAL;
 	}
@@ -52,8 +55,9 @@ void PostView::draw_() const {
 			             COMMUNITY_IMAGE_SIZE);
 			Draw_x_centered(LOCALIZED(UNSUPPORTED_IMAGE), content_x_pos(), content_x_pos() + COMMUNITY_IMAGE_SIZE,
 			                cur_y + COMMUNITY_IMAGE_SIZE * 0.3, 0.5, 0.5, DEFAULT_TEXT_COLOR);
-		} else
+		} else {
 			thumbnail_draw(additional_image_handle, content_x_pos(), cur_y, COMMUNITY_IMAGE_SIZE, COMMUNITY_IMAGE_SIZE);
+		}
 		cur_y += COMMUNITY_IMAGE_SIZE + SMALL_MARGIN;
 	}
 	if (additional_video_view) {
@@ -69,10 +73,11 @@ void PostView::draw_() const {
 	if (replies_shown) { // hide replies
 		cur_y += SMALL_MARGIN;
 		Draw(LOCALIZED(FOLD_REPLIES), content_x_pos(), cur_y - 2, 0.5, 0.5, COLOR_LINK);
-		if (fold_replies_holding)
+		if (fold_replies_holding) {
 			Draw_line(content_x_pos(), cur_y + DEFAULT_FONT_INTERVAL, COLOR_LINK,
 			          content_x_pos() + Draw_get_width(LOCALIZED(FOLD_REPLIES), 0.5), cur_y + DEFAULT_FONT_INTERVAL,
 			          COLOR_LINK, 1);
+		}
 		cur_y += DEFAULT_FONT_INTERVAL;
 		cur_y += SMALL_MARGIN;
 	}
@@ -86,9 +91,10 @@ void PostView::draw_() const {
 		                      : replies_shown    ? LOCALIZED(SHOW_MORE_REPLIES)
 		                                         : LOCALIZED(SHOW_REPLIES);
 		Draw(message, content_x_pos(), cur_y - 2, 0.5, 0.5, COLOR_LINK);
-		if (show_more_replies_holding)
+		if (show_more_replies_holding) {
 			Draw_line(content_x_pos(), cur_y + DEFAULT_FONT_INTERVAL, COLOR_LINK,
 			          content_x_pos() + Draw_get_width(message, 0.5), cur_y + DEFAULT_FONT_INTERVAL, COLOR_LINK, 1);
+		}
 		cur_y += DEFAULT_FONT_INTERVAL;
 	}
 }
@@ -97,12 +103,15 @@ void PostView::update_(Hid_info key) {
 	bool inside_author_icon = in_range(key.touch_x, x0, std::min<float>(x1, x0 + get_icon_size() + SMALL_MARGIN)) &&
 	                          in_range(key.touch_y, cur_y, cur_y + get_icon_size());
 
-	if (key.p_touch && inside_author_icon)
+	if (key.p_touch && inside_author_icon) {
 		icon_holding = true;
-	if (key.touch_x == -1 && icon_holding && on_author_icon_pressed_func)
+	}
+	if (key.touch_x == -1 && icon_holding && on_author_icon_pressed_func) {
 		on_author_icon_pressed_func(*this);
-	if (!inside_author_icon)
+	}
+	if (!inside_author_icon) {
 		icon_holding = false;
+	}
 
 	cur_y += (lines_shown + 1) * DEFAULT_FONT_INTERVAL;
 
@@ -113,21 +122,24 @@ void PostView::update_(Hid_info key) {
 		             std::min<float>(x1, content_x_pos() + Draw_get_width(LOCALIZED(SHOW_MORE), 0.5))) &&
 		    in_range(key.touch_y, cur_y, cur_y + DEFAULT_FONT_INTERVAL);
 
-		if (key.p_touch && inside_show_more)
+		if (key.p_touch && inside_show_more) {
 			show_more_holding = true;
+		}
 		if (key.touch_x == -1 && show_more_holding) {
 			lines_shown = std::min<size_t>(lines_shown + 50, content_lines.size());
 			var_need_refresh = true;
 		}
-		if (!inside_show_more)
+		if (!inside_show_more) {
 			show_more_holding = false;
+		}
 		cur_y += DEFAULT_FONT_INTERVAL;
 	}
 
 	cur_y = std::max<int>(cur_y, y0 + get_icon_size() + SMALL_MARGIN);
 
-	if (additional_image_url != "")
+	if (additional_image_url != "") {
 		cur_y += COMMUNITY_IMAGE_SIZE + SMALL_MARGIN * 2;
+	}
 	if (additional_video_view) {
 		cur_y += SMALL_MARGIN;
 		additional_video_view->update(key, content_x_pos(), cur_y);
@@ -142,21 +154,24 @@ void PostView::update_(Hid_info key) {
 		             std::min<float>(x1, content_x_pos() + Draw_get_width(LOCALIZED(FOLD_REPLIES), 0.5))) &&
 		    in_range(key.touch_y, cur_y, cur_y + DEFAULT_FONT_INTERVAL + 1);
 
-		if (key.p_touch && inside_fold_replies)
+		if (key.p_touch && inside_fold_replies) {
 			fold_replies_holding = true;
+		}
 		if (key.touch_x == -1 && fold_replies_holding) {
 			replies_shown = 0;
 			var_need_refresh = true;
 		}
-		if (!inside_fold_replies)
+		if (!inside_fold_replies) {
 			fold_replies_holding = false;
+		}
 		cur_y += DEFAULT_FONT_INTERVAL;
 		cur_y += SMALL_MARGIN;
 	}
 	for (size_t i = 0; i < replies_shown; i++) {
 		float cur_height = replies[i]->get_height();
-		if (cur_y < 240 && cur_y + cur_height > 0)
+		if (cur_y < 240 && cur_y + cur_height > 0) {
 			static_cast<View *>(replies[i])->update(key, 0, cur_y);
+		}
 		cur_y += cur_height;
 	}
 	if (is_loading_replies || get_has_more_replies() || replies_shown < replies.size()) {
@@ -168,19 +183,23 @@ void PostView::update_(Hid_info key) {
 		                                         std::min<float>(x1, content_x_pos() + Draw_get_width(message, 0.5))) &&
 		                                in_range(key.touch_y, cur_y, cur_y + DEFAULT_FONT_INTERVAL + 1);
 
-		if (key.p_touch && inside_show_more_replies)
+		if (key.p_touch && inside_show_more_replies) {
 			show_more_replies_holding = true;
-		if (is_loading_replies)
+		}
+		if (is_loading_replies) {
 			show_more_replies_holding = false;
+		}
 		if (key.touch_x == -1 && show_more_replies_holding) {
 			if (replies_shown < replies.size()) {
 				replies_shown = replies.size();
 				var_need_refresh = true;
-			} else if (on_load_more_replies_pressed_func)
+			} else if (on_load_more_replies_pressed_func) {
 				on_load_more_replies_pressed_func(*this);
+			}
 		}
-		if (!inside_show_more_replies)
+		if (!inside_show_more_replies) {
 			show_more_replies_holding = false;
+		}
 		cur_y += DEFAULT_FONT_INTERVAL;
 	}
 }

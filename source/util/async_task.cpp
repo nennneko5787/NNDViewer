@@ -9,10 +9,11 @@ static std::deque<std::pair<AsyncTaskFuncType, void *>> task_queue; // task_queu
 void remove_all_async_tasks_with_type(AsyncTaskFuncType func) {
 	resource_lock.lock();
 	for (auto itr = task_queue.begin(); itr != task_queue.end();) {
-		if (itr != task_queue.begin() && itr->first == func)
+		if (itr != task_queue.begin() && itr->first == func) {
 			itr = task_queue.erase(itr);
-		else
+		} else {
 			itr++;
+		}
 	}
 	resource_lock.unlock();
 }
@@ -26,11 +27,12 @@ void queue_async_task(AsyncTaskFuncType func, void *arg) {
 int is_async_task_running(AsyncTaskFuncType func) {
 	int res = 0;
 	resource_lock.lock();
-	for (int i = 0; i < (int)task_queue.size(); i++)
+	for (int i = 0; i < (int)task_queue.size(); i++) {
 		if (task_queue[i].first == func) {
 			res = i ? 1 : 2;
 			break;
 		}
+	}
 	resource_lock.unlock();
 	return res;
 }
@@ -57,8 +59,9 @@ void async_task_thread_func(void *arg) {
 			resource_lock.lock();
 			task_queue.pop_front();
 			resource_lock.unlock();
-		} else
+		} else {
 			usleep(50000);
+		}
 	}
 
 	threadExit(0);

@@ -74,8 +74,9 @@ void Search_init(void) {
 	search_box_view->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; });
 	search_box_view->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; });
 	search_box_view->set_on_view_released([](View &) {
-		if (Search_show_search_keyboard())
+		if (Search_show_search_keyboard()) {
 			global_intent.next_scene = SceneType::SEARCH;
+		}
 	});
 
 	url_button_view = (new TextView(0, SEARCH_BOX_MARGIN, URL_BUTTON_WIDTH, RESULT_Y_LOW - SEARCH_BOX_MARGIN * 2 - 1));
@@ -84,8 +85,9 @@ void Search_init(void) {
 	url_button_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(URL); });
 	url_button_view->set_get_background_color([](const View &) { return LIGHT1_BACK_COLOR; });
 	url_button_view->set_on_view_released([](View &) {
-		if (Search_show_url_input_keyboard())
+		if (Search_show_url_input_keyboard()) {
 			global_intent.next_scene = SceneType::SEARCH;
+		}
 	});
 
 	toast_view->set_is_visible(false);
@@ -160,18 +162,21 @@ static void update_result_bottom_view() {
 	if (search_result.error != "" || search_result.has_more_results()) {
 		TextView *cur_view =
 		    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 2))->set_x_alignment(TextView::XAlign::CENTER);
-		if (search_result.error != "")
+		if (search_result.error != "") {
 			cur_view->set_text(search_result.error);
-		else
+		} else {
 			cur_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(LOADING); });
+		}
 		result_bottom_view = cur_view;
-	} else
+	} else {
 		result_bottom_view = new EmptyView(0, 0, 320, 0);
+	}
 	result_view->views[1] = result_bottom_view;
 	result_view->set_on_child_drawn(1, [](const ScrollView &, int) {
 		if (search_result.has_more_results() && search_result.error == "") {
-			if (!is_async_task_running(load_search_results) && !is_async_task_running(load_more_search_results))
+			if (!is_async_task_running(load_search_results) && !is_async_task_running(load_more_search_results)) {
 				queue_async_task(load_more_search_results, NULL);
+			}
 		}
 	});
 }
@@ -205,11 +210,13 @@ static View *result_item_to_view(const YouTubeSuccinctItem &item) {
 }
 static std::pair<int *, std::string *> get_thumbnail_info_from_view(View *view) {
 	SuccinctVideoView *cur_view0 = dynamic_cast<SuccinctVideoView *>(view);
-	if (cur_view0)
+	if (cur_view0) {
 		return {&cur_view0->thumbnail_handle, &cur_view0->thumbnail_url};
+	}
 	SuccinctChannelView *cur_view1 = dynamic_cast<SuccinctChannelView *>(view);
-	if (cur_view1)
+	if (cur_view1) {
 		return {&cur_view1->thumbnail_handle, &cur_view1->thumbnail_url};
+	}
 	usleep(1000000);
 	return {NULL, NULL};
 }
@@ -239,8 +246,9 @@ static void load_search_results(void *) {
 	// wrap and truncate here
 	logger.info("search", "truncate/view creation start");
 	std::vector<View *> new_result_views;
-	for (size_t i = 0; i < new_result.results.size(); i++)
+	for (size_t i = 0; i < new_result.results.size(); i++) {
 		new_result_views.push_back(result_item_to_view(new_result.results[i]));
+	}
 	logger.info("search", "truncate/view creation end");
 
 	resource_lock.lock();
@@ -262,8 +270,9 @@ static void load_more_search_results(void *) {
 
 	logger.info("search-c", "truncate/view creation start");
 	std::vector<View *> new_result_views;
-	for (size_t i = search_result.results.size(); i < new_result.results.size(); i++)
+	for (size_t i = search_result.results.size(); i < new_result.results.size(); i++) {
 		new_result_views.push_back(result_item_to_view(new_result.results[i]));
+	}
 	logger.info("search-c", "truncate/view creation end");
 
 	resource_lock.lock();
@@ -272,8 +281,9 @@ static void load_more_search_results(void *) {
 		return;
 	}
 	search_result = new_result;
-	if (new_result.error == "")
+	if (new_result.error == "") {
 		result_list_view->views.insert(result_list_view->views.end(), new_result_views.begin(), new_result_views.end());
+	}
 	update_result_bottom_view();
 	var_need_refresh = true;
 	resource_lock.unlock();
@@ -287,8 +297,9 @@ static void access_input_url(void *) {
 
 	if (page_type == YouTubePageType::INVALID) {
 		static NetworkSessionList session_list;
-		if (!session_list.inited)
+		if (!session_list.inited) {
 			session_list.init();
+		}
 
 		auto result = session_list.perform(HttpRequest::GET(url, {}));
 		page_type = youtube_get_page_type(result.redirected_url);
@@ -301,12 +312,13 @@ static void access_input_url(void *) {
 		return;
 	}
 	if (page_type != YouTubePageType::INVALID) {
-		if (page_type == YouTubePageType::VIDEO)
+		if (page_type == YouTubePageType::VIDEO) {
 			global_intent.next_scene = SceneType::VIDEO_PLAYER;
-		else if (page_type == YouTubePageType::CHANNEL)
+		} else if (page_type == YouTubePageType::CHANNEL) {
 			global_intent.next_scene = SceneType::CHANNEL;
-		else if (page_type == YouTubePageType::SEARCH)
+		} else if (page_type == YouTubePageType::SEARCH) {
 			global_intent.next_scene = SceneType::SEARCH;
+		}
 		global_intent.arg = url;
 	} else {
 		toast_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(NOT_A_YOUTUBE_URL); });
@@ -318,8 +330,9 @@ static void access_input_url(void *) {
 
 bool Search_show_search_keyboard() {
 	if (!is_async_task_running(load_search_results)) {
-		if (global_current_scene != SceneType::SEARCH)
+		if (global_current_scene != SceneType::SEARCH) {
 			resource_lock.lock();
+		}
 		SwkbdState keyboard;
 		swkbdInit(&keyboard, SWKBD_TYPE_NORMAL, 2, 32);
 		swkbdSetFeatures(&keyboard, SWKBD_DEFAULT_QWERTY | SWKBD_PREDICTIVE_INPUT);
@@ -345,16 +358,19 @@ bool Search_show_search_keyboard() {
 
 			global_intent.next_scene = SceneType::SEARCH;
 		}
-		if (global_current_scene != SceneType::SEARCH)
+		if (global_current_scene != SceneType::SEARCH) {
 			resource_lock.unlock();
+		}
 		return button_pressed == SWKBD_BUTTON_RIGHT;
-	} else
+	} else {
 		return false;
+	}
 }
 bool Search_show_url_input_keyboard() {
 	if (!is_async_task_running(access_input_url)) {
-		if (global_current_scene != SceneType::SEARCH)
+		if (global_current_scene != SceneType::SEARCH) {
 			resource_lock.lock();
+		}
 		SwkbdState keyboard;
 		swkbdInit(&keyboard, SWKBD_TYPE_NORMAL, 2, 255);
 		swkbdSetFeatures(&keyboard, SWKBD_DEFAULT_QWERTY | SWKBD_PREDICTIVE_INPUT);
@@ -375,11 +391,13 @@ bool Search_show_url_input_keyboard() {
 			remove_all_async_tasks_with_type(access_input_url);
 			queue_async_task(access_input_url, NULL);
 		}
-		if (global_current_scene != SceneType::SEARCH)
+		if (global_current_scene != SceneType::SEARCH) {
 			resource_lock.unlock();
+		}
 		return button_pressed == SWKBD_BUTTON_RIGHT;
-	} else
+	} else {
 		return false;
+	}
 }
 
 void Search_draw(void) {
@@ -394,8 +412,9 @@ void Search_draw(void) {
 
 	if (toast_view_visible_frames_left > 0) {
 		toast_view_visible_frames_left--;
-		if (!toast_view_visible_frames_left)
+		if (!toast_view_visible_frames_left) {
 			toast_view->set_is_visible(false);
+		}
 	}
 	if (var_need_refresh || !var_eco_mode) {
 		var_need_refresh = false;
@@ -407,26 +426,31 @@ void Search_draw(void) {
 		// (!) : I don't know how to draw textures truncated, so I will just fill the margin with white again
 		resource_lock.lock();
 		main_view->draw();
-		if (toast_view_visible_frames_left > 0)
+		if (toast_view_visible_frames_left > 0) {
 			toast_view->draw();
+		}
 		resource_lock.unlock();
 
-		if (video_playing_bar_show)
+		if (video_playing_bar_show) {
 			video_draw_playing_bar();
+		}
 		draw_overlay_menu(video_playing_bar_show ? 240 - OVERLAY_MENU_ICON_SIZE - VIDEO_PLAYING_BAR_HEIGHT
 		                                         : 240 - OVERLAY_MENU_ICON_SIZE);
 
-		if (Util_expl_query_show_flag())
+		if (Util_expl_query_show_flag()) {
 			Util_expl_draw();
+		}
 
-		if (Util_err_query_error_show_flag())
+		if (Util_err_query_error_show_flag()) {
 			Util_err_draw();
+		}
 
 		Draw_touch_pos();
 
 		Draw_apply_draw();
-	} else
+	} else {
 		gspWaitForVBlank();
+	}
 
 	if (Util_err_query_error_show_flag()) {
 		Util_err_main(key);
@@ -444,13 +468,16 @@ void Search_draw(void) {
 		}
 		resource_lock.unlock();
 
-		if (video_playing_bar_show)
+		if (video_playing_bar_show) {
 			video_update_playing_bar(key);
+		}
 
-		if (key.p_a)
+		if (key.p_a) {
 			Search_show_search_keyboard();
+		}
 
-		if (key.p_b)
+		if (key.p_b) {
 			global_intent.next_scene = SceneType::BACK;
+		}
 	}
 }

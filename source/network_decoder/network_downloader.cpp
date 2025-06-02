@@ -10,29 +10,34 @@
 // --------------------------------
 
 bool NetworkStream::is_data_available(u64 start, u64 size) {
-	if (!ready)
+	if (!ready) {
 		return false;
-	if (start + size > len)
+	}
+	if (start + size > len) {
 		return false;
+	}
 	u64 end = start + size - 1;
 	u64 start_block = start / BLOCK_SIZE;
 	u64 end_block = end / BLOCK_SIZE;
 
 	bool res = true;
 	downloaded_data_lock.lock();
-	for (u64 block = start_block; block <= end_block; block++)
+	for (u64 block = start_block; block <= end_block; block++) {
 		if (!downloaded_data.count(block)) {
 			res = false;
 			break;
 		}
+	}
 	downloaded_data_lock.unlock();
 	return res;
 }
 std::vector<u8> NetworkStream::get_data(u64 start, u64 size) {
-	if (!ready)
+	if (!ready) {
 		return {};
-	if (!size)
+	}
+	if (!size) {
 		return {};
+	}
 	u64 end = start + size - 1;
 	u64 start_block = start / BLOCK_SIZE;
 	u64 end_block = end / BLOCK_SIZE;
@@ -56,10 +61,11 @@ void NetworkStream::set_data(u64 block, const std::vector<u8> &data) {
 	downloaded_data[block] = data;
 	if (downloaded_data.size() > MAX_CACHE_BLOCKS) { // ensure it doesn't cache too much and run out of memory
 		u64 read_head_block = read_head / BLOCK_SIZE;
-		if (std::next(downloaded_data.begin())->first < read_head_block)
+		if (std::next(downloaded_data.begin())->first < read_head_block) {
 			downloaded_data.erase(std::next(downloaded_data.begin()));
-		else
+		} else {
 			downloaded_data.erase(std::prev(downloaded_data.end()));
+		}
 	}
 	downloaded_data_lock.unlock();
 }
@@ -79,16 +85,17 @@ std::vector<double> NetworkStream::get_buffering_progress_bar(int res_len) {
 		while (itr != downloaded_data.end()) {
 			u64 il = itr->first * BLOCK_SIZE;
 			u64 ir = std::min((itr->first + 1) * BLOCK_SIZE, len);
-			if (ir <= l)
+			if (ir <= l) {
 				itr++;
-			else if (il >= r)
+			} else if (il >= r) {
 				break;
-			else {
+			} else {
 				res[i] += std::min(ir, r) - std::max(il, l);
-				if (ir >= r)
+				if (ir >= r) {
 					break;
-				else
+				} else {
 					itr++;
+				}
 			}
 		}
 		res[i] /= r - l;
@@ -105,12 +112,13 @@ std::vector<double> NetworkStream::get_buffering_progress_bar(int res_len) {
 void NetworkStreamDownloader::add_stream(NetworkStream *stream) {
 	streams_lock.lock();
 	size_t index = (size_t)-1;
-	for (size_t i = 0; i < streams.size(); i++)
+	for (size_t i = 0; i < streams.size(); i++) {
 		if (!streams[i]) {
 			streams[i] = stream;
 			index = i;
 			break;
 		}
+	}
 	if (index == (size_t)-1) {
 		index = streams.size();
 		streams.push_back(stream);
@@ -133,10 +141,12 @@ static std::string remove_url_parameter(const std::string &url, const std::strin
 		if (url[i] == '&' || url[i] == '?') {
 			if (url.substr(i + 1, param.size() + 1) == param + "=") {
 				i = std::find(url.begin() + i + 1, url.end(), '&') - url.begin();
-			} else
+			} else {
 				res.push_back(url[i++]);
-		} else
+			}
+		} else {
 			res.push_back(url[i++]);
+		}
 	}
 	return res;
 }
@@ -149,30 +159,36 @@ void NetworkStreamDownloader::downloader_thread() {
 		streams_lock.lock();
 		// back up 'read_head's as those can be changed from another thread
 		std::vector<u64> read_heads(streams.size());
-		for (size_t i = 0; i < streams.size(); i++)
-			if (streams[i])
+		for (size_t i = 0; i < streams.size(); i++) {
+			if (streams[i]) {
 				read_heads[i] = streams[i]->read_head;
+			}
+		}
 
 		// find the stream to download next
 		double margin_percentage_min = 1000;
 		for (size_t i = 0; i < streams.size(); i++) {
-			if (!streams[i])
+			if (!streams[i]) {
 				continue;
+			}
 			if (streams[i]->quit_request) {
 				delete streams[i];
 				streams[i] = NULL;
 				continue;
 			}
-			if (streams[i]->error)
+			if (streams[i]->error) {
 				continue;
-			if (streams[i]->suspend_request)
+			}
+			if (streams[i]->suspend_request) {
 				continue;
+			}
 			if (!streams[i]->ready) {
 				cur_stream_index = i;
 				break;
 			}
-			if (streams[i]->whole_download)
+			if (streams[i]->whole_download) {
 				continue; // its entire content should already be downloaded
+			}
 
 			int forward_buffer_block_num =
 			    std::max<int>(2, (MAX_CACHE_BLOCKS - 1) * var_forward_buffer_ratio); // block #0 is always kept
@@ -181,20 +197,24 @@ void NetworkStreamDownloader::downloader_thread() {
 			while (first_not_downloaded_block < streams[i]->block_num &&
 			       streams[i]->downloaded_data.count(first_not_downloaded_block)) {
 				first_not_downloaded_block++;
-				if (first_not_downloaded_block == read_head_block + forward_buffer_block_num)
+				if (first_not_downloaded_block == read_head_block + forward_buffer_block_num) {
 					break;
+				}
 			}
-			if (first_not_downloaded_block == streams[i]->block_num)
+			if (first_not_downloaded_block == streams[i]->block_num) {
 				continue;
-			if (first_not_downloaded_block == read_head_block + forward_buffer_block_num)
+			}
+			if (first_not_downloaded_block == read_head_block + forward_buffer_block_num) {
 				continue; // no need to download this stream for now
+			}
 
 			double margin_percentage;
-			if (first_not_downloaded_block == read_head_block)
+			if (first_not_downloaded_block == read_head_block) {
 				margin_percentage = 0;
-			else
+			} else {
 				margin_percentage =
 				    (double)(first_not_downloaded_block * BLOCK_SIZE - read_heads[i]) / streams[i]->len * 100;
+			}
 			if (margin_percentage_min > margin_percentage) {
 				margin_percentage_min = margin_percentage;
 				cur_stream_index = i;
@@ -214,8 +234,9 @@ void NetworkStreamDownloader::downloader_thread() {
 		if (cur_stream->whole_download) {
 			auto &session_list = cur_stream->session_list ? *cur_stream->session_list : thread_network_session_list;
 			auto result = session_list.perform(HttpRequest::GET(cur_stream->url, {}));
-			if (result.redirected_url != "")
+			if (result.redirected_url != "") {
 				cur_stream->url = result.redirected_url;
+			}
 
 			if (!result.fail && result.status_code_is_success() && result.data.size()) {
 				{ // acquire necessary headers
@@ -264,8 +285,9 @@ void NetworkStreamDownloader::downloader_thread() {
 		} else {
 			u64 block_reading = read_heads[cur_stream_index] / BLOCK_SIZE;
 			if (cur_stream->ready) {
-				while (block_reading < cur_stream->block_num && cur_stream->downloaded_data.count(block_reading))
+				while (block_reading < cur_stream->block_num && cur_stream->downloaded_data.count(block_reading)) {
 					block_reading++;
+				}
 				if (block_reading == cur_stream->block_num) { // something unexpected happened
 					logger.error(LOG_THREAD_STR, "unexpected error (trying to read beyond the end of the stream)");
 					cur_stream->error = true;
@@ -289,8 +311,9 @@ void NetworkStreamDownloader::downloader_thread() {
 			              {{"Range", "bytes=" + std::to_string(start) + "-" + std::to_string(end - 1)}}))
 			        : session_list.perform(HttpRequest::GET(
 			              cur_stream->url + "&range=" + std::to_string(start) + "-" + std::to_string(end - 1), {}));
-			if (result.redirected_url != "")
+			if (result.redirected_url != "") {
 				cur_stream->url = remove_url_parameter(result.redirected_url, "range");
+			}
 
 			if (!result.fail && result.status_code_is_success()) {
 				if (cur_stream->len == 0) {
@@ -303,21 +326,25 @@ void NetworkStreamDownloader::downloader_thread() {
 						if (!*end) {
 							ok = true;
 							cur_stream->block_num = NetworkStream::get_block_num(cur_stream->len);
-						} else
+						} else {
 							logger.error(LOG_THREAD_STR, "failed to parse Content-Range : " + std::string(slash + 1));
-					} else
+						}
+					} else {
 						logger.error(LOG_THREAD_STR,
 						             "no slash in Content-Range response header : " + content_range_str);
-					if (!ok)
+					}
+					if (!ok) {
 						cur_stream->error = true;
+					}
 				}
 				if (cur_stream->ready && result.data.size() != expected_len) {
 					logger.error(LOG_THREAD_STR, "size discrepancy : " + std::to_string(expected_len) + " -> " +
 					                                 std::to_string(result.data.size()));
 					if (cur_stream->retry_cnt_left) {
 						cur_stream->retry_cnt_left--;
-					} else
+					} else {
 						cur_stream->error = true;
+					}
 					continue;
 				}
 				cur_stream->retry_cnt_left = NetworkStream::RETRY_CNT_MAX;
@@ -330,15 +357,18 @@ void NetworkStreamDownloader::downloader_thread() {
 				logger.error("net/dl", "access failed : " + result.error);
 				if (cur_stream->retry_cnt_left) {
 					cur_stream->retry_cnt_left--;
-				} else
+				} else {
 					cur_stream->error = true;
+				}
 			}
 		}
 	}
 	logger.info(LOG_THREAD_STR, "Exit, deiniting...");
-	for (auto stream : streams)
-		if (stream)
+	for (auto stream : streams) {
+		if (stream) {
 			stream->quit_request = true;
+		}
+	}
 }
 void NetworkStreamDownloader::delete_all() {
 	for (auto &stream : streams) {

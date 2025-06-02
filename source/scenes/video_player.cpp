@@ -163,8 +163,9 @@ using namespace VideoPlayer;
 
 static const char *volatile network_waiting_status = NULL;
 const char *get_network_waiting_status() {
-	if (network_waiting_status)
+	if (network_waiting_status) {
 		return network_waiting_status;
+	}
 	return network_decoder.get_network_waiting_status();
 }
 
@@ -372,17 +373,20 @@ void VideoPlayer_init(void) {
 	return LOCALIZED(PREAMP) + " : " + std::to_string((int)std::round(std::exp(view.get_value()) * 100)) + "%"; })
 				->set_while_holding([] (BarView &view) {
 	double volume = std::exp(view.get_value());
-	if (volume >= 0.95 && volume <= 1.05)
+	if (volume >= 0.95 && volume <= 1.05) {
 		volume = 1.0, view.set_value(0);
+	}
 	// volume change is needs a reconstruction of the filter graph, so don't update volume too often
 	static int cnt = 0;
-	if (++cnt >= 15)
+	if (++cnt >= 15) {
 		cnt = 0, network_decoder.set_preamp(volume);
+	}
 				})
 				->set_on_release([] (BarView &view) {
 	double volume = std::exp(view.get_value());
-	if (volume >= 0.95 && volume <= 1.05)
+	if (volume >= 0.95 && volume <= 1.05) {
 		volume = 1.0, view.set_value(0);
+	}
 	network_decoder.set_preamp(volume);
 				}),
 			(new BarView(0, 0, 260, 30)) // speed
@@ -392,8 +396,9 @@ void VideoPlayer_init(void) {
 				->set_while_holding([] (BarView &view) {
 	view.fix_close_values(0.97, 1.0, 1.03);
 	static int cnt = 0;
-	if (++cnt >= 15)
+	if (++cnt >= 15) {
 		cnt = 0, network_decoder.set_tempo(view.get_value());
+	}
 				})
 				->set_on_release([] (BarView &view) {
 	view.fix_close_values(0.97, 1.0, 1.03);
@@ -406,8 +411,9 @@ void VideoPlayer_init(void) {
 				->set_while_holding([] (BarView &view) {
 	view.fix_close_values(0.97, 1.0, 1.03);
 	static int cnt = 0;
-	if (++cnt >= 15)
+	if (++cnt >= 15) {
 		cnt = 0, network_decoder.set_pitch(view.get_value());
+	}
 				})
 				->set_on_release([] (BarView &view) {
 	view.fix_close_values(0.97, 1.0, 1.03);
@@ -457,8 +463,9 @@ void VideoPlayer_init(void) {
                              ->set_get_background_color(View::STANDARD_BACKGROUND)
                              ->set_on_view_released([](View &) {
 	                             std::fill(equalizer_values, equalizer_values + 18, 1.0);
-	                             for (int i = 0; i < 18; i++)
+	                             for (int i = 0; i < 18; i++) {
 		                             network_decoder.set_equalizer_value(i, 1);
+	                             }
                              }),
                          (new RuleView(0, 0, EQUALIZER_POPUP_WIDTH, 1))->set_margin(0),
                          (new ScrollView(0, 0, EQUALIZER_POPUP_WIDTH, EQUALIZER_POPUP_HEIGHT - 40))
@@ -490,8 +497,9 @@ void VideoPlayer_init(void) {
                             ->set_views({playlist_title_view, playlist_author_view,
                                          (new RuleView(0, 0, 320, SMALL_MARGIN)), playlist_list_view})
                             ->set_draw_order({3, 2, 1, 0});
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++) {
 	    playlist_tab_view->views[i]->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; });
+    }
 
     // default : 5 tabs
     main_view =
@@ -539,8 +547,9 @@ void VideoPlayer_init(void) {
     vid_min_time = 99999999;
     vid_max_time = 0;
     vid_recent_total_time = 0;
-    for (int i = 0; i < 90; i++)
+    for (int i = 0; i < 90; i++) {
 	    vid_recent_time[i] = 0;
+    }
 
     for (int i = 0; i < 2; i++) {
 	    vid_tex_width[i] = 0;
@@ -570,24 +579,28 @@ void VideoPlayer_init(void) {
     }
 
     result = Draw_load_texture("romfs:/gfx/draw/video_player/banner.t3x", 61, vid_banner, 0, 2);
-    if (result.code != 0)
+    if (result.code != 0) {
 	    logger.error(DEF_SAPP0_INIT_STR, "Draw_load_texture()..." + result.string + result.error_description,
 	                 result.code);
+    }
 
     result = Draw_load_texture("romfs:/gfx/draw/video_player/control.t3x", 62, vid_control, 0, 2);
-    if (result.code != 0)
+    if (result.code != 0) {
 	    logger.error(DEF_SAPP0_INIT_STR, "Draw_load_texture()..." + result.string + result.error_description,
 	                 result.code);
+    }
 
     result = Draw_load_texture("romfs:/gfx/draw/thumb_up.t3x", 63, var_texture_thumb_up, 0, 2);
-    if (result.code != 0)
+    if (result.code != 0) {
 	    logger.error(DEF_SAPP0_INIT_STR, "Draw_load_texture()..." + result.string + result.error_description,
 	                 result.code);
+    }
 
     result = Draw_load_texture("romfs:/gfx/draw/thumb_down.t3x", 64, var_texture_thumb_down, 0, 2);
-    if (result.code != 0)
+    if (result.code != 0) {
 	    logger.error(DEF_SAPP0_INIT_STR, "Draw_load_texture()..." + result.string + result.error_description,
 	                 result.code);
+    }
 
     vid_x = 0;
     vid_y = 15;
@@ -675,8 +688,9 @@ void VideoPlayer_init(void) {
 	    Draw_free_texture(63);
 	    Draw_free_texture(64);
 
-	    for (int i = 0; i < 2; i++)
+	    for (int i = 0; i < 2; i++) {
 		    Draw_c2d_image_free(vid_image[i]);
+	    }
 
 	    logger.info(DEF_SAPP0_EXIT_STR, "Exited.");
     }
@@ -733,13 +747,15 @@ void VideoPlayer_init(void) {
 
 		    suggestion_tab_view->set_on_child_drawn(1, [](const ScrollView &, int) {
 			    if (cur_video_info.has_more_suggestions() && cur_video_info.error == "") {
-				    if (!is_async_task_running(load_video_page) && !is_async_task_running(load_more_suggestions))
+				    if (!is_async_task_running(load_video_page) && !is_async_task_running(load_more_suggestions)) {
 					    queue_async_task(load_more_suggestions, &cur_video_info);
+				    }
 			    }
 		    });
 		    suggestion_bottom_view = bottom_view;
-	    } else
+	    } else {
 		    suggestion_bottom_view = new EmptyView(0, 0, 320, 0);
+	    }
 	    suggestion_tab_view->views[1] = suggestion_bottom_view;
     }
     // also used for playlist items
@@ -776,13 +792,15 @@ void VideoPlayer_init(void) {
 
 		    comment_tab_view->set_on_child_drawn(2, [](const ScrollView &, int) {
 			    if (cur_video_info.has_more_comments() && cur_video_info.error == "") {
-				    if (!is_async_task_running(load_video_page) && !is_async_task_running(load_more_comments))
+				    if (!is_async_task_running(load_video_page) && !is_async_task_running(load_more_comments)) {
 					    queue_async_task(load_more_comments, &cur_video_info);
+				    }
 			    }
 		    });
 		    comments_bottom_view = bottom_view;
-	    } else
+	    } else {
 		    comments_bottom_view = new EmptyView(0, 0, 320, 0);
+	    }
 	    comment_tab_view->views[2] = comments_bottom_view;
     }
 #define COMMENT_MAX_LINE_NUM 1000 // this limit exists due to performance reason (TODO : more efficient truncating)
@@ -791,17 +809,19 @@ void VideoPlayer_init(void) {
 	    std::vector<std::string> cur_lines;
 	    auto itr = cur_content.begin();
 	    while (itr != cur_content.end()) {
-		    if (cur_lines.size() >= COMMENT_MAX_LINE_NUM)
+		    if (cur_lines.size() >= COMMENT_MAX_LINE_NUM) {
 			    break;
+		    }
 		    auto next_itr = std::find(itr, cur_content.end(), '\n');
 		    auto tmp = truncate_str(std::string(itr, next_itr), COMMENT_MAX_WIDTH,
 		                            COMMENT_MAX_LINE_NUM - cur_lines.size(), 0.5, 0.5);
 		    cur_lines.insert(cur_lines.end(), tmp.begin(), tmp.end());
 
-		    if (next_itr != cur_content.end())
+		    if (next_itr != cur_content.end()) {
 			    itr = std::next(next_itr);
-		    else
+		    } else {
 			    break;
+		    }
 	    }
 	    std::string author_id = comment.author.id;
 	    return (new PostView(0, 0, 320))
@@ -831,21 +851,24 @@ void VideoPlayer_init(void) {
 	    if (!arg) {
 		    is_to_play = is_to_display = true;
 		    url = cur_playing_url;
-	    } else
+	    } else {
 		    url = *((const std::string *)arg);
+	    }
 	    YouTubeVideoDetail tmp_video_info;
 	    bool need_loading = false;
-	    if (video_info_cache.count(url))
+	    if (video_info_cache.count(url)) {
 		    tmp_video_info = video_info_cache[url];
-	    else
+	    } else {
 		    need_loading = true;
+	    }
 	    if (need_loading && is_to_display) {
 		    static TextView *loading_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
 		                                        ->set_text([]() { return LOCALIZED(LOADING); })
 		                                        ->set_x_alignment(TextView::XAlign::CENTER)
 		                                        ->set_y_alignment(TextView::YAlign::UP);
-		    for (int i = 0; i < 4; i++)
+		    for (int i = 0; i < 4; i++) {
 			    main_view->views[i] = loading_view;
+		    }
 		    // tab #4(Playback) and #5(Playlist) remain displayed
 		    var_need_refresh = true;
 	    }
@@ -876,8 +899,9 @@ void VideoPlayer_init(void) {
 			    if (title_lines.size() == 3) {
 				    title_lines = truncate_str(tmp_video_info.title, TITLE_MAX_WIDTH, 2, 0.5, 0.5);
 				    title_font_size = 0.5;
-			    } else
+			    } else {
 				    title_font_size = MIDDLE_FONT_SIZE;
+			    }
 
 			    std::string author_id = tmp_video_info.author.id;
 			    new_main_icon_view
@@ -947,12 +971,14 @@ void VideoPlayer_init(void) {
 				    if (tmp_video_info.is_playable()) {
 					    play_button
 					        ->set_on_view_released([url](View &) {
-						        if (cur_video_info.id != playing_video_info.id)
+						        if (cur_video_info.id != playing_video_info.id) {
 							        send_change_video_request_wo_lock(url, true, false, false);
+						        }
 					        })
 					        ->set_get_background_color([](const View &view) -> u32 {
-						        if (cur_video_info.id == playing_video_info.id)
+						        if (cur_video_info.id == playing_video_info.id) {
 							        return 0xFFFFBBBB;
+						        }
 						        return View::STANDARD_BACKGROUND(view);
 					        });
 				    } else {
@@ -984,10 +1010,11 @@ void VideoPlayer_init(void) {
 					    auto next_itr = std::find(itr, description.end(), '\n');
 					    auto cur_lines = truncate_str(std::string(itr, next_itr), DESC_MAX_WIDTH, 100, 0.5, 0.5);
 					    description_lines.insert(description_lines.end(), cur_lines.begin(), cur_lines.end());
-					    if (next_itr != description.end())
+					    if (next_itr != description.end()) {
 						    itr = std::next(next_itr);
-					    else
+					    } else {
 						    break;
+					    }
 				    }
 				    std::vector<View *> add_views = {
 				        (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * description_lines.size()))
@@ -998,13 +1025,15 @@ void VideoPlayer_init(void) {
 		    }
 		    // prepare suggestion view
 		    std::vector<View *> new_suggestion_views;
-		    for (size_t i = 0; i < tmp_video_info.suggestions.size(); i++)
+		    for (size_t i = 0; i < tmp_video_info.suggestions.size(); i++) {
 			    new_suggestion_views.push_back(suggestion_to_view(tmp_video_info.suggestions[i]));
+		    }
 
 		    // prepare comment views (comments exist from the first if it's loaded from cache)
 		    std::vector<View *> new_comment_views;
-		    for (size_t i = 0; i < tmp_video_info.comments.size(); i++)
+		    for (size_t i = 0; i < tmp_video_info.comments.size(); i++) {
 			    new_comment_views.push_back(comment_to_view(tmp_video_info.comments[i], i));
+		    }
 
 		    // prepare captions view
 		    static std::string selected_base_lang = "";
@@ -1049,13 +1078,14 @@ void VideoPlayer_init(void) {
 			            ->set_text(cur_lang.name)
 			            ->set_text_offset(0.0, -1.0)
 			            ->set_get_background_color([cur_lang](const View &view) {
-				            if (cur_lang.id == selected_base_lang)
+				            if (cur_lang.id == selected_base_lang) {
 					            return COLOR_GRAY(0x80);
-				            else {
+				            } else {
 					            int darkness = std::min<int>(
 					                0xFF, 0xD0 + 0x30 * (1 - std::min(1.0, 0.15 * view.view_holding_time)));
-					            if (var_night_mode)
+					            if (var_night_mode) {
 						            darkness = 0xFF - darkness;
+					            }
 					            return COLOR_GRAY(darkness);
 				            }
 			            })
@@ -1087,12 +1117,13 @@ void VideoPlayer_init(void) {
 	    TextView *cur_option_view =
 	        (new TextView(0, 0, 160, DEFAULT_FONT_INTERVAL))->set_text(cur_lang.name)->set_text_offset(0.0, -1.0);
 	    cur_option_view->set_get_background_color([cur_lang](const View &view) {
-		    if (cur_lang.id == selected_translation_lang)
+		    if (cur_lang.id == selected_translation_lang) {
 			    return COLOR_GRAY(0x80);
-		    else {
+		    } else {
 			    int darkness = std::min<int>(0xFF, 0xD0 + 0x30 * (1 - std::min(1.0, 0.15 * view.view_holding_time)));
-			    if (var_night_mode)
+			    if (var_night_mode) {
 				    darkness = 0xFF - darkness;
+			    }
 			    return COLOR_GRAY(darkness);
 		    }
 	    });
@@ -1106,8 +1137,9 @@ void VideoPlayer_init(void) {
     // prepare playlist view
     double playlist_view_scroll = playlist_list_view->get_offset(); // this call should not need mutex locking
     std::vector<View *> new_playlist_views;
-    for (auto video : tmp_video_info.playlist.videos)
+    for (auto video : tmp_video_info.playlist.videos) {
 	    new_playlist_views.push_back(suggestion_to_view(YouTubeSuccinctItem(video)));
+    }
     if (tmp_video_info.playlist.id != "" && tmp_video_info.playlist.id == playing_video_info.playlist.id) {
 	    for (size_t i = 0; i < tmp_video_info.playlist.videos.size(); i++) {
 		    if (youtube_get_video_id_by_url(tmp_video_info.playlist.videos[i].url) == playing_video_info.id) {
@@ -1120,12 +1152,15 @@ void VideoPlayer_init(void) {
 	    new_playlist_views[tmp_video_info.playlist.selected_index]->set_get_background_color(
 	        [](const View &) { return COLOR_LIGHT_GREEN; });
 	    double selected_y = tmp_video_info.playlist.selected_index * SUGGESTIONS_VERTICAL_INTERVAL;
-	    if (playlist_view_scroll < selected_y - (CONTENT_Y_HIGH - PLAYLIST_TOP_HEIGHT))
+	    if (playlist_view_scroll < selected_y - (CONTENT_Y_HIGH - PLAYLIST_TOP_HEIGHT)) {
 		    playlist_view_scroll = selected_y - (CONTENT_Y_HIGH - PLAYLIST_TOP_HEIGHT) + SUGGESTIONS_VERTICAL_INTERVAL;
-	    if (playlist_view_scroll > selected_y + SUGGESTIONS_VERTICAL_INTERVAL)
+	    }
+	    if (playlist_view_scroll > selected_y + SUGGESTIONS_VERTICAL_INTERVAL) {
 		    playlist_view_scroll = selected_y;
-    } else
+	    }
+    } else {
 	    playlist_view_scroll = 0;
+    }
     playlist_view_scroll =
         std::min<double>(playlist_view_scroll, tmp_video_info.playlist.videos.size() * SUGGESTIONS_VERTICAL_INTERVAL -
                                                    (CONTENT_Y_HIGH - PLAYLIST_TOP_HEIGHT));
@@ -1206,15 +1241,17 @@ void VideoPlayer_init(void) {
 		    small_resource_lock.unlock();
 		    return;
 	    }
-	    if (tmp_video_info.duration_ms > 60 * 60 * 1000)
+	    if (tmp_video_info.duration_ms > 60 * 60 * 1000) {
 		    tmp_video_info.both_stream_url =
 		        ""; // for some reason, itag 18 causes problems when the video is long enough
+	    }
 	    playing_video_info = tmp_video_info;
 	    video_info_cache[url] = tmp_video_info;
 
 	    vid_change_video_request = true;
-	    if (network_decoder.ready)
+	    if (network_decoder.ready) {
 		    network_decoder.interrupt = true;
+	    }
 
 	    thumbnail_cancel_request(cur_playing_video_view->thumbnail_handle);
 	    cur_playing_video_view->thumbnail_handle = -1;
@@ -1228,16 +1265,19 @@ void VideoPlayer_init(void) {
 
 	    // prepare the quality selector
 	    std::vector<int> available_qualities;
-	    for (auto &i : tmp_video_info.video_stream_urls)
+	    for (auto &i : tmp_video_info.video_stream_urls) {
 		    available_qualities.push_back(i.first);
+	    }
 
 	    video_quality_selector_view->button_texts = {(std::function<std::string()>)[](){return LOCALIZED(OFF);
     }
     }
     ;
-    for (auto i : available_qualities)
-	    if (var_is_new3ds || i <= 240)
+    for (auto i : available_qualities) {
+	    if (var_is_new3ds || i <= 240) {
 		    video_quality_selector_view->button_texts.push_back(std::to_string(i) + "p");
+	    }
+    }
     video_quality_selector_view->button_num = video_quality_selector_view->button_texts.size();
 
     auto is_available = [&](int p_value) {
@@ -1275,21 +1315,24 @@ void VideoPlayer_init(void) {
     video_quality_selector_view->set_on_change([available_qualities](const SelectorView &view) {
 	    bool changed = false;
 	    if (view.selected_button == 0) {
-		    if (!audio_only_mode)
+		    if (!audio_only_mode) {
 			    changed = true;
+		    }
 		    audio_only_mode = true;
 	    } else {
 		    int new_p_value = available_qualities[view.selected_button - 1];
-		    if (audio_only_mode || video_p_value != new_p_value)
+		    if (audio_only_mode || video_p_value != new_p_value) {
 			    changed = true;
+		    }
 		    audio_only_mode = false;
 		    video_p_value = new_p_value;
 	    }
 	    if (changed) {
 		    seek_at_init_request = vid_current_pos;
 		    vid_change_video_request = true;
-		    if (network_decoder.ready)
+		    if (network_decoder.ready) {
 			    network_decoder.interrupt = true;
+		    }
 	    }
 	    var_video_quality = audio_only_mode ? 0 : video_p_value;
 	    misc_tasks_request(TASK_SAVE_SETTINGS);
@@ -1297,14 +1340,15 @@ void VideoPlayer_init(void) {
     // update playlist tab
     if (cur_video_info.playlist.id != "" && cur_video_info.playlist.id == tmp_video_info.playlist.id) {
 	    for (size_t i = 0; i < cur_video_info.playlist.videos.size(); i++) {
-		    if ((int)i == cur_video_info.playlist.selected_index)
+		    if ((int)i == cur_video_info.playlist.selected_index) {
 			    playlist_list_videos_view->views[i]->set_get_background_color(
 			        [](const View &) { return COLOR_LIGHT_BLUE; });
-		    else if (youtube_get_video_id_by_url(tmp_video_info.playlist.videos[i].url) == tmp_video_info.id)
+		    } else if (youtube_get_video_id_by_url(tmp_video_info.playlist.videos[i].url) == tmp_video_info.id) {
 			    playlist_list_videos_view->views[i]->set_get_background_color(
 			        [](const View &) { return COLOR_LIGHT_GREEN; });
-		    else
+		    } else {
 			    playlist_list_videos_view->views[i]->set_get_background_color(View::STANDARD_BACKGROUND);
+		    }
 	    }
     }
     small_resource_lock.unlock();
@@ -1321,8 +1365,9 @@ void VideoPlayer_init(void) {
 	    // wrap suggestion titles
 	    logger.info("player/load-s", "truncate/view creation start");
 	    std::vector<View *> new_suggestion_views;
-	    for (size_t i = arg->suggestions.size(); i < new_result.suggestions.size(); i++)
+	    for (size_t i = arg->suggestions.size(); i < new_result.suggestions.size(); i++) {
 		    new_suggestion_views.push_back(suggestion_to_view(new_result.suggestions[i]));
+	    }
 	    logger.info("player/load-s", "truncate/view creation end");
 
 	    small_resource_lock.lock();
@@ -1330,9 +1375,9 @@ void VideoPlayer_init(void) {
 		    small_resource_lock.unlock();
 		    return;
 	    }
-	    if (new_result.error != "")
+	    if (new_result.error != "") {
 		    cur_video_info.error = new_result.error;
-	    else {
+	    } else {
 		    cur_video_info = new_result;
 		    suggestion_main_view->views.insert(suggestion_main_view->views.end(), new_suggestion_views.begin(),
 		                                       new_suggestion_views.end());
@@ -1354,8 +1399,9 @@ void VideoPlayer_init(void) {
 	    std::vector<View *> new_comment_views;
 	    // wrap comments
 	    logger.info("player/load-c", "truncate/views creation start");
-	    for (size_t i = arg->comments.size(); i < new_result.comments.size(); i++)
+	    for (size_t i = arg->comments.size(); i < new_result.comments.size(); i++) {
 		    new_comment_views.push_back(comment_to_view(new_result.comments[i], i));
+	    }
 	    logger.info("player/load-c", "truncate/views creation end");
 
 	    small_resource_lock.lock();
@@ -1391,17 +1437,19 @@ void VideoPlayer_init(void) {
 		    std::vector<std::string> cur_lines;
 		    auto itr = cur_content.begin();
 		    while (itr != cur_content.end()) {
-			    if (cur_lines.size() >= COMMENT_MAX_LINE_NUM)
+			    if (cur_lines.size() >= COMMENT_MAX_LINE_NUM) {
 				    break;
+			    }
 			    auto next_itr = std::find(itr, cur_content.end(), '\n');
 			    auto tmp = truncate_str(std::string(itr, next_itr), REPLY_MAX_WIDTH,
 			                            COMMENT_MAX_LINE_NUM - cur_lines.size(), 0.5, 0.5);
 			    cur_lines.insert(cur_lines.end(), tmp.begin(), tmp.end());
 
-			    if (next_itr != cur_content.end())
+			    if (next_itr != cur_content.end()) {
 				    itr = std::next(next_itr);
-			    else
+			    } else {
 				    break;
+			    }
 		    }
 		    std::string author_id = cur_reply.author.id;
 		    new_reply_views.push_back(
@@ -1473,8 +1521,9 @@ void VideoPlayer_init(void) {
     for (const auto &caption_piece : new_result.caption_data[{base_lang_id, translation_lang_id}]) {
 	    const auto &cur_content = caption_piece.content;
 
-	    if (!cur_content.size() || cur_content == "\n")
+	    if (!cur_content.size() || cur_content == "\n") {
 		    continue;
+	    }
 
 	    std::vector<std::string> cur_lines;
 	    auto itr = cur_content.begin();
@@ -1483,10 +1532,11 @@ void VideoPlayer_init(void) {
 		    auto tmp = truncate_str(std::string(itr, next_itr), CAPTION_CONTENT_MAX_WIDTH, 20, 0.5, 0.5);
 		    cur_lines.insert(cur_lines.end(), tmp.begin(), tmp.end());
 
-		    if (next_itr != cur_content.end())
+		    if (next_itr != cur_content.end()) {
 			    itr = std::next(next_itr);
-		    else
+		    } else {
 			    break;
+		    }
 	    }
 
 	    float start_time = caption_piece.start_time;
@@ -1498,8 +1548,9 @@ void VideoPlayer_init(void) {
 	                             ->set_text_offset(0.0, -1.0)
 	                             ->set_get_text_color([]() { return COLOR_LINK; })
 	                             ->set_on_view_released([start_time](View &view) {
-		                             if (network_decoder.ready)
+		                             if (network_decoder.ready) {
 			                             send_seek_request_wo_lock(start_time);
+		                             }
 	                             }),
 	                         (new TextView(0, 0, CAPTION_CONTENT_MAX_WIDTH, DEFAULT_FONT_INTERVAL * cur_lines.size()))
 	                             ->set_text_lines(cur_lines)
@@ -1540,8 +1591,9 @@ void VideoPlayer_init(void) {
     // END : functions called from async_task.cpp
 
     static bool send_load_more_suggestions_request() {
-	    if (is_async_task_running(load_video_page) || is_async_task_running(load_more_suggestions))
+	    if (is_async_task_running(load_video_page) || is_async_task_running(load_more_suggestions)) {
 		    return false;
+	    }
 	    queue_async_task(load_more_suggestions, &cur_video_info);
 	    return true;
     }
@@ -1553,8 +1605,9 @@ void VideoPlayer_init(void) {
 	    remove_all_async_tasks_with_type(load_more_suggestions);
 	    remove_all_async_tasks_with_type(load_more_comments);
 
-	    if (force_load)
+	    if (force_load) {
 		    video_info_cache.erase(url);
+	    }
 
 	    if (update_player) {
 		    if (cur_playing_url != url) {
@@ -1565,16 +1618,18 @@ void VideoPlayer_init(void) {
 	    if (update_view) {
 		    if (cur_displaying_url != url) {
 			    cur_displaying_url = url;
-			    if (main_view->selected_tab != TAB_PLAYLIST)
+			    if (main_view->selected_tab != TAB_PLAYLIST) {
 				    main_view->selected_tab = TAB_GENERAL;
+			    }
 		    }
 	    }
-	    if (update_player && update_view)
+	    if (update_player && update_view) {
 		    queue_async_task(load_video_page, NULL);
-	    else if (update_view)
+	    } else if (update_view) {
 		    queue_async_task(load_video_page, &cur_displaying_url);
-	    else if (update_player)
+	    } else if (update_player) {
 		    queue_async_task(load_video_page, &cur_playing_url);
+	    }
 	    var_need_refresh = true;
     }
     static void send_change_video_request(std::string url, bool update_player, bool update_view, bool force_load) {
@@ -1587,8 +1642,9 @@ void VideoPlayer_init(void) {
 	    vid_seek_pos = pos;
 	    vid_current_pos = pos;
 	    vid_seek_request = true;
-	    if (network_decoder.ready) // avoid locking while initing
+	    if (network_decoder.ready) { // avoid locking while initing
 		    network_decoder.interrupt = true;
+	    }
     }
     static void send_seek_request(double pos) {
 	    small_resource_lock.lock();
@@ -1600,8 +1656,9 @@ void VideoPlayer_init(void) {
 	    if (!vid_play_request && vid_pausing_seek) {
 		    small_resource_lock.lock();
 		    vid_pausing_seek = false;
-		    if (!vid_pausing)
+		    if (!vid_pausing) {
 			    Util_speaker_resume(0);
+		    }
 		    small_resource_lock.unlock();
 	    }
 	    return vid_play_request;
@@ -1646,10 +1703,11 @@ void VideoPlayer_init(void) {
 	    Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 320 - 7, 240 - 8, 3, 5);
 
 	    double bar_timestamp = vid_current_pos;
-	    if (bar_grabbed)
+	    if (bar_grabbed) {
 		    bar_timestamp = last_grab_timestamp;
-	    else if (vid_seek_request)
+	    } else if (vid_seek_request) {
 		    bar_timestamp = vid_current_pos;
+	    }
 	    double vid_progress = network_decoder.get_bar_pos_from_timestamp(bar_timestamp);
 
 	    std::string time_str0 = Util_convert_seconds_to_time(bar_timestamp);
@@ -1683,12 +1741,14 @@ void VideoPlayer_init(void) {
 		    bar_grabbed = true;
 		    var_need_refresh = true;
 	    }
-	    if (bar_grabbed)
+	    if (bar_grabbed) {
 		    last_grab_timestamp = network_decoder.get_timestamp_from_bar_pos(
 		        ((key.touch_x != -1 ? key.touch_x : last_touch_x) - bar_x_l) / (bar_x_r - bar_x_l));
+	    }
 	    if (bar_grabbed && key.touch_x == -1) {
-		    if (network_decoder.ready)
+		    if (network_decoder.ready) {
 			    send_seek_request(last_grab_timestamp);
+		    }
 		    bar_grabbed = false;
 		    var_need_refresh = true;
 	    }
@@ -1697,10 +1757,12 @@ void VideoPlayer_init(void) {
 		    global_intent.arg = cur_playing_url;
 	    }
 	    small_resource_lock.lock();
-	    if (!vid_pausing_seek && bar_grabbed && !vid_pausing)
+	    if (!vid_pausing_seek && bar_grabbed && !vid_pausing) {
 		    Util_speaker_pause(0);
-	    if (vid_pausing_seek && !bar_grabbed && !vid_pausing)
+	    }
+	    if (vid_pausing_seek && !bar_grabbed && !vid_pausing) {
 		    Util_speaker_resume(0);
+	    }
 	    vid_pausing_seek = bar_grabbed;
 
 	    // start/stop
@@ -1709,8 +1771,9 @@ void VideoPlayer_init(void) {
 		    if (vid_play_request) {
 			    if (vid_pausing) {
 				    vid_pausing = false;
-				    if (eof_reached)
+				    if (eof_reached) {
 					    send_seek_request_wo_lock(0);
+				    }
 				    Util_speaker_resume(0);
 			    } else {
 				    vid_pausing = true;
@@ -1732,8 +1795,9 @@ void VideoPlayer_init(void) {
 
     void video_set_linear_filter_enabled(bool enabled) {
 	    if (vid_already_init) {
-		    for (int i = 0; i < 2; i++)
+		    for (int i = 0; i < 2; i++) {
 			    Draw_c2d_image_set_filter(&vid_image[i], enabled);
+		    }
 	    }
     }
     void video_set_skip_drawing(bool skip) { video_skip_drawing = skip; }
@@ -1749,8 +1813,9 @@ void VideoPlayer_init(void) {
 		                 vid_tex_height[texture_index] * vid_zoom);
 		    caption_overlay_view->cur_timestamp = vid_current_pos;
 		    caption_overlay_view->draw();
-	    } else
+	    } else {
 		    Draw_texture(vid_banner[var_night_mode], 0, 15, 400, 225);
+	    }
     }
     void video_draw_top_screen() {
 	    // fit to screen size
@@ -1758,16 +1823,19 @@ void VideoPlayer_init(void) {
 	    vid_zoom = std::min(10.0, std::max(0.05, vid_zoom));
 	    vid_x = (400 - (vid_width_org * vid_zoom)) / 2;
 	    vid_y = ((var_full_screen_mode ? 240 : 225) - (vid_height_org * vid_zoom)) / 2;
-	    if (!var_full_screen_mode)
+	    if (!var_full_screen_mode) {
 		    vid_y += 15;
+	    }
 
 	    Draw_screen_ready(0, video_get_top_screen_background_color());
 	    video_draw_video_frame();
 	    logger.draw();
-	    if (video_should_draw_top_bar())
+	    if (video_should_draw_top_bar()) {
 		    Draw_top_ui();
-	    if (var_debug_mode)
+	    }
+	    if (var_debug_mode) {
 		    Draw_debug_info();
+	    }
     }
 
     static void decode_thread(void *arg) {
@@ -1808,8 +1876,9 @@ void VideoPlayer_init(void) {
 			    vid_min_time = 99999999;
 			    vid_max_time = 0;
 			    vid_recent_total_time = 0;
-			    for (int i = 0; i < 90; i++)
+			    for (int i = 0; i < 90; i++) {
 				    vid_recent_time[i] = 0;
+			    }
 
 			    for (int i = 0; i < 2; i++) {
 				    vid_tex_width[i] = 0;
@@ -1890,10 +1959,12 @@ void VideoPlayer_init(void) {
 					    vid_duration = tmp.duration;
 					    vid_frametime = 1000.0 / vid_framerate;
 
-					    if (vid_width % 16 != 0)
+					    if (vid_width % 16 != 0) {
 						    vid_width += 16 - vid_width % 16;
-					    if (vid_height % 16 != 0)
+					    }
+					    if (vid_height % 16 != 0) {
 						    vid_height += 16 - vid_height % 16;
+					    }
 				    }
 			    }
 
@@ -1927,18 +1998,21 @@ void VideoPlayer_init(void) {
 						    logger.info(DEF_SAPP0_DECODE_THREAD_STR,
 						                "network_decoder.seek()..." + result.string + result.error_description,
 						                result.code);
-						    if (result.code != 0)
+						    if (result.code != 0) {
 							    vid_play_request = false;
+						    }
 						    break;
 					    }
 					    network_decoder_critical_lock.unlock();
-					    if (eof_reached)
+					    if (eof_reached) {
 						    vid_pausing = false; // if it was stuck at the end of the video, resume playing after seek
+					    }
 					    network_waiting_status = NULL;
 					    var_need_refresh = true;
 				    }
-				    if (vid_change_video_request || !vid_play_request)
+				    if (vid_change_video_request || !vid_play_request) {
 					    break;
+				    }
 				    vid_duration = network_decoder.get_duration();
 
 				    auto type = network_decoder.next_decode_type();
@@ -1963,12 +2037,14 @@ void VideoPlayer_init(void) {
 						    small_resource_lock.unlock();
 					    }
 					    eof_reached = true;
-					    if (break_flag)
+					    if (break_flag) {
 						    break;
+					    }
 					    usleep(10000);
 					    continue;
-				    } else
+				    } else {
 					    eof_reached = false;
+				    }
 
 				    if (type == NetworkMultipleDecoder::PacketType::AUDIO) {
 					    double pos;
@@ -1982,18 +2058,20 @@ void VideoPlayer_init(void) {
 						    while (true) {
 							    result = Util_speaker_add_buffer(0, ch, audio, audio_size, pos);
 							    if (result.code == 0 || !vid_play_request || vid_seek_request ||
-							        vid_change_video_request)
+							        vid_change_video_request) {
 								    break;
+							    }
 							    // Util_log_save(DEF_SAPP0_DECODE_THREAD_STR, "audio queue full");
 
 							    usleep(10000);
 						    }
 						    free(audio);
 						    audio = NULL;
-					    } else if (result.code != DEF_ERR_NEED_MORE_INPUT) // ignore NEED_MORE_INPUT error
+					    } else if (result.code != DEF_ERR_NEED_MORE_INPUT) { // ignore NEED_MORE_INPUT error
 						    logger.error(DEF_SAPP0_DECODE_THREAD_STR,
 						                 "Util_audio_decoder_decode()..." + result.string + result.error_description,
 						                 result.code);
+					    }
 				    } else if (type == NetworkMultipleDecoder::PacketType::VIDEO) {
 					    osTickCounterUpdate(&counter0);
 					    result = network_decoder.decode_video(&w, &h, &key);
@@ -2018,34 +2096,40 @@ void VideoPlayer_init(void) {
 					    vid_total_frames++;
 					    vid_recent_time[89] = cur_frame_internval;
 					    vid_recent_total_time = std::accumulate(vid_recent_time, vid_recent_time + 90, 0.0);
-					    for (int i = 1; i < 90; i++)
+					    for (int i = 1; i < 90; i++) {
 						    vid_recent_time[i - 1] = vid_recent_time[i];
+					    }
 
 					    vid_time[0][319] = cur_frame_internval;
-					    for (int i = 1; i < 320; i++)
+					    for (int i = 1; i < 320; i++) {
 						    vid_time[0][i - 1] = vid_time[0][i];
+					    }
 
 					    if (vid_play_request && !vid_seek_request && !vid_change_video_request) {
-						    if (result.code != 0 && result.code != DEF_ERR_NEED_MORE_INPUT)
+						    if (result.code != 0 && result.code != DEF_ERR_NEED_MORE_INPUT) {
 							    logger.error(DEF_SAPP0_DECODE_THREAD_STR,
 							                 "Util_video_decoder_decode()..." + result.string +
 							                     result.error_description,
 							                 result.code);
+						    }
 					    }
-				    } else if (type == NetworkMultipleDecoder::PacketType::INTERRUPTED)
+				    } else if (type == NetworkMultipleDecoder::PacketType::INTERRUPTED) {
 					    continue;
-				    else
+				    } else {
 					    logger.error(DEF_SAPP0_DECODE_THREAD_STR, "unknown type of packet");
+				    }
 			    }
 
 			    network_waiting_status = NULL;
 
-			    while (Util_speaker_is_playing(0) && vid_play_request)
+			    while (Util_speaker_is_playing(0) && vid_play_request) {
 				    usleep(10000);
+			    }
 			    Util_speaker_exit(0);
 
-			    if (!vid_change_video_request)
+			    if (!vid_change_video_request) {
 				    vid_play_request = false;
+			    }
 
 			    // make sure the convert thread stops before closing network_decoder
 			    network_decoder_critical_lock.lock(); // the converter thread is now suspended
@@ -2056,12 +2140,14 @@ void VideoPlayer_init(void) {
 			    vid_pausing = false;
 			    vid_seek_request = false;
 			    logger.info(DEF_SAPP0_DECODE_THREAD_STR, "deinit complete");
-		    } else
+		    } else {
 			    usleep(DEF_ACTIVE_THREAD_SLEEP_TIME);
+		    }
 
-		    while (vid_thread_run &&
-		           (should_suspend_decoding || (vid_thread_suspend && !vid_play_request && !vid_change_video_request)))
+		    while (vid_thread_run && (should_suspend_decoding ||
+		                              (vid_thread_suspend && !vid_play_request && !vid_change_video_request))) {
 			    usleep(DEF_INACTIVE_THREAD_SLEEP_TIME);
+		    }
 	    }
 
 	    logger.info(DEF_SAPP0_DECODE_THREAD_STR, "Thread exit.");
@@ -2090,25 +2176,29 @@ void VideoPlayer_init(void) {
 					    result = network_decoder.get_decoded_video_frame(
 					        vid_width, vid_height, network_decoder.hw_decoder_enabled ? &video : &yuv_video, &pts);
 					    osTickCounterUpdate(&counter0);
-					    if (result.code != DEF_ERR_NEED_MORE_INPUT)
+					    if (result.code != DEF_ERR_NEED_MORE_INPUT) {
 						    break;
-					    if (vid_pausing || vid_pausing_seek)
+					    }
+					    if (vid_pausing || vid_pausing_seek) {
 						    usleep(10000);
-					    else
+					    } else {
 						    usleep(3000);
+					    }
 				    } while (vid_play_request && !vid_seek_request && !vid_change_video_request && !audio_only_mode);
 
 				    if (audio_only_mode) {
 					    while (audio_only_mode && vid_play_request && !vid_seek_request && !vid_change_video_request) {
 						    double tmp = Util_speaker_get_current_timestamp(0, vid_sample_rate);
-						    if (tmp != -1)
+						    if (tmp != -1) {
 							    vid_current_pos = tmp;
+						    }
 						    usleep(50000);
 					    }
 					    break;
 				    }
-				    if (!vid_play_request || vid_seek_request || vid_change_video_request)
+				    if (!vid_play_request || vid_seek_request || vid_change_video_request) {
 					    break;
+				    }
 				    if (result.code != 0) { // this is an unexpected error
 					    logger.error(DEF_SAPP0_CONVERT_THREAD_STR,
 					                 "failure getting decoded result" + result.string + result.error_description,
@@ -2149,8 +2239,9 @@ void VideoPlayer_init(void) {
 							        1000000;
 							    usleep(sleep_microseconds);
 							    cur_sound_pos = Util_speaker_get_current_timestamp(0, vid_sample_rate);
-							    if (cur_sound_pos < 0)
+							    if (cur_sound_pos < 0) {
 								    break;
+							    }
 						    }
 					    }
 					    vid_current_pos = pts;
@@ -2163,10 +2254,11 @@ void VideoPlayer_init(void) {
 						    vid_tex_height[texture_index_head] = vid_height_org;
 						    result = Draw_set_texture_data(&vid_image[texture_index_head], video, vid_width,
 						                                   vid_height_org, 1024, 1024, GPU_RGB565);
-						    if (result.code != 0)
+						    if (result.code != 0) {
 							    logger.error(DEF_SAPP0_CONVERT_THREAD_STR,
 							                 "Draw_set_texture_data()..." + result.string + result.error_description,
 							                 result.code);
+						    }
 						    texture_index_head = !texture_index_head;
 					    }
 
@@ -2174,13 +2266,15 @@ void VideoPlayer_init(void) {
 					    vid_copy_time[1] += osTickCounterRead(&counter0);
 
 					    var_need_refresh = true;
-				    } else
+				    } else {
 					    logger.error(DEF_SAPP0_CONVERT_THREAD_STR,
 					                 "Util_converter_yuv420p_to_bgr565()..." + result.string + result.error_description,
 					                 result.code);
+				    }
 
-				    if (video_need_free)
+				    if (video_need_free) {
 					    free(video);
+				    }
 				    video = NULL;
 				    yuv_video = NULL; // this is the result of network_decoder.get_decoded_video_frame(), so it should
 				                      // not be freed
@@ -2188,16 +2282,19 @@ void VideoPlayer_init(void) {
 				    osTickCounterUpdate(&counter1);
 				    cur_convert_time += osTickCounterRead(&counter1);
 				    vid_time[1][319] = cur_convert_time;
-				    for (int i = 1; i < 320; i++)
+				    for (int i = 1; i < 320; i++) {
 					    vid_time[1][i - 1] = vid_time[1][i];
+				    }
 			    }
 			    network_decoder_critical_lock.unlock();
-		    } else
+		    } else {
 			    usleep(DEF_ACTIVE_THREAD_SLEEP_TIME);
+		    }
 
-		    while (vid_thread_run &&
-		           (should_suspend_decoding || (vid_thread_suspend && !vid_play_request && !vid_change_video_request)))
+		    while (vid_thread_run && (should_suspend_decoding ||
+		                              (vid_thread_suspend && !vid_play_request && !vid_change_video_request))) {
 			    usleep(DEF_INACTIVE_THREAD_SLEEP_TIME);
+		    }
 	    }
 
 	    y2rExit();
@@ -2209,10 +2306,12 @@ void VideoPlayer_init(void) {
     void video_set_show_debug_info(bool show) {
 	    if (vid_already_init) {
 		    small_resource_lock.lock();
-		    if (show && playback_tab_view->views.back() != debug_info_view)
+		    if (show && playback_tab_view->views.back() != debug_info_view) {
 			    playback_tab_view->views.push_back(debug_info_view);
-		    if (!show && playback_tab_view->views.back() == debug_info_view)
+		    }
+		    if (!show && playback_tab_view->views.back() == debug_info_view) {
 			    playback_tab_view->views.pop_back();
+		    }
 		    small_resource_lock.unlock();
 	    }
     }
@@ -2239,23 +2338,26 @@ void VideoPlayer_init(void) {
 		    equalizer_popup_view->draw();
 		    small_resource_lock.unlock();
 
-		    if (Util_expl_query_show_flag())
+		    if (Util_expl_query_show_flag()) {
 			    Util_expl_draw();
+		    }
 
-		    if (Util_err_query_error_show_flag())
+		    if (Util_err_query_error_show_flag()) {
 			    Util_err_draw();
+		    }
 
 		    Draw_touch_pos();
 
 		    Draw_apply_draw();
-	    } else
+	    } else {
 		    gspWaitForVBlank();
+	    }
 
-	    if (Util_err_query_error_show_flag())
+	    if (Util_err_query_error_show_flag()) {
 		    Util_err_main(key);
-	    else if (Util_expl_query_show_flag())
+	    } else if (Util_expl_query_show_flag()) {
 		    Util_expl_main(key);
-	    else {
+	    } else {
 		    /* ****************************** LOCK START ******************************  */
 		    small_resource_lock.lock();
 
@@ -2272,13 +2374,15 @@ void VideoPlayer_init(void) {
 					    float cur_height = comments_main_view->views[i]->get_height();
 					    if (cur_y < HIGH && cur_y + cur_height >= LOW) {
 						    auto parent_comment_view = dynamic_cast<PostView *>(comments_main_view->views[i]);
-						    if (cur_y + parent_comment_view->get_self_height() >= LOW)
+						    if (cur_y + parent_comment_view->get_self_height() >= LOW) {
 							    comments_list.push_back({cur_y, parent_comment_view});
+						    }
 						    auto list = parent_comment_view->get_reply_pos_list(); // {y offset, reply view}
 						    for (auto j : list) {
 							    float cur_reply_height = j.second->get_height();
-							    if (cur_y + j.first < HIGH && cur_y + j.first + cur_reply_height > LOW)
+							    if (cur_y + j.first < HIGH && cur_y + j.first + cur_reply_height > LOW) {
 								    comments_list.push_back({cur_y + j.first, j.second});
+							    }
 						    }
 					    }
 					    cur_y += cur_height;
@@ -2291,14 +2395,18 @@ void VideoPlayer_init(void) {
 			    }
 
 			    std::set<PostView *> newly_loading_views, cancelling_views;
-			    for (auto i : comment_thumbnail_loaded_list)
+			    for (auto i : comment_thumbnail_loaded_list) {
 				    cancelling_views.insert(i);
-			    for (auto i : comments_list)
+			    }
+			    for (auto i : comments_list) {
 				    newly_loading_views.insert(i.second);
-			    for (auto i : comment_thumbnail_loaded_list)
+			    }
+			    for (auto i : comment_thumbnail_loaded_list) {
 				    newly_loading_views.erase(i);
-			    for (auto i : comments_list)
+			    }
+			    for (auto i : comments_list) {
 				    cancelling_views.erase(i.second);
+			    }
 
 			    for (auto i : cancelling_views) {
 				    thumbnail_cancel_request(i->author_icon_handle);
@@ -2313,23 +2421,27 @@ void VideoPlayer_init(void) {
 
 			    std::vector<std::pair<int, int>> priority_list;
 			    auto priority = [&](float y) {
-				    if (y < 0)
+				    if (y < 0) {
 					    return 500 + y / 100;
-				    if (y < 240)
+				    }
+				    if (y < 240) {
 					    return PRIORITY_FOREGROUND + y;
+				    }
 				    return 500 + (240 - y) / 100;
 			    };
-			    for (auto i : comments_list)
+			    for (auto i : comments_list) {
 				    priority_list.push_back({i.second->author_icon_handle, priority(i.first)});
+			    }
 			    thumbnail_set_priorities(priority_list);
 		    }
 
 		    update_overlay_menu(&key);
 
-		    if (equalizer_popup_view->is_visible)
+		    if (equalizer_popup_view->is_visible) {
 			    equalizer_popup_view->update(key);
-		    else
+		    } else {
 			    main_view->update(key);
+		    }
 
 		    if (channel_id_pressed != "") {
 			    global_intent.next_scene = SceneType::CHANNEL;
@@ -2345,19 +2457,23 @@ void VideoPlayer_init(void) {
 		    small_resource_lock.unlock();
 		    /* ****************************** LOCK END ******************************  */
 
-		    if (video_playing_bar_show)
+		    if (video_playing_bar_show) {
 			    video_update_playing_bar(key);
+		    }
 		    if (key.p_a) {
 			    if (vid_play_request) {
 				    if (vid_pausing) {
-					    if (!vid_pausing_seek)
+					    if (!vid_pausing_seek) {
 						    Util_speaker_resume(0);
-					    if (eof_reached)
+					    }
+					    if (eof_reached) {
 						    send_seek_request(0);
+					    }
 					    vid_pausing = false;
 				    } else {
-					    if (!vid_pausing_seek)
+					    if (!vid_pausing_seek) {
 						    Util_speaker_pause(0);
+					    }
 					    vid_pausing = true;
 				    }
 			    }

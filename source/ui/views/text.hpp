@@ -28,8 +28,9 @@ struct TextView : public FixedSizeView {
 	}
 	template <class T> TextView *set_text_lines(std::vector<T> text) {
 		this->text.clear();
-		for (auto i : text)
+		for (auto i : text) {
 			this->text.push_back(i);
+		}
 		return this;
 	}
 	TextView *set_font_size(double font_size, double interval) {
@@ -59,15 +60,17 @@ struct TextView : public FixedSizeView {
 		int y_start = y_align == YAlign::CENTER ? (int)((y0 + y1 - interval * text.size()) / 2) : y0;
 		for (size_t i = 0; i < text.size(); i++) {
 			float cur_y = y_start + i * interval + text_y_offset;
-			if (cur_y > 240 || cur_y < -50)
+			if (cur_y > 240 || cur_y < -50) {
 				continue;
-			if (x_align == XAlign::LEFT)
+			}
+			if (x_align == XAlign::LEFT) {
 				Draw(text[i], x0 + SMALL_MARGIN + text_x_offset, cur_y, font_size, font_size, get_text_color());
-			else if (x_align == XAlign::CENTER)
+			} else if (x_align == XAlign::CENTER) {
 				Draw_x_centered(text[i], x0 + SMALL_MARGIN + text_x_offset, x1 - SMALL_MARGIN + text_x_offset, cur_y,
 				                font_size, font_size, get_text_color());
-			else
+			} else {
 				Draw_right(text[i], x1 - SMALL_MARGIN + text_x_offset, cur_y, font_size, font_size, get_text_color());
+			}
 		}
 	}
 	void update_(Hid_info key) override {}

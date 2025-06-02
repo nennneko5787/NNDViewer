@@ -45,33 +45,38 @@ template <typename T> class output_buffer {
 	}
 	// get the size of the queue
 	size_t size() {
-		if (head >= tail)
+		if (head >= tail) {
 			return head - tail;
-		else
+		} else {
 			return head + num + 1 - tail;
+		}
 	}
 	size_t size_max() { return num; }
 	bool full() { return size() == num; }
 	bool empty() { return size() == 0; }
 	T get_next_pushed() {
-		if (full())
+		if (full()) {
 			return NULL;
+		}
 		return buffer[head];
 	}
 	bool push() {
-		if (full())
+		if (full()) {
 			return false;
+		}
 		head = (head == num ? 0 : head + 1);
 		return true;
 	}
 	T get_next_poped() {
-		if (empty())
+		if (empty()) {
 			return NULL;
+		}
 		return buffer[tail];
 	}
 	bool pop() {
-		if (empty())
+		if (empty()) {
 			return false;
+		}
 		tail = (tail == num ? 0 : tail + 1);
 		return true;
 	}
@@ -194,10 +199,12 @@ class NetworkDecoder {
 	const char *get_network_waiting_status() {
 		const char *res = NULL;
 		critical_op_lock.lock();
-		if (ready && io && io->network_stream[VIDEO] && io->network_stream[VIDEO]->network_waiting_status)
+		if (ready && io && io->network_stream[VIDEO] && io->network_stream[VIDEO]->network_waiting_status) {
 			res = io->network_stream[VIDEO]->network_waiting_status;
-		if (ready && io && io->network_stream[AUDIO] && io->network_stream[AUDIO]->network_waiting_status)
+		}
+		if (ready && io && io->network_stream[AUDIO] && io->network_stream[AUDIO]->network_waiting_status) {
 			res = io->network_stream[AUDIO]->network_waiting_status;
+		}
 		critical_op_lock.unlock();
 		return res;
 	}
@@ -259,16 +266,17 @@ class NetworkDecoder {
 	DecoderType get_decoder_type() {
 		DecoderType res;
 		critical_op_lock.lock();
-		if (!ready)
+		if (!ready) {
 			res = DecoderType::NA;
-		else if (hw_decoder_enabled)
+		} else if (hw_decoder_enabled) {
 			res = DecoderType::HW;
-		else if (decoder_context[VIDEO]->active_thread_type == FF_THREAD_FRAME)
+		} else if (decoder_context[VIDEO]->active_thread_type == FF_THREAD_FRAME) {
 			res = DecoderType::MT_FRAME;
-		else if (decoder_context[VIDEO]->active_thread_type == FF_THREAD_SLICE)
+		} else if (decoder_context[VIDEO]->active_thread_type == FF_THREAD_SLICE) {
 			res = DecoderType::MT_SLICE;
-		else
+		} else {
 			res = DecoderType::ST;
+		}
 		critical_op_lock.unlock();
 		return res;
 	}

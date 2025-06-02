@@ -49,8 +49,9 @@ void load_watch_history() {
 			cur_video.my_view_count = video["my_view_count"].int_value();
 			cur_video.last_watch_time = strtoll(video["last_watch_time"].string_value().c_str(), NULL, 10);
 			cur_video.valid = youtube_is_valid_video_id(cur_video.id);
-			if (!cur_video.valid)
+			if (!cur_video.valid) {
 				logger.caution("history/load", "invalid history item : " + cur_video.title);
+			}
 
 			loaded_watch_history.push_back(cur_video);
 		}
@@ -93,23 +94,25 @@ void save_watch_history() {
 	std::string data = RJson(json_root).dump();
 
 	auto result = atomic_io.save(data);
-	if (result.code != 0)
+	if (result.code != 0) {
 		logger.warning("history/save", result.string + result.error_description, result.code);
-	else
+	} else {
 		logger.info("history/save", "history saved.");
+	}
 }
 void add_watched_video(HistoryVideo video) {
 	if (var_history_enabled) {
 		video.title_lines = truncate_str(video.title, 320 - VIDEO_LIST_THUMBNAIL_WIDTH - 6, 2, 0.5, 0.5);
 		resource_lock.lock();
 		bool found = false;
-		for (auto &i : watch_history)
+		for (auto &i : watch_history) {
 			if (i.id == video.id) {
 				int my_view_count = i.my_view_count + 1;
 				i = video;
 				i.my_view_count = my_view_count;
 				found = true;
 			}
+		}
 		if (!found) {
 			video.my_view_count = 1;
 			watch_history.push_back(video);
@@ -122,9 +125,11 @@ void add_watched_video(HistoryVideo video) {
 void history_erase_by_id(const std::string &id) {
 	resource_lock.lock();
 	std::vector<HistoryVideo> tmp_watch_history;
-	for (auto video : watch_history)
-		if (video.id != id)
+	for (auto video : watch_history) {
+		if (video.id != id) {
 			tmp_watch_history.push_back(video);
+		}
+	}
 	watch_history = tmp_watch_history;
 	resource_lock.unlock();
 }
@@ -137,9 +142,11 @@ void history_erase_all() {
 std::vector<HistoryVideo> get_valid_watch_history() {
 	resource_lock.lock();
 	std::vector<HistoryVideo> res;
-	for (auto &video : watch_history)
-		if (video.valid)
+	for (auto &video : watch_history) {
+		if (video.valid) {
 			res.push_back(video);
+		}
+	}
 	resource_lock.unlock();
 	return res;
 }

@@ -19,8 +19,9 @@ struct VerticalListView : public FixedWidthView {
 	SceneType thumbnail_scene;
 
 	void reset_holding_status_() override {
-		for (auto view : views)
+		for (auto view : views) {
 			view->reset_holding_status();
+		}
 	}
 	virtual void recursive_delete_subviews() override;
 	void swap_views(const std::vector<View *> &new_views); // replaces `views` with `new_views` while trying to avoid
@@ -49,14 +50,16 @@ struct VerticalListView : public FixedWidthView {
 
 	float get_height() const override {
 		float res = 0;
-		for (auto view : views)
+		for (auto view : views) {
 			res += view->get_height();
+		}
 		res += std::max((int)views.size() - 1, 0) * margin;
 		return res;
 	}
 	void on_scroll() override {
-		for (auto view : views)
+		for (auto view : views) {
 			view->on_scroll();
+		}
 	}
 
 	void draw_() const override;

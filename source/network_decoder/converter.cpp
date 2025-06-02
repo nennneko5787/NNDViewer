@@ -10,9 +10,9 @@ extern "C" {
 
 #define CLIP(X) ((X) > 255 ? 255 : (X) < 0 ? 0 : X)
 // YUV -> RGB
-#define C(Y) ((Y)-16)
-#define D(U) ((U)-128)
-#define E(V) ((V)-128)
+#define C(Y) ((Y) - 16)
+#define D(U) ((U) - 128)
+#define E(V) ((V) - 128)
 
 #define YUV2R(Y, V) CLIP((298 * C(Y) + 409 * E(V) + 128) >> 8)
 #define YUV2G(Y, U, V) CLIP((298 * C(Y) - 100 * D(U) - 208 * E(V) + 128) >> 8)
@@ -338,10 +338,11 @@ Result_with_string Util_converter_y2r_yuv420p_to_bgr565(u8 *yuv420p, u8 **bgr565
 	y2r_parameters.input_format = INPUT_YUV420_INDIV_8;
 	y2r_parameters.output_format = OUTPUT_RGB_16_565;
 	y2r_parameters.rotation = ROTATION_NONE;
-	if (texture_format)
+	if (texture_format) {
 		y2r_parameters.block_alignment = BLOCK_8_BY_8;
-	else
+	} else {
 		y2r_parameters.block_alignment = BLOCK_LINE;
+	}
 	y2r_parameters.input_line_width = width;
 	y2r_parameters.input_lines = height;
 	y2r_parameters.standard_coefficient = COEFFICIENT_ITU_R_BT_709_SCALING;

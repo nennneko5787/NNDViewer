@@ -23,8 +23,9 @@ u32 samples[8];
 
 static inline u32 str2u32(const std::string &str) {
 	u32 res = 0;
-	for (char c : str)
+	for (char c : str) {
 		res = res * 0x100 + (u8)c;
+	}
 	return res;
 }
 }; // namespace Draw_
@@ -34,8 +35,9 @@ double Draw_query_frametime(void) { return draw_frametime[19]; }
 
 double Draw_query_fps(void) {
 	double cache = 0;
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i < 20; i++) {
 		cache += draw_frametime[i];
+	}
 
 	return 1000.0 / (cache / 20);
 }
@@ -44,8 +46,9 @@ extern "C" void memcpy_asm_4b(u8 *, u8 *);
 
 int Draw_convert_to_pos(int height, int width, int img_height, int img_width, int pixel_size) {
 	int pos = img_width * height;
-	if (pos == 0)
+	if (pos == 0) {
 		pos = img_width;
+	}
 
 	pos -= (img_width - width) - img_width;
 	return pos * pixel_size;
@@ -72,11 +75,11 @@ Result_with_string Draw_set_texture_data(Image_data *c2d_image, u8 *buf, int pic
 	int pixel_size = 0;
 	Result_with_string result;
 
-	if (color_format == GPU_RGB8)
+	if (color_format == GPU_RGB8) {
 		pixel_size = 3;
-	else if (color_format == GPU_RGB565)
+	} else if (color_format == GPU_RGB565) {
 		pixel_size = 2;
-	else {
+	} else {
 		result.code = DEF_ERR_INVALID_ARG;
 		result.string = DEF_ERR_INVALID_ARG_STR;
 		return result;
@@ -107,10 +110,12 @@ Result_with_string Draw_set_texture_data(Image_data *c2d_image, u8 *buf, int pic
 
 	y_max = pic_height - (u32)parse_start_height;
 	x_max = pic_width - (u32)parse_start_width;
-	if (tex_size_y < y_max)
+	if (tex_size_y < y_max) {
 		y_max = tex_size_y;
-	if (tex_size_x < x_max)
+	}
+	if (tex_size_x < x_max) {
 		x_max = tex_size_x;
+	}
 
 	c2d_image->subtex->width = (u16)x_max;
 	c2d_image->subtex->height = (u16)y_max;
@@ -161,10 +166,11 @@ Result_with_string Draw_set_texture_data(Image_data *c2d_image, u8 *buf, int pic
 }
 
 void Draw_c2d_image_set_filter(Image_data *c2d_image, bool filter) {
-	if (filter)
+	if (filter) {
 		C3D_TexSetFilter(c2d_image->c2d.tex, GPU_LINEAR, GPU_LINEAR);
-	else
+	} else {
 		C3D_TexSetFilter(c2d_image->c2d.tex, GPU_NEAREST, GPU_NEAREST);
+	}
 }
 
 Result_with_string Draw_c2d_image_init(Image_data *c2d_image, int tex_size_x, int tex_size_y,
@@ -219,8 +225,9 @@ void Draw(std::string text, float x, float y, float text_size_x, float text_size
 	static C2D_Text c2d_text;
 	static C2D_TextBuf c2d_buf;
 	original_x = x;
-	if (!c2d_buf)
+	if (!c2d_buf) {
 		c2d_buf = C2D_TextBufNew(4096);
+	}
 
 	int characters = Extfont_parse_utf8_str_to_u32(text.c_str(), draw_part_text, 1024);
 	Extfont_sort_rtl(draw_part_text, characters);
@@ -257,13 +264,15 @@ void Draw(std::string text, float x, float y, float text_size_x, float text_size
 					font_num_list[i] = 1; // CHN
 				}
 			}
-			if (!found)
+			if (!found) {
 				font_num_list[i] = 3; // TWN
+			}
 		} else if ((cur_char > samples[4] && cur_char < samples[5]) ||
 		           (cur_char > samples[6] && cur_char < samples[7])) {
 			font_num_list[i] = 2; // KOR
-		} else
+		} else {
 			font_num_list[i] = 4;
+		}
 	}
 	font_num_list[characters] = -2;
 
@@ -281,22 +290,26 @@ void Draw(std::string text, float x, float y, float text_size_x, float text_size
 				C2D_Font cur_font = Extfont_is_extfont_loaded(0) ? system_fonts[prev_font_list_num] : NULL;
 
 				C2D_TextBufClear(c2d_buf);
-				if (prev_font_list_num == 1)
+				if (prev_font_list_num == 1) {
 					y_offset = 3 * text_size_y;
-				else if (prev_font_list_num == 3)
+				} else if (prev_font_list_num == 3) {
 					y_offset = 5 * text_size_y;
-				else
+				} else {
 					y_offset = 0;
+				}
 
 				std::string draw_str;
 				for (int j = consecutive_start; j < i; j++) {
 					u32 cur_char = draw_part_text[j];
-					if (cur_char >> 24)
+					if (cur_char >> 24) {
 						draw_str.push_back(cur_char >> 24);
-					if (cur_char >> 16)
+					}
+					if (cur_char >> 16) {
 						draw_str.push_back(cur_char >> 16 & 0xFF);
-					if (cur_char >> 8)
+					}
+					if (cur_char >> 8) {
 						draw_str.push_back(cur_char >> 8 & 0xFF);
+					}
 					draw_str.push_back(cur_char & 0xFF); // assuming cur_char != 0
 				}
 
@@ -314,8 +327,9 @@ void Draw(std::string text, float x, float y, float text_size_x, float text_size
 			prev_font_list_num = cur_font_list_num;
 			consecutive_start = i;
 		}
-		if (cur_font_list_num == -2)
+		if (cur_font_list_num == -2) {
 			break;
+		}
 	}
 }
 
@@ -325,8 +339,9 @@ float Draw_get_height(const std::string &text, float text_size_y) {
 }
 
 float Draw_get_width_one(u32 cur_char, float text_size_x) {
-	if (cur_char == samples[0] || cur_char == samples[1])
+	if (cur_char == samples[0] || cur_char == samples[1]) {
 		return 0; // NULL, linebreak
+	}
 
 	bool font_loaded[2] = {
 	    Extfont_is_sysfont_loaded(0),
@@ -353,12 +368,14 @@ float Draw_get_width_one(u32 cur_char, float text_size_x) {
 				font_list_num = 1; // CHN
 			}
 		}
-		if (!found)
+		if (!found) {
 			font_list_num = 3; // TWN
+		}
 	} else if ((cur_char > samples[4] && cur_char < samples[5]) || (cur_char > samples[6] && cur_char < samples[7])) {
 		font_list_num = 2; // KOR
-	} else
+	} else {
 		font_list_num = 4;
+	}
 
 	float res = 0;
 	if (!Extfont_is_extfont_loaded(0) || (font_list_num >= 0 && font_list_num <= 3)) {
@@ -366,22 +383,27 @@ float Draw_get_width_one(u32 cur_char, float text_size_x) {
 
 		u8 buf[5] = {0};
 		u8 *ptr = buf;
-		if (cur_char >> 24)
+		if (cur_char >> 24) {
 			*ptr++ = cur_char >> 24;
-		if (cur_char >> 16)
+		}
+		if (cur_char >> 16) {
 			*ptr++ = cur_char >> 16 & 0xFF;
-		if (cur_char >> 8)
+		}
+		if (cur_char >> 8) {
 			*ptr++ = cur_char >> 8 & 0xFF;
+		}
 		*ptr++ = cur_char & 0xFF;
 
 		fontGlyphPos_s glyphData;
 		u32 code;
-		if (decode_utf8(&code, (u8 *)buf) == -1)
+		if (decode_utf8(&code, (u8 *)buf) == -1) {
 			code = 0xFFFD;
+		}
 		C2D_FontCalcGlyphPos(cur_font, &glyphData, C2D_FontGlyphIndexFromCodePoint(cur_font, code), 0, 1.0f, 1.0f);
 		res = glyphData.xAdvance * text_size_x;
-	} else if (font_list_num == 4)
+	} else if (font_list_num == 4) {
 		res = Extfont_get_width_one(cur_char, text_size_x * 1.56);
+	}
 	return res;
 }
 float Draw_get_width(const std::string &text, float text_size_x) {
@@ -393,8 +415,9 @@ float Draw_get_width(const std::string &text, float text_size_x) {
 
 	for (int i = 0; i < characters; i++) {
 		u32 cur_char = part_text[i];
-		if (!cur_char)
+		if (!cur_char) {
 			break;
+		}
 		if (cur_char == (u8)'\n') {
 			x = 0;
 			continue;
@@ -452,8 +475,9 @@ Result_with_string Draw_load_texture(std::string file_name, int sheet_map_num, C
 	}
 
 	if (!function_fail) {
-		for (int i = 0; i <= (num_of_array - 1); i++)
+		for (int i = 0; i <= (num_of_array - 1); i++) {
 			return_image[start_num + i] = C2D_SpriteSheetGetImage(sheet_texture[sheet_map_num], i);
+		}
 	}
 	return load_texture_result;
 }
@@ -461,8 +485,9 @@ Result_with_string Draw_load_texture(std::string file_name, int sheet_map_num, C
 void Draw_touch_pos(void) {
 	Hid_info key;
 	Util_hid_query_key_state(&key);
-	if (key.p_touch || key.h_touch)
+	if (key.p_touch || key.h_touch) {
 		Draw_texture(var_square_image[0], DEF_DRAW_RED, key.touch_x - 1, key.touch_y - 1, 3, 3);
+	}
 }
 
 void Draw_top_ui(void) {
@@ -470,8 +495,9 @@ void Draw_top_ui(void) {
 	Draw_texture(wifi_icon_image[var_wifi_signal], DEF_DRAW_NO_COLOR, 360.0, 0.0, 15.0, 15.0);
 	Draw_texture(battery_level_icon_image[var_battery_level_raw / 5], DEF_DRAW_NO_COLOR, 315.0, 0.0, 30.0, 15.0);
 	Draw_texture(eco_image[var_eco_mode], DEF_DRAW_NO_COLOR, 345.0, 0.0, 15.0, 15.0);
-	if (var_battery_charge)
+	if (var_battery_charge) {
 		Draw_texture(battery_charge_icon_image[0], DEF_DRAW_NO_COLOR, 295.0, 0.0, 20.0, 15.0);
+	}
 	Draw(var_status, 0.0, 0.0, 0.45, 0.45, DEF_DRAW_GREEN);
 	Draw(std::to_string(var_battery_level_raw), 322.5, 1.25, 0.4, 0.4, DEF_DRAW_BLACK);
 }
@@ -490,9 +516,9 @@ void Draw_texture(C2D_Image image, int abgr8888, float x, float y, float x_size,
 	C2D_DrawParams c2d_parameter = {{x, y, x_size, y_size}, {0, 0}, 0.0f, 0.0f};
 
 	if (!(image.tex == NULL)) {
-		if (abgr8888 == DEF_DRAW_NO_COLOR)
+		if (abgr8888 == DEF_DRAW_NO_COLOR) {
 			C2D_DrawImage(image, &c2d_parameter, NULL);
-		else {
+		} else {
 			C2D_PlainImageTint(&tint, abgr8888, true);
 			C2D_DrawImage(image, &c2d_parameter, &tint);
 		}
@@ -514,8 +540,9 @@ void Draw_debug_info(void) {
 	Hid_info key;
 	Util_hid_query_key_state(&key);
 
-	if (var_night_mode)
+	if (var_night_mode) {
 		color = DEF_DRAW_WHITE;
+	}
 
 	Draw_texture(var_square_image[0], DEF_DRAW_WEAK_BLUE, 0.0, 18.0, 70.0, 140.0);
 	Draw_texture(var_square_image[0], DEF_DRAW_WEAK_BLUE, 0.0, 158.0, 110.0, 80.0);
@@ -554,13 +581,15 @@ Result_with_string Draw_load_kanji_samples(void) {
 
 	memset((void *)fs_buffer, 0x0, 0x8000);
 	result = Path("romfs:/gfx/font/sample/kanji.txt").read_file(fs_buffer, 0x8000, size_read);
-	if (result.code == 0)
+	if (result.code == 0) {
 		japanese_kanji_num = Extfont_parse_utf8_str_to_u32((const char *)fs_buffer, draw_japanese_kanji, 3000);
+	}
 
 	memset((void *)fs_buffer, 0x0, 0x8000);
 	result = Path("romfs:/gfx/font/sample/hanyu_s.txt").read_file(fs_buffer, 0x8000, size_read);
-	if (result.code == 0)
+	if (result.code == 0) {
 		simple_chinese_num = Extfont_parse_utf8_str_to_u32((const char *)fs_buffer, draw_simple_chinese, 6300);
+	}
 
 	free(fs_buffer);
 	return result;
@@ -580,29 +609,35 @@ Result_with_string Draw_init(bool wide) {
 	osTickCounterStart(&draw_frame_time_timer);
 
 	result = Draw_load_texture("romfs:/gfx/draw/wifi_signal.t3x", 0, wifi_icon_image, 0, 9);
-	if (result.code != 0)
+	if (result.code != 0) {
 		return result;
+	}
 
 	result = Draw_load_texture("romfs:/gfx/draw/battery_level.t3x", 1, battery_level_icon_image, 0, 21);
-	if (result.code != 0)
+	if (result.code != 0) {
 		return result;
+	}
 
 	result = Draw_load_texture("romfs:/gfx/draw/battery_charge.t3x", 2, battery_charge_icon_image, 0, 1);
-	if (result.code != 0)
+	if (result.code != 0) {
 		return result;
+	}
 
 	result = Draw_load_texture("romfs:/gfx/draw/eco.t3x", 3, eco_image, 0, 2);
-	if (result.code != 0)
+	if (result.code != 0) {
 		return result;
+	}
 
 	result = Draw_load_texture("romfs:/gfx/draw/square.t3x", 4, var_square_image, 0, 1);
-	if (result.code != 0)
+	if (result.code != 0) {
 		return result;
+	}
 
 	result = Draw_load_kanji_samples();
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 8; i++) {
 		samples[i] = str2u32(samples_str[i]);
+	}
 
 	return result;
 }
@@ -623,15 +658,15 @@ void Draw_reinit(bool wide) {
 
 Result_with_string Draw_load_system_font(int system_font_num) {
 	Result_with_string result;
-	if (system_font_num == 0)
+	if (system_font_num == 0) {
 		system_fonts[0] = C2D_FontLoadSystem(CFG_REGION_JPN);
-	else if (system_font_num == 1)
+	} else if (system_font_num == 1) {
 		system_fonts[1] = C2D_FontLoadSystem(CFG_REGION_CHN);
-	else if (system_font_num == 2)
+	} else if (system_font_num == 2) {
 		system_fonts[2] = C2D_FontLoadSystem(CFG_REGION_KOR);
-	else if (system_font_num == 3)
+	} else if (system_font_num == 3) {
 		system_fonts[3] = C2D_FontLoadSystem(CFG_REGION_TWN);
-	else {
+	} else {
 		result.code = DEF_ERR_INVALID_ARG;
 		result.string = DEF_ERR_INVALID_ARG_STR;
 		return result;
@@ -661,10 +696,12 @@ void Draw_free_texture(int sheet_map_num) {
 }
 
 void Draw_exit(void) {
-	for (int i = 0; i < 128; i++)
+	for (int i = 0; i < 128; i++) {
 		Draw_free_texture(i);
-	for (int i = 0; i < 4; i++)
+	}
+	for (int i = 0; i < 4; i++) {
 		Draw_free_system_font(i);
+	}
 
 	C2D_Fini();
 	C3D_Fini();
@@ -684,6 +721,7 @@ void Draw_apply_draw(void) {
 	C3D_FrameEnd(0);
 	osTickCounterUpdate(&draw_frame_time_timer);
 	draw_frametime[19] = osTickCounterRead(&draw_frame_time_timer);
-	for (int i = 0; i < 19; i++)
+	for (int i = 0; i < 19; i++) {
 		draw_frametime[i] = draw_frametime[i + 1];
+	}
 }

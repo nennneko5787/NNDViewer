@@ -37,9 +37,11 @@ struct HttpRequest { // including https
 		                                              "(KHTML, like Gecko) Chrome/83.0.4103.101 Mobile Safari/537.36";
 		static const std::map<std::string, std::string> default_headers = {
 		    {"Accept", "*/*"}, {"Connection", "Keep-Alive"}, {"User-Agent", DEFAULT_USER_AGENT}};
-		for (auto default_header : default_headers)
-			if (!headers.count(default_header.first))
+		for (auto default_header : default_headers) {
+			if (!headers.count(default_header.first)) {
 				headers[default_header.first] = default_header.second;
+			}
+		}
 
 		return headers;
 	}

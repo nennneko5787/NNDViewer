@@ -18,26 +18,29 @@ Thread expl_read_dir_thread;
 std::string Util_expl_query_current_patch(void) { return expl_current_patch; }
 
 std::string Util_expl_query_file_name(int file_num) {
-	if (file_num >= 0 && file_num <= 255)
+	if (file_num >= 0 && file_num <= 255) {
 		return expl_files[file_num];
-	else
+	} else {
 		return "";
+	}
 }
 
 int Util_expl_query_num_of_file(void) { return expl_num_of_file; }
 
 int Util_expl_query_size(int file_num) {
-	if (file_num >= 0 && file_num <= 255)
+	if (file_num >= 0 && file_num <= 255) {
 		return expl_size[file_num];
-	else
+	} else {
 		return -1;
+	}
 }
 
 std::string Util_expl_query_type(int file_num) {
-	if (file_num >= 0 && file_num <= 255)
+	if (file_num >= 0 && file_num <= 255) {
 		return expl_type[file_num];
-	else
+	} else {
 		return "";
+	}
 }
 
 bool Util_expl_query_show_flag(void) { return expl_show_flag; }
@@ -50,8 +53,9 @@ void Util_expl_set_current_patch(std::string patch) { expl_current_patch = patch
 
 void Util_expl_set_show_flag(bool flag) {
 	expl_show_flag = flag;
-	if (flag == true)
+	if (flag == true) {
 		expl_read_dir_request = true;
+	}
 }
 
 void Util_expl_init(void) {
@@ -81,10 +85,11 @@ void Util_expl_draw(void) {
 	Draw("A : OK, B : Back, Y : Close, ↑↓→← : Move", 12.5, 185.0, 0.4, 0.4, DEF_DRAW_BLACK);
 	Draw(expl_current_patch, 12.5, 195.0, 0.45, 0.45, DEF_DRAW_BLACK);
 	for (int i = 0; i < 16; i++) {
-		if (i == (int)expl_selected_file_num)
+		if (i == (int)expl_selected_file_num) {
 			color = DEF_DRAW_RED;
-		else
+		} else {
 			color = DEF_DRAW_BLACK;
+		}
 
 		Draw(expl_files[i + (int)expl_view_offset_y] + "(" +
 		         std::to_string(expl_size[i + (int)expl_view_offset_y] / 1024.0 / 1024.0).substr(0, 4) + "MB) (" +
@@ -109,8 +114,9 @@ void Util_expl_main(Hid_info key) {
 					    !(Util_expl_query_current_patch() == "/")) {
 						expl_current_patch = expl_current_patch.substr(0, expl_current_patch.length() - 1);
 						cut_pos = expl_current_patch.find_last_of("/");
-						if (!(cut_pos == std::string::npos))
+						if (!(cut_pos == std::string::npos)) {
 							expl_current_patch = expl_current_patch.substr(0, cut_pos + 1);
+						}
 
 						expl_view_offset_y = 0.0;
 						expl_selected_file_num = 0.0;
@@ -130,8 +136,9 @@ void Util_expl_main(Hid_info key) {
 
 					break;
 				} else {
-					if (expl_num_of_file > (i + (int)expl_view_offset_y))
+					if (expl_num_of_file > (i + (int)expl_view_offset_y)) {
 						expl_selected_file_num = i;
+					}
 
 					var_need_refresh = true;
 				}
@@ -141,8 +148,9 @@ void Util_expl_main(Hid_info key) {
 			if (expl_current_patch != "/") {
 				expl_current_patch = expl_current_patch.substr(0, expl_current_patch.length() - 1);
 				cut_pos = expl_current_patch.find_last_of("/");
-				if (!(cut_pos == std::string::npos))
+				if (!(cut_pos == std::string::npos)) {
 					expl_current_patch = expl_current_patch.substr(0, cut_pos + 1);
+				}
 
 				expl_view_offset_y = 0.0;
 				expl_selected_file_num = 0.0;
@@ -152,42 +160,48 @@ void Util_expl_main(Hid_info key) {
 		} else if (key.p_d_down || key.h_d_down || key.p_c_down || key.h_c_down || key.p_d_right || key.h_d_right ||
 		           key.p_c_right || key.h_c_right) {
 			if ((expl_selected_file_num + 1.0) < 16.0 && (expl_selected_file_num + 1.0) < expl_num_of_file) {
-				if (key.p_d_down || key.h_d_down || key.p_c_down || key.h_c_down)
+				if (key.p_d_down || key.h_d_down || key.p_c_down || key.h_c_down) {
 					expl_selected_file_num += 0.125 * key.count;
-				else if (key.p_d_right || key.h_d_right || key.p_c_right || key.h_c_right)
+				} else if (key.p_d_right || key.h_d_right || key.p_c_right || key.h_c_right) {
 					expl_selected_file_num += 1.0 * key.count;
+				}
 			} else if ((expl_view_offset_y + expl_selected_file_num + 1.0) < expl_num_of_file) {
-				if (key.p_d_down || key.h_d_down || key.p_c_down || key.h_c_down)
+				if (key.p_d_down || key.h_d_down || key.p_c_down || key.h_c_down) {
 					expl_view_offset_y += 0.125 * key.count;
-				else if (key.p_d_right || key.h_d_right || key.p_c_right || key.h_c_right)
+				} else if (key.p_d_right || key.h_d_right || key.p_c_right || key.h_c_right) {
 					expl_view_offset_y += 1.0 * key.count;
+				}
 			}
 			var_need_refresh = true;
 		} else if (key.p_d_up || key.h_d_up || key.p_c_up || key.h_c_up || key.p_d_left || key.h_d_left ||
 		           key.p_c_left || key.h_c_left) {
 			if ((expl_selected_file_num - 1.0) > -1.0) {
-				if (key.p_d_up || key.h_d_up || key.p_c_up || key.h_c_up)
+				if (key.p_d_up || key.h_d_up || key.p_c_up || key.h_c_up) {
 					expl_selected_file_num -= 0.125 * key.count;
-				else if (key.p_d_left || key.h_d_left || key.p_c_left || key.h_c_left)
+				} else if (key.p_d_left || key.h_d_left || key.p_c_left || key.h_c_left) {
 					expl_selected_file_num -= 1.0 * key.count;
+				}
 			} else if ((expl_view_offset_y - 1.0) > -1.0) {
-				if (key.p_d_up || key.h_d_up || key.p_c_up || key.h_c_up)
+				if (key.p_d_up || key.h_d_up || key.p_c_up || key.h_c_up) {
 					expl_view_offset_y -= 0.125 * key.count;
-				else if (key.p_d_left || key.h_d_left || key.p_c_left || key.h_c_left)
+				} else if (key.p_d_left || key.h_d_left || key.p_c_left || key.h_c_left) {
 					expl_view_offset_y -= 1.0 * key.count;
+				}
 			}
 			var_need_refresh = true;
 		}
-		if (expl_selected_file_num <= -1)
+		if (expl_selected_file_num <= -1) {
 			expl_selected_file_num = 0;
-		else if (expl_selected_file_num >= 16)
+		} else if (expl_selected_file_num >= 16) {
 			expl_selected_file_num = 15;
-		else if (expl_selected_file_num >= expl_num_of_file)
+		} else if (expl_selected_file_num >= expl_num_of_file) {
 			expl_selected_file_num = expl_num_of_file - 1;
-		if (expl_view_offset_y <= -1)
+		}
+		if (expl_view_offset_y <= -1) {
 			expl_view_offset_y = 0;
-		else if (expl_view_offset_y + expl_selected_file_num >= expl_num_of_file)
+		} else if (expl_view_offset_y + expl_selected_file_num >= expl_num_of_file) {
 			expl_view_offset_y = expl_num_of_file - 16;
+		}
 	}
 }
 
@@ -278,12 +292,14 @@ void Util_expl_read_dir_thread(void *arg) {
 				if (!(expl_current_patch == "/")) {
 					num_offset = 1;
 					expl_num_of_file += 1;
-					if (var_lang == "jp")
+					if (var_lang == "jp") {
 						expl_files[0] = "親ディレクトリへ移動";
-					else
+					} else {
 						expl_files[0] = "Move to parent directory";
-				} else
+					}
+				} else {
 					num_offset = 0;
+				}
 
 				for (int i = 0; i < num_of_hidden; i++) {
 					index = i + num_offset;
@@ -315,8 +331,9 @@ void Util_expl_read_dir_thread(void *arg) {
 			expl_read_dir_request = false;
 
 			for (int i = 0; i <= index; i++) {
-				if (expl_read_dir_request)
+				if (expl_read_dir_request) {
 					break;
+				}
 
 				result = Path(expl_current_patch + expl_files[i]).get_size(file_size);
 				if (result.code == 0) {
@@ -324,8 +341,9 @@ void Util_expl_read_dir_thread(void *arg) {
 					var_need_refresh = true;
 				}
 			}
-		} else
+		} else {
 			usleep(DEF_ACTIVE_THREAD_SLEEP_TIME);
+		}
 	}
 	logger.info(DEF_EXPL_READ_DIR_THREAD_STR, "Thread exit.");
 	threadExit(0);

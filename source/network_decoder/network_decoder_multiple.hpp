@@ -105,18 +105,20 @@ class NetworkMultipleDecoder {
 	double get_timestamp_from_bar_pos(double pos) {
 		pos = std::min(1.0, std::max(0.0, pos));
 		double duration = get_duration();
-		if (is_livestream && !adjust_timestamp)
+		if (is_livestream && !adjust_timestamp) {
 			return duration - std::min<double>(duration, 60 * 60 * 12) * (1 - pos);
-		else
+		} else {
 			return duration * pos;
+		}
 	}
 	double get_bar_pos_from_timestamp(double timestamp) {
 		double duration = get_duration();
 		double res;
-		if (is_livestream && !adjust_timestamp)
+		if (is_livestream && !adjust_timestamp) {
 			res = 1 - (duration - timestamp) / std::min<double>(duration, 60 * 60 * 12);
-		else
+		} else {
 			res = timestamp / duration;
+		}
 		return std::max(0.0, std::min(1.0, res));
 	}
 

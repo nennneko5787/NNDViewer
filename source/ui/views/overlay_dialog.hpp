@@ -44,8 +44,9 @@ struct OverlayDialogView : public OverlayView {
 		size_t n = button_strs.size();
 		for (size_t i = 0; i < button_strs.size(); i++) {
 			int width = (DEFAULT_DIALOG_WIDTH + 1) / n;
-			if (i < (DEFAULT_DIALOG_WIDTH + 1) % n)
+			if (i < (DEFAULT_DIALOG_WIDTH + 1) % n) {
 				width++;
+			}
 
 			buttons_view->views.push_back((new TextView(0, 0, width - 1, DEFAULT_DIALOG_BUTTON_HEIGHT))
 			                                  ->set_text(button_strs[i])
@@ -54,17 +55,20 @@ struct OverlayDialogView : public OverlayView {
 			                                  ->set_get_background_color(View::STANDARD_BACKGROUND)
 			                                  ->set_on_view_released([this, i](View &) {
 				                                  bool close = true;
-				                                  if (this->on_button_pressed && !this->on_button_pressed(*this, i))
+				                                  if (this->on_button_pressed && !this->on_button_pressed(*this, i)) {
 					                                  close = false;
-				                                  if (close)
+				                                  }
+				                                  if (close) {
 					                                  this->set_is_visible(false);
+				                                  }
 				                                  var_need_refresh = true;
 			                                  }));
-			if (i + 1 < button_strs.size())
+			if (i + 1 < button_strs.size()) {
 				buttons_view->views.push_back((new RuleView(0, 0, 1, DEFAULT_DIALOG_BUTTON_HEIGHT))
 				                                  ->set_get_color([]() { return LIGHT2_BACK_COLOR; })
 				                                  ->set_margin(0)
 				                                  ->set_is_vertical(true));
+			}
 		}
 		return this;
 	}

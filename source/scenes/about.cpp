@@ -16,21 +16,12 @@ bool exiting = false;
 const std::vector<std::string> app_description_lines = {"A work-in-progress homebrew YouTube client", "for the 3DS"};
 const std::vector<std::pair<std::string, std::vector<std::string>>> credits = {
     {"The story",
-     {"The story goes as follows:",
-      "ThirdTube stopped working", "then we, as the the former ThirdTube",
-      "now FourthTube community, took action",
-      "Extra credit goes to:",
-      "NCP 3.0, fixing the app",
-      "Smu1zel, fixing the app",
-      "5GBurrito, minor contributions",
-      "2B_enpitsu, new banner and icon",
-      "ItsFrocat, German translation strings",
-      "dragontwo14, German translation strings",
-      "cooolgamer, French translation strings",
-      "Dxni, Italian translation strings",
-      "Core 2 Extreme, for Video player for 3DS from",
-      "which the video playback code of this app is",
-      "taken"}},
+     {"The story goes as follows:", "ThirdTube stopped working", "then we, as the the former ThirdTube",
+      "now FourthTube community, took action", "Extra credit goes to:", "NCP 3.0, fixing the app",
+      "Smu1zel, fixing the app", "5GBurrito, minor contributions", "2B_enpitsu, new banner and icon",
+      "ItsFrocat, German translation strings", "dragontwo14, German translation strings",
+      "cooolgamer, French translation strings", "Dxni, Italian translation strings",
+      "Core 2 Extreme, for Video player for 3DS from", "which the video playback code of this app is", "taken"}},
 };
 const std::vector<std::string> license_lines = {
     "You can redistribute and/or modify this software",
@@ -167,22 +158,26 @@ void About_draw(void) {
 
 		main_view->draw();
 
-		if (video_playing_bar_show)
+		if (video_playing_bar_show) {
 			video_draw_playing_bar();
+		}
 		draw_overlay_menu(video_playing_bar_show ? 240 - OVERLAY_MENU_ICON_SIZE - VIDEO_PLAYING_BAR_HEIGHT
 		                                         : 240 - OVERLAY_MENU_ICON_SIZE);
 
-		if (Util_expl_query_show_flag())
+		if (Util_expl_query_show_flag()) {
 			Util_expl_draw();
+		}
 
-		if (Util_err_query_error_show_flag())
+		if (Util_err_query_error_show_flag()) {
 			Util_err_draw();
+		}
 
 		Draw_touch_pos();
 
 		Draw_apply_draw();
-	} else
+	} else {
 		gspWaitForVBlank();
+	}
 
 	if (Util_err_query_error_show_flag()) {
 		Util_err_main(key);
@@ -193,10 +188,12 @@ void About_draw(void) {
 
 		main_view->update(key);
 
-		if (video_playing_bar_show)
+		if (video_playing_bar_show) {
 			video_update_playing_bar(key);
+		}
 
-		if (key.p_b)
+		if (key.p_b) {
 			global_intent.next_scene = SceneType::BACK;
+		}
 	}
 }

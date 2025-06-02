@@ -46,15 +46,15 @@ Result_with_string Util_mic_start_recording(int sample_rate) {
 		return result;
 	}
 
-	if (sample_rate == 32728)
+	if (sample_rate == 32728) {
 		mic_sample_rate = MICU_SAMPLE_RATE_32730;
-	else if (sample_rate == 16364)
+	} else if (sample_rate == 16364) {
 		mic_sample_rate = MICU_SAMPLE_RATE_16360;
-	else if (sample_rate == 10909)
+	} else if (sample_rate == 10909) {
 		mic_sample_rate = MICU_SAMPLE_RATE_10910;
-	else if (sample_rate == 8182)
+	} else if (sample_rate == 8182) {
 		mic_sample_rate = MICU_SAMPLE_RATE_8180;
-	else {
+	} else {
 		result.code = DEF_ERR_INVALID_ARG;
 		result.string = DEF_ERR_INVALID_ARG_STR;
 		return result;

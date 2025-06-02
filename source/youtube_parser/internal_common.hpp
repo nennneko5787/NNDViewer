@@ -78,20 +78,22 @@ void parse_json_destructive(char *str, const Func1 &on_success, const Func2 &on_
 	std::string json_err;
 	Document json_root;
 	RJson data = RJson::parse_inplace(json_root, str, json_err);
-	if (json_err != "")
+	if (json_err != "") {
 		on_fail(json_err);
-	else
+	} else {
 		on_success(json_root, data); // both `json_root` and `str` is alive at this point
+	}
 }
 // calls `access` to fetch json and calls `parse` to parse the json
 // properly handles the lifetime of json objects
 template <class Func1, class Func2, class Func3>
 void access_and_parse_json(const Func1 &access, const Func2 &on_success, const Func3 &on_fail) {
 	auto result = access();
-	if (result.first)
+	if (result.first) {
 		parse_json_destructive(&result.second[0], on_success, on_fail);
-	else
+	} else {
 		on_fail(result.second);
+	}
 }
 
 std::string convert_url_to_mobile(std::string url);

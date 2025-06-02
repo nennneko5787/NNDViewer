@@ -32,12 +32,15 @@ template <class CallArg> struct FlexibleString {
 	// FlexibleString(const FlexibleString &) = default;
 
 	operator std::string() const {
-		if (type == Type::RAW)
+		if (type == Type::RAW) {
 			return value;
-		if (type == Type::FUNC_WITH_ARG)
+		}
+		if (type == Type::FUNC_WITH_ARG) {
 			return func_with_arg(*arg);
-		if (type == Type::FUNC)
+		}
+		if (type == Type::FUNC) {
 			return func();
+		}
 		return "FlexStr Unknown Type Err";
 	}
 	FlexibleString &operator=(const FlexibleString &rhs) = default;

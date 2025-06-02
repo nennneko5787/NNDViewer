@@ -19,9 +19,9 @@ void Util_err_set_error_message(std::string summary, std::string description, st
 	err_error_summary = summary;
 	err_error_description = description;
 	err_error_place = place;
-	if (error_code == 1234567890)
+	if (error_code == 1234567890) {
 		err_error_code = "N/A";
-	else {
+	} else {
 		sprintf(cache, "0x%x", error_code);
 		err_error_code = cache;
 	}

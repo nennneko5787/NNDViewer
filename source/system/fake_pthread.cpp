@@ -17,11 +17,13 @@ int util_fake_pthread_enabled_cores = 2;
 void Util_fake_pthread_set_enabled_core(bool enabled_core[4]) {
 	int num_of_core = 0;
 
-	if (!enabled_core[0] && !enabled_core[1] && !enabled_core[2] && !enabled_core[3])
+	if (!enabled_core[0] && !enabled_core[1] && !enabled_core[2] && !enabled_core[3]) {
 		return;
+	}
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++) {
 		util_fake_pthread_enabled_core_list[i] = -3;
+	}
 
 	for (int i = 0; i < 4; i++) {
 		if (enabled_core[i]) {
@@ -62,10 +64,11 @@ int pthread_once(pthread_once_t *once_control, void (*init_routine)(void)) {
 	s32 next;
 	do {
 		val = __ldrex((s32 *)&once_control->status);
-		if (val == PTHREAD_ONCE_NOT_RUN)
+		if (val == PTHREAD_ONCE_NOT_RUN) {
 			next = PTHREAD_ONCE_RUNNING;
-		else
+		} else {
 			next = val;
+		}
 	} while (__strex((s32 *)&once_control->status, val));
 
 	if (val == PTHREAD_ONCE_NOT_RUN) {
@@ -98,35 +101,40 @@ int pthread_cond_destroy(pthread_cond_t *cond) { return 0; }
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
 	Thread handle = 0;
 
-	if (util_fake_pthread_enabled_cores == 0)
+	if (util_fake_pthread_enabled_cores == 0) {
 		return -1;
+	}
 
 	handle = threadCreate((ThreadFunc)(void *)start_routine, arg, DEF_STACKSIZE, DEF_THREAD_PRIORITY_LOW,
 	                      util_fake_pthread_enabled_core_list[util_fake_pthread_core_offset], true);
 	*thread = (pthread_t)handle;
 
-	if (util_fake_pthread_core_offset + 1 < util_fake_pthread_enabled_cores)
+	if (util_fake_pthread_core_offset + 1 < util_fake_pthread_enabled_cores) {
 		util_fake_pthread_core_offset++;
-	else
+	} else {
 		util_fake_pthread_core_offset = 0;
+	}
 
-	if (!handle)
+	if (!handle) {
 		return -1;
-	else
+	} else {
 		return 0;
+	}
 }
 
 int pthread_join(pthread_t thread, void **__value_ptr) {
 	while (true) {
 		int result = threadJoin((Thread)thread, U64_MAX);
-		if (result == 0)
+		if (result == 0) {
 			return 0;
+		}
 	}
 }
 
 int pthread_attr_init(pthread_attr_t *attr) {
-	if (!attr)
+	if (!attr) {
 		return -1;
+	}
 
 	attr->stackaddr = NULL;
 	attr->stacksize = DEF_STACKSIZE;
@@ -138,8 +146,9 @@ int pthread_attr_init(pthread_attr_t *attr) {
 int pthread_attr_destroy(pthread_attr_t *attr) { return 0; }
 
 int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
-	if (!attr || stacksize < 16384)
+	if (!attr || stacksize < 16384) {
 		return -1;
+	}
 
 	attr->stacksize = stacksize;
 	return 0;
@@ -147,23 +156,27 @@ int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
 
 int posix_memalign(void **memptr, size_t alignment, size_t size) {
 	*memptr = memalign(alignment, size);
-	if (!*memptr)
+	if (!*memptr) {
 		return -1;
-	else
+	} else {
 		return 0;
+	}
 }
 
 long sysconf(int name) {
 	if (name == _SC_NPROCESSORS_CONF) {
-		if (var_model == CFG_MODEL_N2DSXL || var_model == CFG_MODEL_N3DS || var_model == CFG_MODEL_N3DSXL)
+		if (var_model == CFG_MODEL_N2DSXL || var_model == CFG_MODEL_N3DS || var_model == CFG_MODEL_N3DSXL) {
 			return 4;
-		else
+		} else {
 			return 2;
+		}
 	} else if (name == _SC_NPROCESSORS_ONLN) {
-		if (var_model == CFG_MODEL_N2DSXL || var_model == CFG_MODEL_N3DS || var_model == CFG_MODEL_N3DSXL)
+		if (var_model == CFG_MODEL_N2DSXL || var_model == CFG_MODEL_N3DS || var_model == CFG_MODEL_N3DSXL) {
 			return 2 + var_core2_available + var_core3_available;
-		else
+		} else {
 			return 2;
-	} else
+		}
+	} else {
 		return -1;
+	}
 }

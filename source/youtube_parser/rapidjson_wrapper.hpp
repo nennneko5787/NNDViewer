@@ -45,18 +45,20 @@ class RJson {
 	int int_value() const { return json && json->IsInt() ? json->GetInt() : 0; }
 	bool bool_value() const { return json && json->IsBool() ? json->GetBool() : false; }
 	std::vector<RJson> array_items() const {
-		if (!json || !json->IsArray())
+		if (!json || !json->IsArray()) {
 			return {};
+		}
 		const auto &array = json->GetArray();
 		return std::vector<RJson>(array.Begin(), array.End());
 	}
 
 	void set_str(rapidjson::Document &json_root, const char *key, const char *value) {
-		if (!json || !json->IsObject())
+		if (!json || !json->IsObject()) {
 			return;
-		if (has_key(key))
+		}
+		if (has_key(key)) {
 			(*this)[key].json->SetString(value, json_root.GetAllocator());
-		else {
+		} else {
 			rapidjson::Value value_object;
 			value_object.SetString(value, json_root.GetAllocator());
 			rapidjson::Value key_object;
@@ -72,8 +74,9 @@ class RJson {
 	RJson operator[](size_t index) const { return json && json->IsArray() ? (*json)[index] : RJson(); }
 
 	std::string dump() const {
-		if (!json)
+		if (!json) {
 			return "(null)";
+		}
 		rapidjson::StringBuffer buffer;
 		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 		json->Accept(writer);

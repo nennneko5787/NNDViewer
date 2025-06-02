@@ -11,8 +11,9 @@ SwkbdState swkbd;
 Result_with_string Util_swkbd_set_dic_word(std::string first_spell[], std::string full_spell[], int num_of_word) {
 	Result_with_string result;
 	if (num_of_word <= DEF_SWKBD_MAX_DIC_WORDS) {
-		for (int i = 0; i < num_of_word; i++)
+		for (int i = 0; i < num_of_word; i++) {
 			swkbdSetDictWord(&swkbd_words[i], first_spell[i].c_str(), full_spell[i].c_str());
+		}
 
 		swkbdSetDictionary(&swkbd, swkbd_words, num_of_word);
 	} else {
@@ -46,14 +47,15 @@ std::string Util_swkbd_launch(int max_length, std::string *out_data) {
 	press_button = swkbdInputText(&swkbd, swkb_input_text, max_length);
 	*out_data = swkb_input_text;
 
-	if (press_button == SWKBD_BUTTON_LEFT)
+	if (press_button == SWKBD_BUTTON_LEFT) {
 		button = "left";
-	else if (press_button == SWKBD_BUTTON_MIDDLE)
+	} else if (press_button == SWKBD_BUTTON_MIDDLE) {
 		button = "middle";
-	else if (press_button == SWKBD_BUTTON_RIGHT)
+	} else if (press_button == SWKBD_BUTTON_RIGHT) {
 		button = "right";
-	else if (press_button == SWKBD_BUTTON_NONE)
+	} else if (press_button == SWKBD_BUTTON_NONE) {
 		button = "none";
+	}
 
 	return button;
 }

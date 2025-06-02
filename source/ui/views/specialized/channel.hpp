@@ -68,11 +68,14 @@ struct ChannelView : public FixedSizeView {
 		bool in_subscribe_button = key.touch_x >= x1 - SMALL_MARGIN * 2 - SUBSCRIBE_BUTTON_WIDTH &&
 		                           key.touch_x < x1 - SMALL_MARGIN * 2 && key.touch_y >= subscribe_button_y &&
 		                           key.touch_y < subscribe_button_y + SUBSCRIBE_BUTTON_HEIGHT;
-		if (key.p_touch && in_subscribe_button)
+		if (key.p_touch && in_subscribe_button) {
 			subscribe_button_holding = true;
-		if (subscribe_button_holding && key.touch_x == -1 && on_subscribe_button_released)
+		}
+		if (subscribe_button_holding && key.touch_x == -1 && on_subscribe_button_released) {
 			on_subscribe_button_released(*this);
-		if (!in_subscribe_button)
+		}
+		if (!in_subscribe_button) {
 			subscribe_button_holding = false;
+		}
 	}
 };
