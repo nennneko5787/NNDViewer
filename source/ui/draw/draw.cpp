@@ -1,6 +1,5 @@
 #include "headers.hpp"
 #include "ui/colors.hpp"
-#include "variables.hpp"
 
 namespace Draw_ {
 double draw_frametime[20] = {
