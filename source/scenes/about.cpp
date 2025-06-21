@@ -17,7 +17,7 @@ const std::vector<std::string> app_description_lines = {"A work-in-progress home
 const std::vector<std::pair<std::string, std::vector<std::string>>> credits = {
     {"The story",
      {"The story goes as follows:",
-    "ThirdTube stopped working", "then we, as the the former ThirdTube",
+    "ThirdTube stopped working", "then we, as the former ThirdTube",
     "now FourthTube community, took action",
     "Extra credit goes to:",
     "NCP 3.0, fixing the app",
