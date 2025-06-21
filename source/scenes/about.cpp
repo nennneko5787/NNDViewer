@@ -23,7 +23,7 @@ const std::vector<std::pair<std::string, std::vector<std::string>>> credits = {
     "NCP 3.0, fixing the app",
     "Smu1zel, fixing the app",
     "5GBurrito, minor contributions",
-    "2B_enpitsu, new banner and icon",
+    "2b-zipper, new banner and icon",
     "ItsFrocat, German translation strings",
     "dragontwo14, German translation strings",
     "cooolgamer, French translation strings",
