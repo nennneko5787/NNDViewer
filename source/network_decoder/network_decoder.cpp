@@ -176,7 +176,7 @@ Result_with_string NetworkDecoderFFmpegIOData::init_(int type, NetworkDecoder *p
 		result.error_description = "avformat_find_stream_info() failed " + std::to_string(ffmpeg_result);
 		goto fail;
 	}
-	if (video_audio_seperate) {
+	if (video_audio_separate) {
 		if (format_context[type]->nb_streams != 1) {
 			result.error_description = "nb_streams != 1 : " + std::to_string(format_context[type]->nb_streams);
 			goto fail;
@@ -216,13 +216,13 @@ Result_with_string NetworkDecoderFFmpegIOData::init(NetworkStream *video_stream,
                                                     NetworkDecoder *parent_decoder) {
 	Result_with_string result;
 
-	video_audio_seperate = video_stream != audio_stream;
+	video_audio_separate = video_stream != audio_stream;
 	network_stream[VIDEO] = video_stream;
 	network_stream[AUDIO] = audio_stream;
 	this->parent_decoder = parent_decoder;
 
 	// init io
-	if (video_audio_seperate) {
+	if (video_audio_separate) {
 		RETURN_WITH_PREFIX_ON_ERROR(init_(VIDEO, parent_decoder), "[v] ");
 		RETURN_WITH_PREFIX_ON_ERROR(init_(AUDIO, parent_decoder), "[a] ");
 	} else {
@@ -254,7 +254,7 @@ Result_with_string NetworkDecoderFFmpegIOData::reinit_stream(int type, int64_t s
 
 	logger.info("debug", "avformat reinit #" + std::to_string(type) + "...");
 	deinit_(type, false);
-	RETURN_WITH_PREFIX_ON_ERROR(init_(type, parent_decoder), video_audio_seperate ? "[v+a]"
+	RETURN_WITH_PREFIX_ON_ERROR(init_(type, parent_decoder), video_audio_separate ? "[v+a]"
 	                                                         : type == VIDEO      ? "[v]"
 	                                                                              : "[a]");
 
@@ -288,7 +288,7 @@ end:
 	return result;
 }
 double NetworkDecoderFFmpegIOData::get_duration() {
-	return (double)format_context[video_audio_seperate ? AUDIO : BOTH]->duration / AV_TIME_BASE;
+	return (double)format_context[video_audio_separate ? AUDIO : BOTH]->duration / AV_TIME_BASE;
 }
 
 /* ********************************************************* */
@@ -861,9 +861,36 @@ NetworkDecoder::PacketType NetworkDecoder::next_decode_type() {
 			}
 		}
 	}
-	if (!packet_buffer[VIDEO].size() && !packet_buffer[AUDIO].size()) {
-		return PacketType::EoF;
+
+	bool video_empty = packet_buffer[VIDEO].empty();
+	bool audio_empty = packet_buffer[AUDIO].empty();
+	bool video_decoded_empty = video_tmp_frames.empty() && video_mvd_tmp_frames.empty();
+
+	// Check if the stream reached EOF
+	auto is_stream_eof = [&](int type) {
+		auto stream = io->network_stream[type];
+		return stream && stream->ready && stream->read_head >= stream->len;
+	};
+	// Check if the stream has error or quit request
+	auto is_stream_error_or_quit = [&](int type) {
+		auto stream = io->network_stream[type];
+		return stream && (stream->error || stream->quit_request);
+	};
+
+	if (video_empty && audio_empty && video_decoded_empty) {
+		if (is_av_separate()) {
+			if ((is_stream_eof(VIDEO) || is_stream_error_or_quit(VIDEO))
+			&& (is_stream_eof(AUDIO) || is_stream_error_or_quit(AUDIO))) {
+				return PacketType::EoF;
+			}
+		} else {
+			if (is_stream_eof(BOTH) || is_stream_error_or_quit(BOTH)) {
+				return PacketType::EoF;
+			}
+		}
+		return PacketType::None;
 	}
+
 	if (!packet_buffer[AUDIO].size()) {
 		return PacketType::VIDEO;
 	}
@@ -998,6 +1025,11 @@ Result_with_string NetworkDecoder::decode_video(int *width, int *height, bool *k
 	Result_with_string result;
 	int ffmpeg_result = 0;
 
+	if (packet_buffer[VIDEO].empty()) {
+		result.code = DEF_ERR_NEED_MORE_INPUT;
+		return result;
+	}
+
 	AVPacket *packet_read = packet_buffer[VIDEO][0];
 	*key_frame = (packet_read->flags & AV_PKT_FLAG_KEY);
 
@@ -1066,6 +1098,11 @@ Result_with_string NetworkDecoder::decode_audio(int *size, u8 **data, double *cu
 	int ffmpeg_result = 0;
 	Result_with_string result;
 	*size = 0;
+
+	if (packet_buffer[AUDIO].empty()) {
+		result.code = DEF_ERR_NEED_MORE_INPUT;
+		return result;
+	}
 
 	AVPacket *packet_read = packet_buffer[AUDIO][0];
 
