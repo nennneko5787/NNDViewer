@@ -32,6 +32,7 @@ float var_afk_time = 0;
 double var_dpad_scroll_speed0 = DPAD_SCROLL_SPEED0_DEFAULT;
 double var_dpad_scroll_speed1 = DPAD_SCROLL_SPEED1_DEFAULT;
 double var_dpad_scroll_speed1_threshold = DPAD_SCROLL_THRESHOLD_DEFAULT;
+double var_dpad_scroll_speed1_threshold_legacy = DPAD_SCROLL_THRESHOLD_DEFAULT;
 int var_free_ram = 0;
 int var_free_linear_ram = 0;
 int var_lcd_brightness = 100;

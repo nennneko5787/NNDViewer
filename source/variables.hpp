@@ -40,6 +40,7 @@ extern double var_dpad_scroll_speed1;
 #define DPAD_SCROLL_THRESHOLD_DEFAULT 2.0
 #define DPAD_SCROLL_THRESHOLD_MAX 5.0
 extern double var_dpad_scroll_speed1_threshold; // in seconds
+extern double var_dpad_scroll_speed1_threshold_legacy;
 extern int var_free_ram;
 extern int var_free_linear_ram;
 extern int var_lcd_brightness;
