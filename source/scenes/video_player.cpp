@@ -343,7 +343,7 @@ void VideoPlayer_init(void) {
 	return LOCALIZED(RELOAD); })
 				->set_x_alignment(TextView::XAlign::CENTER)
 				->set_get_background_color([] (const View &) {
-	return is_async_task_running(load_video_page) ? DEF_DRAW_LIGHT_GRAY : DEF_DRAW_WEAK_AQUA;
+	return is_async_task_running(load_video_page) ? DEF_DRAW_LIGHT_GRAY : DEF_DRAW_WEAK_GREEN;
 				})
 				->set_on_view_released([] (View &view) {
 	if (!is_async_task_running(load_video_page)) {
