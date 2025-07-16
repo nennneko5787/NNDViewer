@@ -220,6 +220,9 @@ struct YouTubeChannelDetail {
 	bool community_loaded = false;
 	std::string community_continuation_token;
 
+	bool streams_loaded = false;
+	bool shorts_loaded = false;
+
 	bool has_more_videos() const { return videos_continue_token != ""; }
 	bool has_more_streams() const { return streams_continue_token != ""; }
 	bool has_more_shorts() const { return shorts_continue_token != ""; }

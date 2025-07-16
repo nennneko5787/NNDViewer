@@ -257,6 +257,7 @@ YouTubeChannelDetail youtube_load_channel_streams_page(std::string url_or_id) {
 			}
 			Document json_root;
 			parse_channel_data(get_initial_data(json_root, html), res);
+			res.streams_loaded = true;
 		}
 	} else {
 		std::string &id = url_or_id;
@@ -269,7 +270,10 @@ YouTubeChannelDetail youtube_load_channel_streams_page(std::string url_or_id) {
 		post_content = std::regex_replace(post_content, std::regex("%2"), id);
 
 		access_and_parse_json([&]() { return http_post_json(get_innertube_api_url("browse"), post_content); },
-		                      [&](Document &, RJson json) { parse_channel_data(json, res); },
+		                      [&](Document &, RJson json) {
+			                      parse_channel_data(json, res);
+			                      res.streams_loaded = true;
+		                      },
 		                      [&](const std::string &error) {
 			                      res.error = "[ch-streams] " + error;
 			                      debug_error(res.error);
@@ -316,6 +320,7 @@ YouTubeChannelDetail youtube_load_channel_shorts_page(std::string url_or_id) {
 			}
 			Document json_root;
 			parse_channel_data(get_initial_data(json_root, html), res);
+			res.shorts_loaded = true;
 		}
 	} else {
 		std::string &id = url_or_id;
@@ -328,7 +333,10 @@ YouTubeChannelDetail youtube_load_channel_shorts_page(std::string url_or_id) {
 		post_content = std::regex_replace(post_content, std::regex("%2"), id);
 
 		access_and_parse_json([&]() { return http_post_json(get_innertube_api_url("browse"), post_content); },
-		                      [&](Document &, RJson json) { parse_channel_data(json, res); },
+		                      [&](Document &, RJson json) {
+			                      parse_channel_data(json, res);
+			                      res.shorts_loaded = true;
+		                      },
 		                      [&](const std::string &error) {
 			                      res.error = "[ch-shorts] " + error;
 			                      debug_error(res.error);
