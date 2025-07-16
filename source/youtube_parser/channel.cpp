@@ -128,11 +128,14 @@ static void parse_channel_data(RJson data, YouTubeChannelDetail &res) {
 					if (shorts_data["thumbnail"]["sources"].array_items().size() > 0) {
 						std::string original_thumbnail_url = shorts_data["thumbnail"]["sources"].array_items()[0]["url"].string_value();
 						
-						std::string video_id = get_video_id_from_thumbnail_url(original_thumbnail_url);
+						// Convert webp format to jpg if necessary
+						std::string converted_thumbnail_url = convert_webp_thumbnail_to_jpg(original_thumbnail_url);
+						
+						std::string video_id = get_video_id_from_thumbnail_url(converted_thumbnail_url);
 						if (!video_id.empty()) {
 							short_video.thumbnail_url = youtube_get_video_thumbnail_url_by_id(video_id);
 						} else {
-							short_video.thumbnail_url = original_thumbnail_url;
+							short_video.thumbnail_url = converted_thumbnail_url;
 						}
 					}
 					
@@ -510,11 +513,14 @@ void YouTubeChannelDetail::load_more_shorts() {
 					    if (shorts_data["thumbnail"]["sources"].array_items().size() > 0) {
 						    std::string original_thumbnail_url = shorts_data["thumbnail"]["sources"].array_items()[0]["url"].string_value();
 						    
-						    std::string video_id = get_video_id_from_thumbnail_url(original_thumbnail_url);
+						    // Convert webp format to jpg if necessary
+						    std::string converted_thumbnail_url = convert_webp_thumbnail_to_jpg(original_thumbnail_url);
+						    
+						    std::string video_id = get_video_id_from_thumbnail_url(converted_thumbnail_url);
 						    if (!video_id.empty()) {
 							    short_video.thumbnail_url = youtube_get_video_thumbnail_url_by_id(video_id);
 						    } else {
-							    short_video.thumbnail_url = original_thumbnail_url;
+							    short_video.thumbnail_url = converted_thumbnail_url;
 						    }
 					    }
 					    
