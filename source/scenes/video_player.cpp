@@ -228,14 +228,14 @@ void VideoPlayer_init(void) {
 			y += SMALL_MARGIN;
 		}
 	});
-	video_quality_selector_view = (new SelectorView(0, 0, 320, 35))
+	video_quality_selector_view = (new SelectorView(0, 0, 320, 35, false))
 		->set_texts({
 			(std::function<std::string ()>) []() { return LOCALIZED(OFF);
 }
 }, 0)
 		->set_title([](const SelectorView &view) {
 	return LOCALIZED(VIDEO); });
-        video_loop_view = (new SelectorView(0, 0, 320, 35))
+        video_loop_view = (new SelectorView(0, 0, 320, 35, false))
 		->set_texts({
 			(std::function<std::string ()>) []() { return LOCALIZED(OFF);
         }
@@ -250,7 +250,7 @@ void VideoPlayer_init(void) {
                              {[]() { return vid_video_format; }, []() { return vid_audio_format; },
                               []() {
 	                              return std::to_string(vid_width_org) + "x" + std::to_string(vid_height_org) + "@" +
-	                                     std::to_string(vid_framerate).substr(0, 5) + "fps";
+	                                     std::to_string(vid_framerate).substr(0, 5) + "FPS";
                               },
                               []() {
 	                              auto decoder_type = network_decoder.get_decoder_type();
@@ -353,7 +353,7 @@ void VideoPlayer_init(void) {
 	}
 				}),
 			video_quality_selector_view,
-     		video_loop_view = (new SelectorView(0, 0, 320, 35))
+     		video_loop_view = (new SelectorView(0, 0, 320, 35, false))
      	 		      ->set_texts({
       	   		       (std::function<std::string ()>) []() { return LOCALIZED(OFF); },
       	 		         (std::function<std::string ()>) []() {
@@ -1097,7 +1097,7 @@ void VideoPlayer_init(void) {
 		    // translation languages
 		    VerticalListView *caption_right_view = new VerticalListView(0, 0, 160);
 		    ScrollView *translation_languages_selector_view = new ScrollView(0, 0, 160, 0); // dummy height
-		caption_right_view->views.push_back((new SelectorView(0, 0, 160, DEFAULT_FONT_INTERVAL * 2.5))
+		caption_right_view->views.push_back((new SelectorView(0, 0, 160, DEFAULT_FONT_INTERVAL * 2.5, false))
 			->set_texts({
 				(std::function<std::string ()>) []() { return LOCALIZED(OFF);
 	    }
@@ -1493,7 +1493,7 @@ void VideoPlayer_init(void) {
 	    int top_button_width = 140;
 	caption_main_views.push_back((new HorizontalListView(0, 0, top_button_height))
 		->set_views({
-			(new SelectorView(0, 0, 320 - top_button_width, top_button_height))
+			(new SelectorView(0, 0, 320 - top_button_width, top_button_height, false))
 				->set_texts({
 					(std::function<std::string ()>) [] () { return LOCALIZED(OFF); },
 					(std::function<std::string ()>) [] () {
