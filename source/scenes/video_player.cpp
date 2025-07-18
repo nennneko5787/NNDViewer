@@ -299,9 +299,9 @@ void VideoPlayer_init(void) {
 	                     Draw_line(0, y + 90, DEFAULT_TEXT_COLOR, 320, y + 90, DEFAULT_TEXT_COLOR, 2);
 	                     Draw_line(0, y + 90 - vid_frametime, 0xFFFFFF00, 320, y + 90 - vid_frametime, 0xFFFFFF00, 2);
 	                     if (vid_total_frames != 0 && vid_min_time != 0 && vid_recent_total_time != 0) {
-		                     Draw("avg " + std::to_string(1000 / (vid_total_time / vid_total_frames)).substr(0, 5) +
-		                              " min " + std::to_string(1000 / vid_max_time).substr(0, 5) + " max " +
-		                              std::to_string(1000 / vid_min_time).substr(0, 5) + " recent avg " +
+		                     Draw("Avg: " + std::to_string(1000 / (vid_total_time / vid_total_frames)).substr(0, 5) +
+		                              " Min: " + std::to_string(1000 / vid_max_time).substr(0, 5) + " Max: " +
+		                              std::to_string(1000 / vid_min_time).substr(0, 5) + " Recent Avg: " +
 		                              std::to_string(1000 / (vid_recent_total_time / 90)).substr(0, 5) + " FPS",
 		                          0, y + 90, 0.4, 0.4, DEFAULT_TEXT_COLOR);
 	                     }
