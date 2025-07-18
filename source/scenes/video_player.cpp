@@ -302,7 +302,7 @@ void VideoPlayer_init(void) {
 		                     Draw("avg " + std::to_string(1000 / (vid_total_time / vid_total_frames)).substr(0, 5) +
 		                              " min " + std::to_string(1000 / vid_max_time).substr(0, 5) + " max " +
 		                              std::to_string(1000 / vid_min_time).substr(0, 5) + " recent avg " +
-		                              std::to_string(1000 / (vid_recent_total_time / 90)).substr(0, 5) + " fps",
+		                              std::to_string(1000 / (vid_recent_total_time / 90)).substr(0, 5) + " FPS",
 		                          0, y + 90, 0.4, 0.4, DEFAULT_TEXT_COLOR);
 	                     }
 
