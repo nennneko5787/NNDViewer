@@ -235,7 +235,7 @@ void VideoPlayer_init(void) {
 }, 0)
 		->set_title([](const SelectorView &view) {
 	return LOCALIZED(VIDEO); });
-        video_loop_view = (new SelectorView(0, 0, 320, 35, false))
+        video_loop_view = (new SelectorView(0, 0, 320, 35, true))
 		->set_texts({
 			(std::function<std::string ()>) []() { return LOCALIZED(OFF);
         }
