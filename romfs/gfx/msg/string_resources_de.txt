@@ -107,8 +107,8 @@
 <ECO_MODE>Eco Modus</ECO_MODE>
 <FULL_SCREEN_MODE>Vollbild Modus</FULL_SCREEN_MODE>
 <SHOW_FULL_DISLIKE>Genaue Anzahl der Dislikes anzeigen</SHOW_FULL_DISLIKE>
-<HIDE_POINTER>Hide pointer</HIDE_POINTER>
-<DARK_THEME>Dunkler Modus</DARK_THEME>
+<HIDE_POINTER>Verstecke den Zeiger</HIDE_POINTER>
+<DARK_THEME>Dunkel Modus</DARK_THEME>
 <AUTOPLAY>Autoplay</AUTOPLAY>
 <LOOP>Wiederholen</LOOP>
 <ONLY_IN_PLAYLIST>Nur Playlists</ONLY_IN_PLAYLIST>
