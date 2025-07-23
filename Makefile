@@ -49,6 +49,7 @@ GRAPHICS	:=	gfx
 ROMFS		:=	romfs
 LIBRARY := library
 GFXBUILD	:=	$(ROMFS)/gfx
+TIME := $(shell date +"%Y-%m-%d %H:%M:%S %Z")
 #---------------------------------------------------------------------------------
 APP_VER					:= 84
 APP_TITLE				:= FourthTube
@@ -72,7 +73,7 @@ ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
 CFLAGS	:= -Wall -Wextra -Wno-unused -Wno-psabi -O2 -mword-relocations \
 		-fomit-frame-pointer -ffunction-sections -fdata-sections \
-		$(ARCH)
+		$(ARCH) -DDEF_BUILD_TIME="\"$(TIME)\""
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D__3DS__ -DCURL_STATICLIB
 
