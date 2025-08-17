@@ -1,6 +1,4 @@
-# Make sure you're using the Unix path on Windows, not the Windows (C:\...) path!
-# Replace this path with your own.
-FOURTHTUBE_PATH=/home/lynden/Downloads/FourthTube
+FOURTHTUBE_PATH=C:/path/to/FourthTube
 
 
 LIBCTRU_PATH=$FOURTHTUBE_PATH/library/libctru

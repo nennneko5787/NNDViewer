@@ -17,7 +17,7 @@ old_library='libcurl.a'
 inherited_linker_flags=''
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/opt/devkitpro/portlibs/3ds/lib -L/home/lynden/Downloads/FourthTube/library/libctru/lib -L/home/lynden/Downloads/FourthTube/library/libbrotli/lib -L/lib -L/home/lynden/Downloads/FourthTube/library/nghttp2/lib /home/lynden/Downloads/FourthTube/library/nghttp2/lib/libnghttp2.la -L/c/Users/Lynden/Downloads/FourthTube/library/libctru/lib -lmbedtls -lmbedx509 -lmbedcrypto -lz -lctru'
+dependency_libs=' -L/a/soft/devkitPro/portlibs/3ds/lib -LA:/proj/ThirdTube/library/libctru/lib -LA:/proj/ThirdTube/library/libbrotli/lib -LA:/soft/msys2/mingw64/bin/../lib -L/lib -LA:/proj/ThirdTube/library/nghttp2/lib A:/proj/ThirdTube/library/nghttp2/lib/libnghttp2.la -lmbedtls -lmbedx509 -lmbedcrypto -lz -lctru'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/usr/lib'
+libdir='/lib'
