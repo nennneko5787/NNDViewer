@@ -52,10 +52,10 @@ GFXBUILD	:=	$(ROMFS)/gfx
 TIME := $(shell date +"%Y-%m-%d %H:%M:%S %Z")
 #---------------------------------------------------------------------------------
 APP_VER					:= 84
-APP_TITLE				:= FourthTube
-APP_DESCRIPTION				:= A YouTube Client For The 3DS
-APP_AUTHOR				:= The FourthTube Community
-PRODUCT_CODE				:= CTR-TYT
+APP_TITLE				:= NNDViewer
+APP_DESCRIPTION				:= A Nico Nico Douga Client For The 3DS
+APP_AUTHOR				:= The NNDViewer Community
+PRODUCT_CODE				:= CTR-NND
 UNIQUE_ID				:= 0xBF74D
 
 BANNER_AUDIO				:= resource/banner.wav
@@ -234,7 +234,7 @@ else
 endif
 
 release: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES) $(OBJDIRS)
-	@echo -e "\033[0;33mThis target is intended for project maintainers to quickly create a file named FourthTube.cia to ship. You probably don't want this as a regular builder.\033[0m"
+	@echo -e "\033[0;33mThis target is intended for project maintainers to quickly create a file named NNDViewer.cia to ship. You probably don't want this as a regular builder.\033[0m"
 	@echo Building 3dsx...
 	@$(MAKE) -j10 -s --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 	@echo

@@ -16,21 +16,12 @@ bool exiting = false;
 const std::vector<std::string> app_description_lines = {"A work-in-progress homebrew YouTube client", "for the 3DS"};
 const std::vector<std::pair<std::string, std::vector<std::string>>> credits = {
     {"The story",
-     {"The story goes as follows:",
-    "ThirdTube stopped working", "then we, as the former ThirdTube",
-    "now FourthTube community, took action",
-    "Extra credit goes to:",
-    "NCP 3.0, fixing the app",
-    "Smu1zel, fixing the app",
-    "5GBurrito, minor contributions",
-    "2b-zipper, new banner and icon",
-    "ItsFrocat, German translation strings",
-    "dragontwo14, German translation strings",
-    "cooolgamer, French translation strings",
-    "Dxni, Italian translation strings",
-    "Core 2 Extreme, for Video player for 3DS from",
-    "which the video playback code of this app is",
-    "taken"}},
+     {"The story goes as follows:", "ThirdTube stopped working", "then we, as the former ThirdTube",
+      "now FourthTube community, took action", "Extra credit goes to:", "NCP 3.0, fixing the app",
+      "Smu1zel, fixing the app", "5GBurrito, minor contributions", "2b-zipper, new banner and icon",
+      "ItsFrocat, German translation strings", "dragontwo14, German translation strings",
+      "cooolgamer, French translation strings", "Dxni, Italian translation strings",
+      "Core 2 Extreme, for Video player for 3DS from", "which the video playback code of this app is", "taken"}},
 };
 const std::vector<std::string> license_lines = {
     "You can redistribute and/or modify this software",
@@ -82,7 +73,7 @@ void About_init(void) {
 	                        ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	                    (new RuleView(0, 0, 320, SMALL_MARGIN * 2)),
 	                    (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
-	                        ->set_text("FourthTube")
+	                        ->set_text("NNDViewer")
 	                        ->set_x_alignment(TextView::XAlign::CENTER)
 	                        ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	                    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
