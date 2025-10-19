@@ -51,12 +51,12 @@ LIBRARY := library
 GFXBUILD	:=	$(ROMFS)/gfx
 TIME := $(shell date +"%Y-%m-%d %H:%M:%S %Z")
 #---------------------------------------------------------------------------------
-APP_VER					:= 84
+APP_VER					:= 85
 APP_TITLE				:= NNDViewer
 APP_DESCRIPTION				:= A Nico Nico Douga Client For The 3DS
 APP_AUTHOR				:= The NNDViewer Community
 PRODUCT_CODE				:= CTR-NND
-UNIQUE_ID				:= 0xBF74D
+UNIQUE_ID				:= 0x57870
 
 BANNER_AUDIO				:= resource/banner.wav
 BANNER_IMAGE				:= resource/banner.cgfx
